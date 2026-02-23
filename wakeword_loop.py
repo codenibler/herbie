@@ -6,7 +6,6 @@ import os
 
 
 def initialize_wakeword_loop():
-
     # Ensure porcupine access token is set
     ACCESS_TOKEN = os.getenv("WAKEWORD_ACCESS_TOKEN")    
     assert ACCESS_TOKEN, "WAKEWORD_ACCESS_TOKEN environment variable is not set. Missing in the .env file."
@@ -40,7 +39,8 @@ def initialize_wakeword_loop():
             logging.debug("Wake word detected! Activating Herbie...")      
             # End stream waiting for wakeword
             stream.stop()
-            return True  # Signal that wake word was detected and processing should continue
+            stream.close()
+            return True
         else:
             logging.debug("No wake word detected in this frame.")   
             # Here, if triggered, we move to listening to user and processing audio. 
