@@ -34,7 +34,6 @@ def initialize_wakeword_loop():
     while True:
         audio_frame = get_next_audio_frame()
         signal = porcupine.process(audio_frame)
-        logging.debug(f"Audio frame processed. Signal: {signal}")
         if signal >= 0:
             logging.debug("Wake word detected! Activating Herbie...")      
             # End stream waiting for wakeword

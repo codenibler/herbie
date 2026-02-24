@@ -10,12 +10,11 @@ import os
 def mono_to_rms16(mono_chunk: np.ndarray) -> float:
     x = mono_chunk.astype(np.float32)
     return float(np.sqrt(np.mean(x**2))) 
-# So I remember... Square to make all amplitudes positive, mean to get average energy, sqrt to get back to original scale. 
-# We are just measuring average energy of the signal. 
+# Square to make all amplitudes + -> mean to get avg energy of both channels -> √ to return to original scale. 
 
 def stereo_to_mono(chunk: np.ndarray) -> np.ndarray:
     """chunk shape: (frames, channels) -> mono int16 shape: (frames,)"""
-    # IF we have 2 dimensions, and the second dimension has 2 channels (columns of 2d array)
+    # If we have 2 dimensions, and the second dimension has 2 channels (columns of 2d array)
     if chunk.ndim == 2 and chunk.shape[1] == 2: 
         # Average of two channels, then convert to int16
         return chunk.mean(axis=1).astype(np.int16)
@@ -25,17 +24,14 @@ def stereo_to_mono(chunk: np.ndarray) -> np.ndarray:
     else:
         return chunk.astype(np.int16).reshape(-1)
 
-def process_audio_bytes(wav_bytes: bytes):
-    print(f"Processing {len(wav_bytes)} bytes of WAV audio...")
-    """ TO DO: TURN RAW BYTES INTO TEXT """
-
+""" TO DO: COMPUTE BACKGROUND ENERGY LEVEL NOT HARDCODED VALUE """
 def record_until_silence(
     samplerate: int = 16000,
     channels: int = 2,          # ReSpeaker hw endpoint requires 2
     blocksize: int = 1024,
-    energy_threshold: float = 700.0,  # tune this
-    pause_threshold: float = 1.0,     # seconds of silence to stop
-    max_duration: float = 100.0        # safety cap
+    energy_threshold: float = 0,        # Set as env param 
+    pause_threshold: float = 1.0,       # Seconds of silence before stop
+    max_duration: float = 100.0         # Max cap
 ):
     """
     Record from mic until silence exceeds pause_threshold seconds.
@@ -71,10 +67,9 @@ def record_until_silence(
             energy = mono_to_rms16(mono)
             now = time.time()
 
-            # Debug print (you can comment this later)
-            logging.debug(f"RMS={energy:.1f}")
 
             above_silence = energy >= energy_threshold
+            logging.debug(f"RMS={energy:.1f}, Above Silence? {above_silence}")
 
             if above_silence:
                 if not speech_started:

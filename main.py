@@ -26,8 +26,8 @@ def activate_buzzer():
 
 def main():
     load_dotenv(override=True) # Override environemnt vars with those in .env
-    warm_up_ollama_model()  # Warm up with system prompt. 
     setup_logging() 
+    warm_up_ollama_model()  # Warm up with system prompt. 
 
     wakeword_detected = initialize_wakeword_loop() # Returns when heard
     activate_buzzer()  # Buzz to indicate wake word was detected
