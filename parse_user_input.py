@@ -1,18 +1,41 @@
-import speech_recognition as sr
+from pathlib import Path
+
+import subprocess
 import logging
+import time
 import io
 import os
 
 
-""" TO DO: CHANGE THIS TO RUN LOCALLY """
 def parse_user_input(wav_bytes):
-    recognizer = sr.Recognizer()
 
-    with sr.AudioFile(io.BytesIO(wav_bytes)) as source:
-        audio_data = recognizer.record(source)
+    WHISPER_PATH = Path(os.getenv("WHISPER_PATH", "whisper.cpp/build/bin/whisper-cli"))
+    WHISPER_MODEL = Path(os.getenv("WHISPER_MODEL", "whisper.cpp/models/ggml-base.en.bin"))
+    WAV_DIR = Path(os.getenv("WAV_DIR", "recorded_wavs"))
 
-    """ TO DO: ADD ERROR HANDLING IN CASE WE COULD NOT PROCESS TEXT. DEFAULT HERBIE ASK 'WHAT WAS THAT?' """
+    if not os.path.exists(WAV_DIR):
+        os.makedirs(WAV_DIR)
+    
+    # Save WAV to file for whisper.
+    wav_path = WAV_DIR / f"user_input_{int(time.time())}.wav"
+    with open(wav_path, "wb") as f:
+        f.write(wav_bytes)
+    logging.info(f"Saved user input WAV to {wav_path}")
 
-    text = recognizer.recognize_google(audio_data)
-    logging.info(f"Recognized text: {text}")
-    return text
+    cmd = [
+        str(WHISPER_PATH),
+        "-m", str(WHISPER_MODEL),
+        "-f", wav_path,
+        "-nt",   # No timestamps
+    ]
+
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        transcription = result.stdout.strip()
+        logging.info(f"Transcription result: {transcription}")
+        return transcription
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Error during transcription: {e.stderr}")
+        """ TO DO: ADD MARVIN ASKING FOR USER TO REPEAT WHAT THEY SAID """
+        return None
+

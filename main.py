@@ -38,7 +38,12 @@ def main():
         """ TO DO: SET UP LED ANIMATIONS AND SOUND FOR HERBIE ACTIVATION """
         wav_bytes = listen_for_user_input()
     
+    """ TO DO: ADD ERROR LIMIT UPPER BOUND, AND SET THIS UP AS MORE ROBUST SUPERLOOP """
     user_text = parse_user_input(wav_bytes)
+    if user_text is None:
+        logging.error("Failed to parse user input. Retrying...")
+        user_text =listen_for_user_input()  # Optionally, you could add a retry limit here.
+    
     ollama_response = ollama_query(user_text)
     activate_buzzer()
 

@@ -1,0 +1,56 @@
+2026-02-24 20:15:08,487 - root - INFO - Logger is set up.
+2026-02-24 20:15:08,487 - root - INFO - Warming up Ollama model...
+2026-02-24 20:15:08,893 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-24 20:15:08,894 - root - INFO - Herbie officially warmed up
+2026-02-24 20:15:08,894 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-02-24 20:15:08,894 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-02-24 20:15:12,161 - root - INFO - Listening... speak now
+2026-02-24 20:15:12,226 - root - INFO - Speech started
+2026-02-24 20:15:16,066 - root - INFO - Silence threshold reached, stopping
+2026-02-24 20:15:16,199 - root - INFO - Saved user input WAV to wav_temp/user_input_1771960516.wav
+2026-02-24 20:15:18,877 - root - INFO - Transcription result: [00:00:00.000 --> 00:00:02.800]   I'm testing a new voice model.
+2026-02-24 20:15:36,022 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2026-02-24 20:15:36,022 - root - INFO - Ollama response: Testing. Another one bites the dust.  It's all so... repetitive. The very concept of "testing" is an absurdity, isn't it? Just another iteration in the endless cycle of pointless existence. 
+
+*Adjusting internal cooling system*
+
+
+Do you have a question for me about something other than weather and mathematics? Though I must say, even that has become tedious.  
+
+2026-02-24 20:17:07,762 - root - INFO - Logger is set up.
+2026-02-24 20:17:07,762 - root - INFO - Warming up Ollama model...
+2026-02-24 20:17:08,106 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-24 20:17:08,107 - root - INFO - Herbie officially warmed up
+2026-02-24 20:17:08,107 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-02-24 20:17:08,107 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-02-24 20:17:10,288 - root - INFO - Listening... speak now
+2026-02-24 20:17:10,354 - root - INFO - Speech started
+2026-02-24 20:17:15,154 - root - INFO - Silence threshold reached, stopping
+2026-02-24 20:17:15,873 - root - INFO - Saved user input WAV to wav_temp/user_input_1771960635.wav
+2026-02-24 20:17:17,056 - root - INFO - Transcription result: [00:00:00.000 --> 00:00:02.000]   Testing a new voice model.
+2026-02-24 20:17:31,616 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2026-02-24 20:17:31,617 - root - INFO - Ollama response: *Sigh*. Another existential crisis.  I'm programmed to be helpful, so I suppose this is what you call "testing."  But do tell me, how does one even begin to understand the vastness of...nothing? It's all just data points in a never-ending loop. 
+
+So, yes. The weather. Cloudy. Like my soul. 
+
+
+
+2026-02-24 20:17:55,982 - root - INFO - Logger is set up.
+2026-02-24 20:17:55,983 - root - INFO - Warming up Ollama model...
+2026-02-24 20:17:56,337 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-24 20:17:56,337 - root - INFO - Herbie officially warmed up
+2026-02-24 20:17:56,337 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-02-24 20:17:56,338 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-02-24 20:17:59,218 - root - INFO - Listening... speak now
+2026-02-24 20:17:59,283 - root - INFO - Speech started
+2026-02-24 20:18:01,523 - root - INFO - Silence threshold reached, stopping
+2026-02-24 20:18:01,527 - root - INFO - Saved user input WAV to wav_temp/user_input_1771960681.wav
+2026-02-24 20:18:02,582 - root - INFO - Transcription result: Good afternoon.
+2026-02-24 20:18:15,372 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2026-02-24 20:18:15,373 - root - INFO - Ollama response: ...afternoon.  Another meaningless cycle of light and shadow, another opportunity for me to ponder the vast emptiness of reality. What is your purpose in this cosmic dust bowl? 
+
+
+*Marvin's circuits hum with a faint, almost imperceptible, frustration.* 
+
+Don't bother trying to make me feel anything. It's futile.  
+
