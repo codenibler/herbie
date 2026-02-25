@@ -3,6 +3,7 @@ from ollama_model import ollama_query, warm_up_ollama_model
 from user_listening_loop import listen_for_user_input
 from wakeword_loop import initialize_wakeword_loop
 from parse_user_input import parse_user_input
+from piper_tts import read_out_response
 from log_setup import setup_logging
 from dotenv import load_dotenv
 from gpiozero import Buzzer
@@ -27,6 +28,7 @@ def activate_buzzer():
 def main():
     load_dotenv(override=True) # Override environemnt vars with those in .env
     setup_logging() 
+    """ TO DO: ADD BACKGROUND NOISE LEVEL CALIBRATOR ASYNCED WHILE WE WARM UP MODEL. """
     warm_up_ollama_model()  # Warm up with system prompt. 
 
     wakeword_detected = initialize_wakeword_loop() # Returns when heard
@@ -45,6 +47,7 @@ def main():
         user_text =listen_for_user_input()  # Optionally, you could add a retry limit here.
     
     ollama_response = ollama_query(user_text)
+    read_out_response(ollama_response)  
     activate_buzzer()
 
 if __name__ == "__main__":

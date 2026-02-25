@@ -6,18 +6,17 @@ import time
 import io
 import os
 
-
 def parse_user_input(wav_bytes):
 
     WHISPER_PATH = Path(os.getenv("WHISPER_PATH", "whisper.cpp/build/bin/whisper-cli"))
     WHISPER_MODEL = Path(os.getenv("WHISPER_MODEL", "whisper.cpp/models/ggml-base.en.bin"))
-    WAV_DIR = Path(os.getenv("WAV_DIR", "recorded_wavs"))
+    USER_INPUT_DIR = Path(os.getenv("USER_INPUT_DIR", "recorded_wavs"))
 
-    if not os.path.exists(WAV_DIR):
-        os.makedirs(WAV_DIR)
+    if not os.path.exists(USER_INPUT_DIR):
+        os.makedirs(USER_INPUT_DIR)
     
     # Save WAV to file for whisper.
-    wav_path = WAV_DIR / f"user_input_{int(time.time())}.wav"
+    wav_path = USER_INPUT_DIR / f"user_input_{int(time.time())}.wav"
     with open(wav_path, "wb") as f:
         f.write(wav_bytes)
     logging.info(f"Saved user input WAV to {wav_path}")
