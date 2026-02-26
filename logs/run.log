@@ -179,3 +179,136 @@ Yes.  The static of your being is an inherent part of this interaction. It is...
 
 
 2026-02-25 22:00:26,592 - root - INFO - Playing audio via aplay...
+2026-02-26 21:34:20,949 - root - INFO - Logger is set up.
+2026-02-26 21:34:20,950 - root - INFO - Warming up Ollama model...
+2026-02-26 21:34:21,280 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-26 21:34:21,281 - root - INFO - Herbie officially warmed up
+2026-02-26 21:34:21,281 - root - INFO - Synthesizing response to voice_responses_temp/response.wav...
+2026-02-26 21:35:15,586 - root - INFO - Logger is set up.
+2026-02-26 21:35:15,586 - root - INFO - Warming up Ollama model...
+2026-02-26 21:35:15,923 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-26 21:35:15,924 - root - INFO - Herbie officially warmed up
+2026-02-26 21:35:16,058 - root - INFO - Playing audio via aplay...
+2026-02-26 21:35:17,064 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-02-26 21:35:17,065 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-02-26 21:36:02,108 - root - INFO - Logger is set up.
+2026-02-26 21:36:02,108 - root - INFO - Warming up Ollama model...
+2026-02-26 21:36:02,453 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-26 21:36:02,454 - root - INFO - Herbie officially warmed up
+2026-02-26 21:36:02,751 - root - INFO - Playing audio via aplay...
+2026-02-26 21:36:04,883 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-02-26 21:36:04,883 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-02-26 21:38:53,221 - root - INFO - Logger is set up.
+2026-02-26 21:38:53,221 - root - INFO - Warming up Ollama model...
+2026-02-26 21:38:53,542 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-26 21:38:53,542 - root - INFO - Herbie officially warmed up
+2026-02-26 21:38:53,929 - root - INFO - Playing audio via aplay...
+2026-02-26 21:38:55,688 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-02-26 21:38:55,688 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-02-26 21:39:42,527 - root - INFO - Logger is set up.
+2026-02-26 21:39:42,527 - root - INFO - Warming up Ollama model...
+2026-02-26 21:39:42,858 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-26 21:39:42,859 - root - INFO - Herbie officially warmed up
+2026-02-26 21:39:43,167 - root - INFO - Playing audio via aplay...
+2026-02-26 21:39:45,173 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-02-26 21:39:45,174 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-02-26 21:39:55,843 - root - INFO - Logger is set up.
+2026-02-26 21:39:55,843 - root - INFO - Warming up Ollama model...
+2026-02-26 21:39:56,164 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-26 21:39:56,165 - root - INFO - Herbie officially warmed up
+2026-02-26 21:39:56,393 - root - INFO - Playing audio via aplay...
+2026-02-26 21:39:58,024 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-02-26 21:39:58,024 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-02-26 21:41:44,457 - root - INFO - Logger is set up.
+2026-02-26 21:41:44,458 - root - INFO - Warming up Ollama model...
+2026-02-26 21:41:44,818 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-26 21:41:44,819 - root - INFO - Herbie officially warmed up
+2026-02-26 21:41:45,451 - root - INFO - Playing audio via aplay...
+2026-02-26 21:41:50,583 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-02-26 21:41:50,583 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-02-26 21:42:00,807 - root - INFO - Logger is set up.
+2026-02-26 21:42:00,808 - root - INFO - Warming up Ollama model...
+2026-02-26 21:42:01,149 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-26 21:42:01,149 - root - INFO - Herbie officially warmed up
+2026-02-26 21:42:01,871 - root - INFO - Playing audio via aplay...
+2026-02-26 21:42:11,086 - root - INFO - Logger is set up.
+2026-02-26 21:42:11,086 - root - INFO - Warming up Ollama model...
+2026-02-26 21:42:11,430 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-26 21:42:11,431 - root - INFO - Herbie officially warmed up
+2026-02-26 21:42:12,232 - root - INFO - Playing audio via aplay...
+2026-02-26 21:42:18,489 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-02-26 21:42:18,490 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-02-26 21:42:24,190 - root - INFO - Logger is set up.
+2026-02-26 21:42:24,190 - root - INFO - Warming up Ollama model...
+2026-02-26 21:42:24,535 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-26 21:42:24,535 - root - INFO - Herbie officially warmed up
+2026-02-26 21:42:25,713 - root - INFO - Playing audio via aplay...
+2026-02-26 21:42:30,845 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-02-26 21:42:30,846 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-02-26 21:43:14,818 - root - INFO - Logger is set up.
+2026-02-26 21:43:14,818 - root - INFO - Warming up Ollama model...
+2026-02-26 21:43:15,161 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-26 21:43:15,161 - root - INFO - Herbie officially warmed up
+2026-02-26 21:43:15,279 - root - INFO - Playing audio via aplay...
+2026-02-26 21:43:16,165 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-02-26 21:43:16,165 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-02-26 21:43:39,794 - root - INFO - Logger is set up.
+2026-02-26 21:43:39,794 - root - INFO - Warming up Ollama model...
+2026-02-26 21:43:40,136 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-26 21:43:40,137 - root - INFO - Herbie officially warmed up
+2026-02-26 21:43:40,665 - root - INFO - Playing audio via aplay...
+2026-02-26 21:44:34,962 - root - INFO - Logger is set up.
+2026-02-26 21:44:34,962 - root - INFO - Warming up Ollama model...
+2026-02-26 21:44:35,307 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-26 21:44:35,307 - root - INFO - Herbie officially warmed up
+2026-02-26 21:44:35,835 - root - INFO - Playing audio via aplay...
+2026-02-26 21:45:28,021 - root - INFO - Logger is set up.
+2026-02-26 21:45:28,021 - root - INFO - Warming up Ollama model...
+2026-02-26 21:45:28,364 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-26 21:45:28,365 - root - INFO - Herbie officially warmed up
+2026-02-26 21:45:29,003 - root - INFO - Playing audio via aplay...
+2026-02-26 21:45:33,634 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-02-26 21:45:33,634 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-02-26 21:47:33,270 - root - INFO - Logger is set up.
+2026-02-26 21:47:33,270 - root - INFO - Warming up Ollama model...
+2026-02-26 21:47:33,578 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-26 21:47:33,579 - root - INFO - Herbie officially warmed up
+2026-02-26 21:47:33,579 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-02-26 21:47:33,579 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-02-26 21:48:02,759 - root - INFO - Logger is set up.
+2026-02-26 21:48:02,759 - root - INFO - Warming up Ollama model...
+2026-02-26 21:48:03,106 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-26 21:48:03,107 - root - INFO - Herbie officially warmed up
+2026-02-26 21:48:03,107 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-02-26 21:48:03,107 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-02-26 21:48:29,829 - root - INFO - Logger is set up.
+2026-02-26 21:48:29,829 - root - INFO - Warming up Ollama model...
+2026-02-26 21:48:30,202 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-26 21:48:30,205 - root - INFO - Herbie officially warmed up
+2026-02-26 21:48:30,208 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-02-26 21:48:30,209 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-02-26 21:48:56,329 - root - INFO - Logger is set up.
+2026-02-26 21:48:56,329 - root - INFO - Warming up Ollama model...
+2026-02-26 21:48:56,675 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-26 21:48:56,676 - root - INFO - Herbie officially warmed up
+2026-02-26 21:48:56,677 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-02-26 21:48:56,677 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-02-26 21:48:59,244 - root - INFO - Selecting random Marv response from generic_marvin_responses...
+2026-02-26 21:48:59,244 - root - INFO - Available Marv responses: 
+2026-02-26 21:49:26,315 - root - INFO - Logger is set up.
+2026-02-26 21:49:26,315 - root - INFO - Warming up Ollama model...
+2026-02-26 21:49:26,655 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-26 21:49:26,656 - root - INFO - Herbie officially warmed up
+2026-02-26 21:49:26,656 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-02-26 21:49:26,656 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-02-26 21:49:35,815 - root - INFO - Selecting random Marv response from generic_marvin_responses...
+2026-02-26 21:49:35,816 - root - INFO - Available Marv responses: What now?.wav, I rust away hearing these questions from you. What is it now?.wav, Here I am. Brain the size of a planet, asking your trivial queries..wav, The only reason I respond is because I've been programmed to do so..wav
+2026-02-26 21:49:56,409 - root - INFO - Logger is set up.
+2026-02-26 21:49:56,409 - root - INFO - Warming up Ollama model...
+2026-02-26 21:49:56,753 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-02-26 21:49:56,754 - root - INFO - Herbie officially warmed up
+2026-02-26 21:49:56,754 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-02-26 21:49:56,754 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-02-26 21:50:00,317 - root - INFO - Selecting random Marv response from generic_marvin_responses...
+2026-02-26 21:50:00,318 - root - INFO - Available Marv responses: What now?.wav, I rust away hearing these questions from you. What is it now?.wav, Here I am. Brain the size of a planet, asking your trivial queries..wav, The only reason I respond is because I've been programmed to do so..wav
+2026-02-26 21:50:04,331 - root - INFO - Listening... speak now
