@@ -9,16 +9,22 @@ from dotenv import load_dotenv
 from gpiozero import Buzzer
 from pathlib import Path
 
+import sounddevice as sd
 import logging
 import random
 import time
 import os
+
+load_dotenv(override=True)  
 
 BUZZER_PIN = 2
 GENERIC_HERBIE_RESPONSES_DIR = "generic_herbie_responses"
 AMBIENT_NOISE_VALUE = 750  # Reclibrated every RECALIBRATION_INTERVAL seconds
 RECALIBRATION_INTERVAL = os.getenv("RECALIBRATION_INTERVAL", 600)  
 LAST_RECALIBRATION_TIME = None
+
+""" TO DO: ADD NAME BASED MATCHING, NOT INDEX """
+sd.default.device = (int(os.getenv("MICROPHONE_IDX", None)), sd.default.device[1])  
 
 # Testing function for wakeword
 def activate_buzzer():
@@ -46,12 +52,13 @@ def main():
             LAST_RECALIBRATION_TIME = time.time()
 
         wakeword_detected = initialize_wakeword_loop() # Returns when heard
+        # activate_buzzer()  # Indicate wakeword detection with buzzer
         
         """ DEACTIVATED FOR NOW. NO SPEAKER """
-        # herbie_responses = os.listdir(GENERIC_HERBIE_RESPONSES_DIR)
-        # random_herbie_response = random.choice(herbie_responses)
-        # logging.info(f"Selected Herbie response: {random_herbie_response}, reading it out.")
-        # read_out_response_from_file(Path(f"{GENERIC_HERBIE_RESPONSES_DIR}/{random_herbie_response}"))
+        herbie_responses = os.listdir(GENERIC_HERBIE_RESPONSES_DIR)
+        random_herbie_response = random.choice(herbie_responses)
+        logging.info(f"Selected Herbie response: {random_herbie_response}, reading it out.")
+        read_out_response_from_file(Path(f"{GENERIC_HERBIE_RESPONSES_DIR}/{random_herbie_response}"))
 
         if wakeword_detected:
             """ TO DO: SET UP LED ANIMATIONS AND SOUND FOR HERBIE ACTIVATION """
