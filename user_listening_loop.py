@@ -6,6 +6,30 @@ import wave
 import io
 import os
 
+""" Recalibrates ambient noise to set silence threshold to finish user input recording """
+def calibrate_ambient_noise(duration: float = 5.0, samplerate: int = 16000, channels: int = 2, blocksize: int = 1024) -> float:
+    logging.info("Calibrating ambient noise level... ")
+    stream = sd.InputStream(samplerate=samplerate, channels=channels, dtype='int16', blocksize=blocksize)
+    try:
+        stream.start()
+        energy_values = []
+        logging.info("Listening... speak now")
+        start_time = time.time()
+        while (time.time() - start_time) < duration:
+            chunk, overflowed = stream.read(blocksize)
+            if overflowed:
+                logging.error("Warning: input overflow during calibration")
+            mono = stereo_to_mono(chunk)
+            energy = mono_to_rms16(mono)
+            energy_values.append(energy)
+            logging.info(f"Calibration RMS={energy:.1f}")
+        ambient_noise_level = np.mean(energy_values)
+        logging.info(f"Calibrated ambient noise level: {ambient_noise_level:.1f}")
+        return ambient_noise_level
+    finally:
+        stream.stop()
+        stream.close()
+
 """Compute RMS energy for a chunk of Mono audio"""
 def mono_to_rms16(mono_chunk: np.ndarray) -> float:
     x = mono_chunk.astype(np.float32)

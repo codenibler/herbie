@@ -1,5 +1,8 @@
-import os
+from pathlib import Path
+
+import datetime as dt
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -7,6 +10,7 @@ def setup_logging():
     
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
     LOG_DIR = os.getenv("LOG_DIR", "logs")
+    LOG_DIR = Path(dt.datetime.today().strftime(f"{LOG_DIR}/%Y-%m-%d"))
     
     if not os.path.exists(LOG_DIR):
         os.makedirs(LOG_DIR)

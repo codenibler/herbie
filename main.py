@@ -1,48 +1,57 @@
 # Entry point for the application
+from user_listening_loop import listen_for_user_input, calibrate_ambient_noise
 from piper_tts import read_out_response, read_out_response_from_file
 from ollama_model import ollama_query, warm_up_ollama_model
-from user_listening_loop import listen_for_user_input
 from wakeword_loop import initialize_wakeword_loop
 from parse_user_input import parse_user_input
 from log_setup import setup_logging
 from dotenv import load_dotenv
 from gpiozero import Buzzer
 from pathlib import Path
-from time import sleep
 
 import logging
 import random
+import time
 import os
 
 BUZZER_PIN = 2
-GENERIC_MARVIN_RESPONSES_DIR = "generic_marvin_responses"
+GENERIC_HERBIE_RESPONSES_DIR = "generic_herbie_responses"
+AMBIENT_NOISE_VALUE = 750  # Reclibrated every RECALIBRATION_INTERVAL seconds
+RECALIBRATION_INTERVAL = os.getenv("RECALIBRATION_INTERVAL", 600)  
+LAST_RECALIBRATION_TIME = None
 
 # Testing function for wakeword
-""" NEED TO IMPORT OLLAMA AND START TESTING SPEEDS AND SENDING MESSAGES"""
 def activate_buzzer():
     buzzer = Buzzer(BUZZER_PIN)
     for _ in range(2):
         buzzer.on()
-        sleep(0.1)
+        time.sleep(0.1)
         buzzer.off()
-        sleep(0.1)
+        time.sleep(0.1)
 
 def main():
     # Initial setup
+    global AMBIENT_NOISE_VALUE, LAST_RECALIBRATION_TIME
+
     load_dotenv(override=True) # Override environemnt vars with those in .env
     setup_logging() 
-    """ TO DO: ADD BACKGROUND NOISE LEVEL CALIBRATOR  WHILE WE WARM UP MODEL. """
-    """ - Probably not enough to do once on startup, should be more frequent """
     warm_up_ollama_model()  # Warm up with system prompt. 
+    AMBIENT_NOISE_VALUE = calibrate_ambient_noise()  # Calibrate ambient noise level on startup.
+    LAST_RECALIBRATION_TIME = time.time()
 
     while True:
-        wakeword_detected = initialize_wakeword_loop() # Returns when heard
-        marv_responses = os.listdir(GENERIC_MARVIN_RESPONSES_DIR)
-        logging.info(f"Selecting random Marv response from {GENERIC_MARVIN_RESPONSES_DIR}...")
-        logging.info("Available Marv responses: " + ", ".join(marv_responses))
+        if (time.time() - LAST_RECALIBRATION_TIME) >= RECALIBRATION_INTERVAL:
+            logging.info("Recalibrating ambient noise level...")
+            AMBIENT_NOISE_VALUE = calibrate_ambient_noise()
+            LAST_RECALIBRATION_TIME = time.time()
 
-        random_marv_response = random.choice(marv_responses)
-        read_out_response_from_file(Path(f"{GENERIC_MARVIN_RESPONSES_DIR}/{random_marv_response}"))
+        wakeword_detected = initialize_wakeword_loop() # Returns when heard
+        
+        """ DEACTIVATED FOR NOW. NO SPEAKER """
+        # herbie_responses = os.listdir(GENERIC_HERBIE_RESPONSES_DIR)
+        # random_herbie_response = random.choice(herbie_responses)
+        # logging.info(f"Selected Herbie response: {random_herbie_response}, reading it out.")
+        # read_out_response_from_file(Path(f"{GENERIC_HERBIE_RESPONSES_DIR}/{random_herbie_response}"))
 
         if wakeword_detected:
             """ TO DO: SET UP LED ANIMATIONS AND SOUND FOR HERBIE ACTIVATION """
@@ -57,6 +66,8 @@ def main():
         ollama_response = ollama_query(user_text)
         read_out_response(ollama_response)  
         activate_buzzer()
+
+
 
 
 if __name__ == "__main__":

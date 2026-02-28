@@ -13,6 +13,7 @@ def initialize_wakeword_loop():
     # Log default microphone information
     logging.info("Wake word loop initializing... Listening for 'Hey Herbie'")
     for idx, device in enumerate(sd.query_devices()):
+        logging.debug(f"Device {idx}: {device['name']} (Input channels: {device['max_input_channels']}, Output channels: {device['max_output_channels']})")
         if idx == sd.default.device[0]:  # Check if this is the default input device
             logging.info(f"Default input device: {device['name']} (ID: {idx})")
 
