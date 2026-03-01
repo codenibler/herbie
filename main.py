@@ -4,12 +4,12 @@ from piper_tts import read_out_response, read_out_response_from_file
 from ollama_model import ollama_query, warm_up_ollama_model
 from wakeword_loop import initialize_wakeword_loop
 from parse_user_input import parse_user_input
-from log_setup import setup_logging
+from setup.microphone_setup import setup_default_microphone
+from setup.log_setup import setup_logging
 from dotenv import load_dotenv
 from gpiozero import Buzzer
 from pathlib import Path
 
-import sounddevice as sd
 import logging
 import random
 import time
@@ -22,9 +22,6 @@ GENERIC_HERBIE_RESPONSES_DIR = "generic_herbie_responses"
 AMBIENT_NOISE_VALUE = 750  # Reclibrated every RECALIBRATION_INTERVAL seconds
 RECALIBRATION_INTERVAL = os.getenv("RECALIBRATION_INTERVAL", 600)  
 LAST_RECALIBRATION_TIME = None
-
-""" TO DO: ADD NAME BASED MATCHING, NOT INDEX """
-sd.default.device = (int(os.getenv("MICROPHONE_IDX", None)), sd.default.device[1])  
 
 # Testing function for wakeword
 def activate_buzzer():
@@ -41,6 +38,7 @@ def main():
 
     load_dotenv(override=True) # Override environemnt vars with those in .env
     setup_logging() 
+    setup_default_microphone()
     warm_up_ollama_model()  # Warm up with system prompt. 
     AMBIENT_NOISE_VALUE = calibrate_ambient_noise()  # Calibrate ambient noise level on startup.
     LAST_RECALIBRATION_TIME = time.time()

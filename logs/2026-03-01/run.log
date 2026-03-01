@@ -1,0 +1,6 @@
+2026-03-01 15:53:16,290 - root - INFO - Logger is set up.
+2026-03-01 15:53:16,290 - root - INFO - Warming up Ollama model...
+2026-03-01 15:53:49,267 - root - INFO - Logger is set up.
+2026-03-01 15:53:49,267 - root - DEBUG - Available audio devices: ['vc4-hdmi-0: MAI PCM i2s-hifi-0 (hw:0,0)', 'ReSpeaker Lite: USB Audio (hw:2,0)', 'sysdefault', 'hdmi', 'pipewire', 'default']
+2026-03-01 15:53:49,267 - root - INFO - Default microphone set to: ReSpeaker Lite (Device Index: 1)
+2026-03-01 15:53:49,267 - root - INFO - Warming up Ollama model...
