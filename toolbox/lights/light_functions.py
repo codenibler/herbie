@@ -46,23 +46,27 @@ async def station_lights_off():
     # Turn off the kitchen light. Requires no parameters.
     BULB1_IP = os.getenv("BULB1_IP")
     BULB2_IP = os.getenv("BULB2_IP")
-    """ TO DO: ADD BULB3 IP AND FUNCTIONALITY """
     # BULB3_IP = os.getenv("BULB3_IP") 
 
-    assert BULB1_IP and BULB2_IP, "BULB1_IP and BULB2_IP environment variables must be set."
-    logging.info(f"Turning off living room lights at IPs: {BULB1_IP}, {BULB2_IP}")
+    assert BULB1_IP and BULB2_IP and BULB3_IP, "BULB1, 2, and 3 IP environment variables must be set."
+    logging.info(f"Turning off living room lights at IPs: {BULB1_IP}, {BULB2_IP}, {BULB3_IP}")
 
     light1 = wizlight(BULB1_IP)
     light2 = wizlight(BULB2_IP)
+    light3 = wizlight(BULB3_IP)
 
     await light1.turn_off()
     await light2.turn_off()
+    await light3.turn_off()
     state1 = await light1.updateState() 
     state2 = await light2.updateState()  
+    state3 = await light3.updateState()
 
-    brightness2 = state2.get_brightness()
+
     brightness1 = state1.get_brightness()
-    if brightness1 == 0 and brightness2 == 0:
+    brightness2 = state2.get_brightness()
+    brightness3 = state3.get_brightness()
+    if brightness1 == 0 and brightness2 == 0 and brightness3 == 0:
         logging.info("Living room lights turned off successfully.")
         return True
     
@@ -73,23 +77,26 @@ async def station_lights_on():
     # Turn on the living room lights. Requires no parameters.
     BULB1_IP = os.getenv("BULB1_IP")
     BULB2_IP = os.getenv("BULB2_IP")
-    """ TO DO: ADD BULB3 IP AND FUNCTIONALITY """
-    # BULB3_IP = os.getenv("BULB3_IP") 
+    BULB3_IP = os.getenv("BULB3_IP") 
 
-    assert BULB1_IP and BULB2_IP, "BULB1_IP and BULB2_IP environment variables must be set."
-    logging.info(f"Turning on living room lights at IPs: {BULB1_IP}, {BULB2_IP}")
+    assert BULB1_IP and BULB2_IP and BULB3_IP, "BULB1, 2, and 3 IP environment variables must be set."
+    logging.info(f"Turning on living room lights at IPs: {BULB1_IP}, {BULB2_IP}, {BULB3_IP}")
 
     light1 = wizlight(BULB1_IP)
     light2 = wizlight(BULB2_IP)
+    light3 = wizlight(BULB3_IP)
 
     await light1.turn_on(PilotBuilder(brightness=128))
     await light2.turn_on(PilotBuilder(brightness=128))
+    await light3.turn_on(PilotBuilder(brightness=128))
     state1 = await light1.updateState() 
     state2 = await light2.updateState()  
+    state3 = await light3.updateState()
 
-    brightness2 = state2.get_brightness()
     brightness1 = state1.get_brightness()
-    if brightness1 == 128 and brightness2 == 128:
+    brightness2 = state2.get_brightness()
+    brightness3 = state3.get_brightness()
+    if brightness1 == 128 and brightness2 == 128 and brightness3 == 128:
         logging.info("Living room lights turned on successfully.")
         return True
     
@@ -100,24 +107,27 @@ async def station_light_brightness(brightness: int):
     # Turn on the living room lights with a specific brightness %. Requires brightness parameter.
     BULB1_IP = os.getenv("BULB1_IP")
     BULB2_IP = os.getenv("BULB2_IP")
-    """ TO DO: ADD BULB3 IP AND FUNCTIONALITY """
-    # BULB3_IP = os.getenv("BULB3_IP") 
+    BULB3_IP = os.getenv("BULB3_IP") 
 
-    assert BULB1_IP and BULB2_IP, "BULB1_IP and BULB2_IP environment variables must be set."
-    logging.info(f"Changing brightness to {brightness}%: {BULB1_IP}, {BULB2_IP}")
+    assert BULB1_IP and BULB2_IP and BULB3_IP, "BULB1, 2, and 3 IP environment variables must be set."
+    logging.info(f"Changing brightness to {brightness}%: {BULB1_IP}, {BULB2_IP}, {BULB3_IP}")
 
     light1 = wizlight(BULB1_IP)
     light2 = wizlight(BULB2_IP)
+    light3 = wizlight(BULB3_IP)
 
     brightness_value = int((brightness / 100) * 255)  # Convert percentage to 0-255 scale
     await light1.turn_on(PilotBuilder(brightness=brightness_value))
     await light2.turn_on(PilotBuilder(brightness=brightness_value))
+    await light3.turn_on(PilotBuilder(brightness=brightness_value))
     state1 = await light1.updateState() 
     state2 = await light2.updateState()  
+    state3 = await light3.updateState()
 
-    brightness2 = state2.get_brightness()
     brightness1 = state1.get_brightness()
-    if brightness1 == brightness_value and brightness2 == brightness_value:
+    brightness2 = state2.get_brightness()
+    brightness3 = state3.get_brightness()
+    if brightness1 == brightness_value and brightness2 == brightness_value and brightness3 == brightness_value:
         logging.info(f"Living room lights set to {brightness}% brightness.")
         return True
 
@@ -128,25 +138,28 @@ async def station_light_color(color_name: str):
     # Turn on the living room lights with a specific color. Requires color_name parameter.
     BULB1_IP = os.getenv("BULB1_IP")
     BULB2_IP = os.getenv("BULB2_IP")
-    """ TO DO: ADD BULB3 IP AND FUNCTIONALITY """
-    # BULB3_IP = os.getenv("BULB3_IP") 
+    BULB3_IP = os.getenv("BULB3_IP") 
 
-    assert BULB1_IP and BULB2_IP, "BULB1_IP and BULB2_IP environment variables must be set."
-    logging.info(f"Changing color to {color_name}: {BULB1_IP}, {BULB2_IP}")
+    assert BULB1_IP and BULB2_IP and BULB3_IP, "BULB1, 2, and 3 IP environment variables must be set."
+    logging.info(f"Changing color to {color_name}: {BULB1_IP}, {BULB2_IP}, {BULB3_IP}")
 
     light1 = wizlight(BULB1_IP)
     light2 = wizlight(BULB2_IP)
+    light3 = wizlight(BULB3_IP)
 
     color_rgb = COLORS.get(color_name.upper(), (255, 255, 255))  # Default to white if not found
     """ TO DO: IF COLOR NOT FOUND, HAVE HERBIE MENTION THIS AND ASK AGAIN """
     await light1.turn_on(PilotBuilder(rgb=color_rgb))
     await light2.turn_on(PilotBuilder(rgb=color_rgb))
+    await light3.turn_on(PilotBuilder(rgb=color_rgb))
     state1 = await light1.updateState() 
     state2 = await light2.updateState()  
+    state3 = await light3.updateState()
 
     rgb2 = state2.get_rgb()
     rgb1 = state1.get_rgb()
-    if rgb1 == color_rgb and rgb2 == color_rgb:
+    rgb3 = state3.get_rgb()
+    if rgb1 == color_rgb and rgb2 == color_rgb and rgb3 == color_rgb:
         logging.info(f"Living room lights set to color {color_name}.")
         return True
 
@@ -158,30 +171,34 @@ async def station_lights_freaky():
     """ TO DO: PLAY CARELESSS WHISPER """
     BULB1_IP = os.getenv("BULB1_IP")
     BULB2_IP = os.getenv("BULB2_IP")
-    """ TO DO: ADD BULB3 IP AND FUNCTIONALITY """
-    # BULB3_IP = os.getenv("BULB3_IP") 
+    BULB3_IP = os.getenv("BULB3_IP") 
 
-    assert BULB1_IP and BULB2_IP, "BULB1_IP and BULB2_IP environment variables must be set."
-    logging.info(f"Changing color to {color_name}: {BULB1_IP}, {BULB2_IP}")
+    assert BULB1_IP and BULB2_IP and BULB3_IP, "BULB1, 2, and 3 IP environment variables must be set."
+    logging.info(f"Changing color to {color_name}: {BULB1_IP}, {BULB2_IP}, {BULB3_IP}")
 
     light1 = wizlight(BULB1_IP)
     light2 = wizlight(BULB2_IP)
+    light3 = wizlight(BULB3_IP)
 
     color_rgb = COLORS.get(color_name.upper(), (255, 255, 255))  # Default to white if not found
     """ TO DO: IF COLOR NOT FOUND, HAVE HERBIE MENTION THIS AND ASK AGAIN """
     await light1.turn_on(PilotBuilder(rgb=color_rgb))
     await light2.turn_on(PilotBuilder(rgb=color_rgb))
+    await light3.turn_on(PilotBuilder(rgb=color_rgb))   
     state1 = await light1.updateState() 
     state2 = await light2.updateState()  
+    state3 = await light3.updateState()
 
     rgb2 = state2.get_rgb()
     rgb1 = state1.get_rgb()
-    if rgb1 == color_rgb and rgb2 == color_rgb:
+    rgb3 = state3.get_rgb()
+    if rgb1 == color_rgb and rgb2 == color_rgb and rgb3 == color_rgb:
         logging.info(f"Living room lights set to color {color_name}.")
         return True
 
-    logging.warning("Failed to set living room lights to specified color.")
+    logging.warning(f"Failed to set living room lights to specified color. Expected RGB: {color_rgb}, Got RGB: ({rgb1}, {rgb2}, {rgb3})")
     return False
+
 
 
 COLORS = {

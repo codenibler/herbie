@@ -2,6 +2,7 @@ import sounddevice as sd
 import soundfile as sf
 import pvporcupine
 import logging
+import time
 import os
 
 
@@ -31,7 +32,8 @@ def initialize_wakeword_loop():
         # Read audio data from the microphone
         audio_data, _ = stream.read(porcupine.frame_length)
         return audio_data.flatten()
-    
+
+    last_wakeword_not_detected_time = time.time()
     while True:
         audio_frame = get_next_audio_frame()
         signal = porcupine.process(audio_frame)
@@ -41,6 +43,6 @@ def initialize_wakeword_loop():
             stream.stop()
             stream.close()
             return True
-        else:
+        elif time.time() - last_wakeword_not_detected_time > 5:  # Log every 5 seconds if no wake word detected
             logging.debug("No wake word detected in this frame.")   
-            # Here, if triggered, we move to listening to user and processing audio. 
+            last_wakeword_not_detected_time = time.time()

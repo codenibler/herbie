@@ -50,13 +50,13 @@ def main():
             LAST_RECALIBRATION_TIME = time.time()
 
         wakeword_detected = initialize_wakeword_loop() # Returns when heard
-        # activate_buzzer()  # Indicate wakeword detection with buzzer
+        activate_buzzer()  # Indicate wakeword detection with buzzer
         
         """ DEACTIVATED FOR NOW. NO SPEAKER """
-        herbie_responses = os.listdir(GENERIC_HERBIE_RESPONSES_DIR)
-        random_herbie_response = random.choice(herbie_responses)
-        logging.info(f"Selected Herbie response: {random_herbie_response}, reading it out.")
-        read_out_response_from_file(Path(f"{GENERIC_HERBIE_RESPONSES_DIR}/{random_herbie_response}"))
+        # herbie_responses = os.listdir(GENERIC_HERBIE_RESPONSES_DIR)
+        # random_herbie_response = random.choice(herbie_responses)
+        # logging.info(f"Selected Herbie response: {random_herbie_response}, reading it out.")
+        # read_out_response_from_file(Path(f"{GENERIC_HERBIE_RESPONSES_DIR}/{random_herbie_response}"))
 
         if wakeword_detected:
             """ TO DO: SET UP LED ANIMATIONS AND SOUND FOR HERBIE ACTIVATION """
