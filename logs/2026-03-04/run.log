@@ -619,3 +619,658 @@
 2026-03-04 10:37:26,918 - root - INFO - Calibrated ambient noise level: 605.6
 2026-03-04 10:37:26,919 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
 2026-03-04 10:37:26,919 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-04 13:08:30,596 - root - INFO - Logger is set up.
+2026-03-04 13:08:30,596 - root - INFO - Default microphone set to: ReSpeaker Lite (Device Index: 1)
+2026-03-04 13:08:30,596 - root - INFO - Warming up Ollama model...
+2026-03-04 13:09:14,709 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-03-04 13:09:14,710 - root - INFO - Herbie officially warmed up
+2026-03-04 13:09:14,710 - root - INFO - Calibrating ambient noise level... 
+2026-03-04 13:09:14,713 - root - INFO - Listening... speak now
+2026-03-04 13:09:14,778 - root - INFO - Calibration RMS=253.5
+2026-03-04 13:09:14,842 - root - INFO - Calibration RMS=263.6
+2026-03-04 13:09:14,906 - root - INFO - Calibration RMS=257.3
+2026-03-04 13:09:14,970 - root - INFO - Calibration RMS=256.2
+2026-03-04 13:09:15,034 - root - INFO - Calibration RMS=439.3
+2026-03-04 13:09:15,098 - root - INFO - Calibration RMS=255.3
+2026-03-04 13:09:15,162 - root - INFO - Calibration RMS=293.7
+2026-03-04 13:09:15,226 - root - INFO - Calibration RMS=312.1
+2026-03-04 13:09:15,290 - root - INFO - Calibration RMS=443.3
+2026-03-04 13:09:15,354 - root - INFO - Calibration RMS=322.9
+2026-03-04 13:09:15,418 - root - INFO - Calibration RMS=1834.0
+2026-03-04 13:09:15,482 - root - INFO - Calibration RMS=549.6
+2026-03-04 13:09:15,546 - root - INFO - Calibration RMS=1400.0
+2026-03-04 13:09:15,610 - root - INFO - Calibration RMS=911.7
+2026-03-04 13:09:15,674 - root - INFO - Calibration RMS=1614.0
+2026-03-04 13:09:15,738 - root - INFO - Calibration RMS=2447.4
+2026-03-04 13:09:15,802 - root - INFO - Calibration RMS=2504.6
+2026-03-04 13:09:15,866 - root - INFO - Calibration RMS=908.5
+2026-03-04 13:09:15,930 - root - INFO - Calibration RMS=1514.8
+2026-03-04 13:09:15,994 - root - INFO - Calibration RMS=902.1
+2026-03-04 13:09:16,058 - root - INFO - Calibration RMS=1183.9
+2026-03-04 13:09:16,122 - root - INFO - Calibration RMS=996.1
+2026-03-04 13:09:16,186 - root - INFO - Calibration RMS=2173.1
+2026-03-04 13:09:16,250 - root - INFO - Calibration RMS=544.8
+2026-03-04 13:09:16,314 - root - INFO - Calibration RMS=252.9
+2026-03-04 13:09:16,378 - root - INFO - Calibration RMS=2744.4
+2026-03-04 13:09:16,442 - root - INFO - Calibration RMS=2384.4
+2026-03-04 13:09:16,506 - root - INFO - Calibration RMS=529.9
+2026-03-04 13:09:16,570 - root - INFO - Calibration RMS=3143.5
+2026-03-04 13:09:16,634 - root - INFO - Calibration RMS=791.6
+2026-03-04 13:09:16,698 - root - INFO - Calibration RMS=407.9
+2026-03-04 13:09:16,762 - root - INFO - Calibration RMS=1716.5
+2026-03-04 13:09:16,826 - root - INFO - Calibration RMS=640.4
+2026-03-04 13:09:16,890 - root - INFO - Calibration RMS=226.5
+2026-03-04 13:09:16,954 - root - INFO - Calibration RMS=315.7
+2026-03-04 13:09:17,018 - root - INFO - Calibration RMS=206.0
+2026-03-04 13:09:17,082 - root - INFO - Calibration RMS=190.9
+2026-03-04 13:09:17,146 - root - INFO - Calibration RMS=183.4
+2026-03-04 13:09:17,210 - root - INFO - Calibration RMS=223.8
+2026-03-04 13:09:17,274 - root - INFO - Calibration RMS=2272.5
+2026-03-04 13:09:17,338 - root - INFO - Calibration RMS=1242.9
+2026-03-04 13:09:17,402 - root - INFO - Calibration RMS=1356.7
+2026-03-04 13:09:17,466 - root - INFO - Calibration RMS=900.3
+2026-03-04 13:09:17,530 - root - INFO - Calibration RMS=1608.4
+2026-03-04 13:09:17,594 - root - INFO - Calibration RMS=1501.9
+2026-03-04 13:09:17,658 - root - INFO - Calibration RMS=771.9
+2026-03-04 13:09:17,722 - root - INFO - Calibration RMS=3706.4
+2026-03-04 13:09:17,786 - root - INFO - Calibration RMS=669.1
+2026-03-04 13:09:17,850 - root - INFO - Calibration RMS=258.5
+2026-03-04 13:09:17,914 - root - INFO - Calibration RMS=590.0
+2026-03-04 13:09:17,978 - root - INFO - Calibration RMS=232.5
+2026-03-04 13:09:18,042 - root - INFO - Calibration RMS=922.8
+2026-03-04 13:09:18,106 - root - INFO - Calibration RMS=459.7
+2026-03-04 13:09:18,170 - root - INFO - Calibration RMS=357.9
+2026-03-04 13:09:18,234 - root - INFO - Calibration RMS=209.9
+2026-03-04 13:09:18,298 - root - INFO - Calibration RMS=202.5
+2026-03-04 13:09:18,362 - root - INFO - Calibration RMS=229.7
+2026-03-04 13:09:18,426 - root - INFO - Calibration RMS=422.2
+2026-03-04 13:09:18,490 - root - INFO - Calibration RMS=298.7
+2026-03-04 13:09:18,554 - root - INFO - Calibration RMS=342.1
+2026-03-04 13:09:18,618 - root - INFO - Calibration RMS=284.4
+2026-03-04 13:09:18,682 - root - INFO - Calibration RMS=333.5
+2026-03-04 13:09:18,746 - root - INFO - Calibration RMS=593.7
+2026-03-04 13:09:18,810 - root - INFO - Calibration RMS=749.3
+2026-03-04 13:09:18,874 - root - INFO - Calibration RMS=446.4
+2026-03-04 13:09:18,938 - root - INFO - Calibration RMS=382.4
+2026-03-04 13:09:19,002 - root - INFO - Calibration RMS=224.3
+2026-03-04 13:09:19,066 - root - INFO - Calibration RMS=245.9
+2026-03-04 13:09:19,130 - root - INFO - Calibration RMS=262.1
+2026-03-04 13:09:19,194 - root - INFO - Calibration RMS=262.4
+2026-03-04 13:09:19,258 - root - INFO - Calibration RMS=236.4
+2026-03-04 13:09:19,322 - root - INFO - Calibration RMS=461.1
+2026-03-04 13:09:19,386 - root - INFO - Calibration RMS=564.6
+2026-03-04 13:09:19,450 - root - INFO - Calibration RMS=384.0
+2026-03-04 13:09:19,514 - root - INFO - Calibration RMS=277.8
+2026-03-04 13:09:19,578 - root - INFO - Calibration RMS=237.2
+2026-03-04 13:09:19,642 - root - INFO - Calibration RMS=260.0
+2026-03-04 13:09:19,706 - root - INFO - Calibration RMS=276.8
+2026-03-04 13:09:19,770 - root - INFO - Calibration RMS=310.8
+2026-03-04 13:09:19,771 - root - INFO - Calibrated ambient noise level: 783.4
+2026-03-04 13:09:19,772 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-04 13:09:19,772 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-04 13:10:38,683 - root - INFO - Listening... speak now
+2026-03-04 13:10:38,748 - root - INFO - Speech started
+2026-03-04 13:10:47,132 - root - INFO - Silence threshold reached, stopping
+2026-03-04 13:10:47,135 - root - INFO - Saved user input WAV to user_input_temp/user_input_1772626247.wav
+2026-03-04 13:22:38,603 - root - INFO - Logger is set up.
+2026-03-04 13:22:38,604 - root - INFO - Default microphone set to: ReSpeaker Lite (Device Index: 1)
+2026-03-04 13:22:38,604 - root - INFO - Warming up Ollama model...
+2026-03-04 13:22:38,868 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-03-04 13:22:38,868 - root - INFO - Herbie officially warmed up
+2026-03-04 13:22:38,868 - root - INFO - Calibrating ambient noise level... 
+2026-03-04 13:22:38,872 - root - INFO - Listening... speak now
+2026-03-04 13:22:38,937 - root - INFO - Calibration RMS=126.6
+2026-03-04 13:22:39,001 - root - INFO - Calibration RMS=147.2
+2026-03-04 13:22:39,064 - root - INFO - Calibration RMS=142.8
+2026-03-04 13:22:39,128 - root - INFO - Calibration RMS=251.5
+2026-03-04 13:22:39,193 - root - INFO - Calibration RMS=151.6
+2026-03-04 13:22:39,257 - root - INFO - Calibration RMS=148.7
+2026-03-04 13:22:39,320 - root - INFO - Calibration RMS=147.6
+2026-03-04 13:22:39,385 - root - INFO - Calibration RMS=144.2
+2026-03-04 13:22:39,449 - root - INFO - Calibration RMS=130.0
+2026-03-04 13:22:39,513 - root - INFO - Calibration RMS=137.6
+2026-03-04 13:22:39,577 - root - INFO - Calibration RMS=142.2
+2026-03-04 13:22:39,641 - root - INFO - Calibration RMS=141.5
+2026-03-04 13:22:39,705 - root - INFO - Calibration RMS=142.0
+2026-03-04 13:22:39,769 - root - INFO - Calibration RMS=130.2
+2026-03-04 13:22:39,833 - root - INFO - Calibration RMS=149.0
+2026-03-04 13:22:39,897 - root - INFO - Calibration RMS=145.4
+2026-03-04 13:22:39,961 - root - INFO - Calibration RMS=142.5
+2026-03-04 13:22:40,025 - root - INFO - Calibration RMS=146.6
+2026-03-04 13:22:40,089 - root - INFO - Calibration RMS=214.4
+2026-03-04 13:22:40,153 - root - INFO - Calibration RMS=137.7
+2026-03-04 13:22:40,217 - root - INFO - Calibration RMS=140.5
+2026-03-04 13:22:40,281 - root - INFO - Calibration RMS=135.3
+2026-03-04 13:22:40,345 - root - INFO - Calibration RMS=142.5
+2026-03-04 13:22:40,409 - root - INFO - Calibration RMS=139.1
+2026-03-04 13:22:40,473 - root - INFO - Calibration RMS=166.3
+2026-03-04 13:22:40,537 - root - INFO - Calibration RMS=157.3
+2026-03-04 13:22:40,601 - root - INFO - Calibration RMS=144.1
+2026-03-04 13:22:40,665 - root - INFO - Calibration RMS=133.8
+2026-03-04 13:22:40,729 - root - INFO - Calibration RMS=132.8
+2026-03-04 13:22:40,793 - root - INFO - Calibration RMS=125.9
+2026-03-04 13:22:40,857 - root - INFO - Calibration RMS=146.4
+2026-03-04 13:22:40,921 - root - INFO - Calibration RMS=131.9
+2026-03-04 13:22:40,985 - root - INFO - Calibration RMS=123.4
+2026-03-04 13:22:41,049 - root - INFO - Calibration RMS=148.5
+2026-03-04 13:22:41,113 - root - INFO - Calibration RMS=142.3
+2026-03-04 13:22:41,177 - root - INFO - Calibration RMS=140.2
+2026-03-04 13:22:41,241 - root - INFO - Calibration RMS=132.7
+2026-03-04 13:22:41,305 - root - INFO - Calibration RMS=138.8
+2026-03-04 13:22:41,369 - root - INFO - Calibration RMS=171.1
+2026-03-04 13:22:41,433 - root - INFO - Calibration RMS=145.7
+2026-03-04 13:22:41,497 - root - INFO - Calibration RMS=137.9
+2026-03-04 13:22:41,561 - root - INFO - Calibration RMS=131.2
+2026-03-04 13:22:41,625 - root - INFO - Calibration RMS=135.5
+2026-03-04 13:22:41,689 - root - INFO - Calibration RMS=140.7
+2026-03-04 13:22:41,753 - root - INFO - Calibration RMS=136.2
+2026-03-04 13:22:41,817 - root - INFO - Calibration RMS=149.8
+2026-03-04 13:22:41,881 - root - INFO - Calibration RMS=126.8
+2026-03-04 13:22:41,945 - root - INFO - Calibration RMS=135.3
+2026-03-04 13:22:42,009 - root - INFO - Calibration RMS=142.2
+2026-03-04 13:22:42,073 - root - INFO - Calibration RMS=125.5
+2026-03-04 13:22:42,137 - root - INFO - Calibration RMS=142.2
+2026-03-04 13:22:42,201 - root - INFO - Calibration RMS=128.7
+2026-03-04 13:22:42,265 - root - INFO - Calibration RMS=140.6
+2026-03-04 13:22:42,329 - root - INFO - Calibration RMS=134.4
+2026-03-04 13:22:42,393 - root - INFO - Calibration RMS=138.2
+2026-03-04 13:22:42,457 - root - INFO - Calibration RMS=140.7
+2026-03-04 13:22:42,521 - root - INFO - Calibration RMS=123.5
+2026-03-04 13:22:42,585 - root - INFO - Calibration RMS=144.4
+2026-03-04 13:22:42,649 - root - INFO - Calibration RMS=149.1
+2026-03-04 13:22:42,713 - root - INFO - Calibration RMS=217.8
+2026-03-04 13:22:42,777 - root - INFO - Calibration RMS=158.2
+2026-03-04 13:22:42,841 - root - INFO - Calibration RMS=132.2
+2026-03-04 13:22:42,905 - root - INFO - Calibration RMS=199.0
+2026-03-04 13:22:42,969 - root - INFO - Calibration RMS=143.0
+2026-03-04 13:22:43,033 - root - INFO - Calibration RMS=135.4
+2026-03-04 13:22:43,097 - root - INFO - Calibration RMS=132.2
+2026-03-04 13:22:43,161 - root - INFO - Calibration RMS=139.1
+2026-03-04 13:22:43,225 - root - INFO - Calibration RMS=144.9
+2026-03-04 13:22:43,289 - root - INFO - Calibration RMS=129.1
+2026-03-04 13:22:43,353 - root - INFO - Calibration RMS=141.8
+2026-03-04 13:22:43,417 - root - INFO - Calibration RMS=140.2
+2026-03-04 13:22:43,481 - root - INFO - Calibration RMS=247.4
+2026-03-04 13:22:43,545 - root - INFO - Calibration RMS=229.0
+2026-03-04 13:22:43,609 - root - INFO - Calibration RMS=151.0
+2026-03-04 13:22:43,673 - root - INFO - Calibration RMS=172.2
+2026-03-04 13:22:43,737 - root - INFO - Calibration RMS=172.6
+2026-03-04 13:22:43,801 - root - INFO - Calibration RMS=155.7
+2026-03-04 13:22:43,865 - root - INFO - Calibration RMS=133.3
+2026-03-04 13:22:43,929 - root - INFO - Calibration RMS=138.1
+2026-03-04 13:22:43,929 - root - INFO - Calibrated ambient noise level: 147.8
+2026-03-04 13:22:43,931 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-04 13:22:43,931 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-04 13:22:48,833 - root - INFO - Listening... speak now
+2026-03-04 13:22:48,898 - root - INFO - Speech started
+2026-03-04 13:22:53,698 - root - INFO - Silence threshold reached, stopping
+2026-03-04 13:22:53,705 - root - INFO - Saved user input WAV to user_input_temp/user_input_1772626973.wav
+2026-03-04 13:22:55,920 - root - INFO - Transcription result: Turn the station lights to the color orange.
+2026-03-04 13:23:26,272 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2026-03-04 13:23:26,273 - root - INFO - Selected tool for this query: <function station_light_color at 0x7ffecef5c9a0>
+2026-03-04 13:23:26,273 - root - INFO - Ollama response: 
+2026-03-04 13:23:26,273 - root - INFO - Executing tool: station_light_color, with arguments: {'color_name': 'ORANGE'}
+2026-03-04 13:23:26,274 - root - INFO - Changing color to ORANGE: 192.168.178.173, 192.168.178.54, 192.168.178.102
+2026-03-04 13:23:26,765 - root - INFO - Living room lights set to color ORANGE.
+2026-03-04 13:23:26,765 - root - INFO - Tool response: True
+2026-03-04 13:23:26,765 - root - INFO - Ollama response: 
+2026-03-04 13:24:09,453 - root - INFO - Logger is set up.
+2026-03-04 13:24:09,453 - root - INFO - Default microphone set to: ReSpeaker Lite (Device Index: 1)
+2026-03-04 13:24:09,454 - root - INFO - Warming up Ollama model...
+2026-03-04 13:24:09,723 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-03-04 13:24:09,723 - root - INFO - Herbie officially warmed up
+2026-03-04 13:24:09,724 - root - INFO - Calibrating ambient noise level... 
+2026-03-04 13:24:09,726 - root - INFO - Listening... speak now
+2026-03-04 13:24:09,791 - root - INFO - Calibration RMS=164.6
+2026-03-04 13:24:09,855 - root - INFO - Calibration RMS=198.9
+2026-03-04 13:24:09,919 - root - INFO - Calibration RMS=408.6
+2026-03-04 13:24:09,983 - root - INFO - Calibration RMS=277.6
+2026-03-04 13:24:10,047 - root - INFO - Calibration RMS=202.1
+2026-03-04 13:24:10,111 - root - INFO - Calibration RMS=173.6
+2026-03-04 13:24:10,175 - root - INFO - Calibration RMS=168.5
+2026-03-04 13:24:10,239 - root - INFO - Calibration RMS=173.7
+2026-03-04 13:24:10,303 - root - INFO - Calibration RMS=184.8
+2026-03-04 13:24:10,367 - root - INFO - Calibration RMS=176.5
+2026-03-04 13:24:10,431 - root - INFO - Calibration RMS=166.8
+2026-03-04 13:24:10,495 - root - INFO - Calibration RMS=302.7
+2026-03-04 13:24:10,559 - root - INFO - Calibration RMS=275.7
+2026-03-04 13:24:10,623 - root - INFO - Calibration RMS=209.0
+2026-03-04 13:24:10,687 - root - INFO - Calibration RMS=167.4
+2026-03-04 13:24:10,751 - root - INFO - Calibration RMS=170.2
+2026-03-04 13:24:10,815 - root - INFO - Calibration RMS=165.5
+2026-03-04 13:24:10,879 - root - INFO - Calibration RMS=188.8
+2026-03-04 13:24:10,943 - root - INFO - Calibration RMS=169.2
+2026-03-04 13:24:11,007 - root - INFO - Calibration RMS=218.5
+2026-03-04 13:24:11,071 - root - INFO - Calibration RMS=154.3
+2026-03-04 13:24:11,135 - root - INFO - Calibration RMS=154.4
+2026-03-04 13:24:11,199 - root - INFO - Calibration RMS=161.3
+2026-03-04 13:24:11,263 - root - INFO - Calibration RMS=170.1
+2026-03-04 13:24:11,327 - root - INFO - Calibration RMS=158.6
+2026-03-04 13:24:11,391 - root - INFO - Calibration RMS=166.8
+2026-03-04 13:24:11,455 - root - INFO - Calibration RMS=175.3
+2026-03-04 13:24:11,519 - root - INFO - Calibration RMS=159.4
+2026-03-04 13:24:11,583 - root - INFO - Calibration RMS=157.0
+2026-03-04 13:24:11,647 - root - INFO - Calibration RMS=189.3
+2026-03-04 13:24:11,711 - root - INFO - Calibration RMS=273.7
+2026-03-04 13:24:11,775 - root - INFO - Calibration RMS=167.6
+2026-03-04 13:24:11,839 - root - INFO - Calibration RMS=154.9
+2026-03-04 13:24:11,903 - root - INFO - Calibration RMS=170.5
+2026-03-04 13:24:11,967 - root - INFO - Calibration RMS=153.1
+2026-03-04 13:24:12,031 - root - INFO - Calibration RMS=270.6
+2026-03-04 13:24:12,095 - root - INFO - Calibration RMS=373.0
+2026-03-04 13:24:12,159 - root - INFO - Calibration RMS=308.9
+2026-03-04 13:24:12,223 - root - INFO - Calibration RMS=228.7
+2026-03-04 13:24:12,287 - root - INFO - Calibration RMS=174.8
+2026-03-04 13:24:12,351 - root - INFO - Calibration RMS=168.3
+2026-03-04 13:24:12,415 - root - INFO - Calibration RMS=167.9
+2026-03-04 13:24:12,479 - root - INFO - Calibration RMS=199.2
+2026-03-04 13:24:12,543 - root - INFO - Calibration RMS=193.2
+2026-03-04 13:24:12,607 - root - INFO - Calibration RMS=247.3
+2026-03-04 13:24:12,671 - root - INFO - Calibration RMS=736.1
+2026-03-04 13:24:12,735 - root - INFO - Calibration RMS=1082.5
+2026-03-04 13:24:12,799 - root - INFO - Calibration RMS=760.6
+2026-03-04 13:24:12,863 - root - INFO - Calibration RMS=327.1
+2026-03-04 13:24:12,927 - root - INFO - Calibration RMS=215.0
+2026-03-04 13:24:12,991 - root - INFO - Calibration RMS=1775.1
+2026-03-04 13:24:13,055 - root - INFO - Calibration RMS=1023.5
+2026-03-04 13:24:13,119 - root - INFO - Calibration RMS=413.2
+2026-03-04 13:24:13,183 - root - INFO - Calibration RMS=236.1
+2026-03-04 13:24:13,247 - root - INFO - Calibration RMS=217.1
+2026-03-04 13:24:13,311 - root - INFO - Calibration RMS=905.3
+2026-03-04 13:24:13,375 - root - INFO - Calibration RMS=395.5
+2026-03-04 13:24:13,439 - root - INFO - Calibration RMS=304.5
+2026-03-04 13:24:13,503 - root - INFO - Calibration RMS=280.7
+2026-03-04 13:24:13,567 - root - INFO - Calibration RMS=267.1
+2026-03-04 13:24:13,631 - root - INFO - Calibration RMS=187.5
+2026-03-04 13:24:13,696 - root - INFO - Calibration RMS=213.7
+2026-03-04 13:24:13,760 - root - INFO - Calibration RMS=627.4
+2026-03-04 13:24:13,824 - root - INFO - Calibration RMS=613.2
+2026-03-04 13:24:13,888 - root - INFO - Calibration RMS=385.4
+2026-03-04 13:24:13,952 - root - INFO - Calibration RMS=273.3
+2026-03-04 13:24:14,016 - root - INFO - Calibration RMS=142.6
+2026-03-04 13:24:14,080 - root - INFO - Calibration RMS=188.4
+2026-03-04 13:24:14,144 - root - INFO - Calibration RMS=168.1
+2026-03-04 13:24:14,208 - root - INFO - Calibration RMS=160.4
+2026-03-04 13:24:14,272 - root - INFO - Calibration RMS=158.5
+2026-03-04 13:24:14,336 - root - INFO - Calibration RMS=233.0
+2026-03-04 13:24:14,400 - root - INFO - Calibration RMS=164.0
+2026-03-04 13:24:14,464 - root - INFO - Calibration RMS=140.6
+2026-03-04 13:24:14,528 - root - INFO - Calibration RMS=215.4
+2026-03-04 13:24:14,592 - root - INFO - Calibration RMS=169.2
+2026-03-04 13:24:14,656 - root - INFO - Calibration RMS=168.8
+2026-03-04 13:24:14,720 - root - INFO - Calibration RMS=156.4
+2026-03-04 13:24:14,784 - root - INFO - Calibration RMS=161.7
+2026-03-04 13:24:14,784 - root - INFO - Calibrated ambient noise level: 285.2
+2026-03-04 13:24:14,785 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-04 13:24:14,786 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-04 14:01:31,068 - root - INFO - Logger is set up.
+2026-03-04 14:01:31,069 - root - INFO - Default microphone set to: ReSpeaker Lite (Device Index: 1)
+2026-03-04 14:01:31,069 - root - INFO - Warming up Ollama model...
+2026-03-04 14:01:31,334 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-03-04 14:01:31,334 - root - INFO - Herbie officially warmed up
+2026-03-04 14:01:31,335 - root - INFO - Calibrating ambient noise level... 
+2026-03-04 14:01:31,337 - root - INFO - Listening... speak now
+2026-03-04 14:01:31,402 - root - INFO - Calibration RMS=81.3
+2026-03-04 14:01:31,466 - root - INFO - Calibration RMS=90.8
+2026-03-04 14:01:31,530 - root - INFO - Calibration RMS=90.0
+2026-03-04 14:01:31,594 - root - INFO - Calibration RMS=97.0
+2026-03-04 14:01:31,658 - root - INFO - Calibration RMS=97.7
+2026-03-04 14:01:31,722 - root - INFO - Calibration RMS=100.4
+2026-03-04 14:01:31,786 - root - INFO - Calibration RMS=94.1
+2026-03-04 14:01:31,850 - root - INFO - Calibration RMS=92.1
+2026-03-04 14:01:31,914 - root - INFO - Calibration RMS=103.2
+2026-03-04 14:01:31,978 - root - INFO - Calibration RMS=101.3
+2026-03-04 14:01:32,042 - root - INFO - Calibration RMS=117.8
+2026-03-04 14:01:32,106 - root - INFO - Calibration RMS=96.8
+2026-03-04 14:01:32,170 - root - INFO - Calibration RMS=103.7
+2026-03-04 14:01:32,234 - root - INFO - Calibration RMS=85.1
+2026-03-04 14:01:32,298 - root - INFO - Calibration RMS=92.6
+2026-03-04 14:01:32,362 - root - INFO - Calibration RMS=90.4
+2026-03-04 14:01:32,426 - root - INFO - Calibration RMS=88.5
+2026-03-04 14:01:32,490 - root - INFO - Calibration RMS=83.1
+2026-03-04 14:01:32,554 - root - INFO - Calibration RMS=83.0
+2026-03-04 14:01:32,618 - root - INFO - Calibration RMS=98.9
+2026-03-04 14:01:32,682 - root - INFO - Calibration RMS=98.1
+2026-03-04 14:01:32,746 - root - INFO - Calibration RMS=93.1
+2026-03-04 14:01:32,810 - root - INFO - Calibration RMS=80.4
+2026-03-04 14:01:32,874 - root - INFO - Calibration RMS=100.3
+2026-03-04 14:01:32,938 - root - INFO - Calibration RMS=103.4
+2026-03-04 14:01:33,002 - root - INFO - Calibration RMS=118.7
+2026-03-04 14:01:33,066 - root - INFO - Calibration RMS=98.2
+2026-03-04 14:01:33,130 - root - INFO - Calibration RMS=90.3
+2026-03-04 14:01:33,194 - root - INFO - Calibration RMS=102.2
+2026-03-04 14:01:33,258 - root - INFO - Calibration RMS=90.4
+2026-03-04 14:01:33,322 - root - INFO - Calibration RMS=100.6
+2026-03-04 14:01:33,386 - root - INFO - Calibration RMS=91.4
+2026-03-04 14:01:33,450 - root - INFO - Calibration RMS=92.6
+2026-03-04 14:01:33,514 - root - INFO - Calibration RMS=103.1
+2026-03-04 14:01:33,578 - root - INFO - Calibration RMS=91.4
+2026-03-04 14:01:33,642 - root - INFO - Calibration RMS=96.5
+2026-03-04 14:01:33,706 - root - INFO - Calibration RMS=91.7
+2026-03-04 14:01:33,770 - root - INFO - Calibration RMS=82.6
+2026-03-04 14:01:33,834 - root - INFO - Calibration RMS=90.1
+2026-03-04 14:01:33,898 - root - INFO - Calibration RMS=92.5
+2026-03-04 14:01:33,962 - root - INFO - Calibration RMS=91.0
+2026-03-04 14:01:34,026 - root - INFO - Calibration RMS=108.1
+2026-03-04 14:01:34,090 - root - INFO - Calibration RMS=96.7
+2026-03-04 14:01:34,154 - root - INFO - Calibration RMS=93.1
+2026-03-04 14:01:34,218 - root - INFO - Calibration RMS=80.9
+2026-03-04 14:01:34,282 - root - INFO - Calibration RMS=84.4
+2026-03-04 14:01:34,346 - root - INFO - Calibration RMS=97.9
+2026-03-04 14:01:34,410 - root - INFO - Calibration RMS=89.7
+2026-03-04 14:01:34,474 - root - INFO - Calibration RMS=102.1
+2026-03-04 14:01:34,538 - root - INFO - Calibration RMS=101.1
+2026-03-04 14:01:34,602 - root - INFO - Calibration RMS=104.3
+2026-03-04 14:01:34,666 - root - INFO - Calibration RMS=106.4
+2026-03-04 14:01:34,730 - root - INFO - Calibration RMS=98.5
+2026-03-04 14:01:34,794 - root - INFO - Calibration RMS=111.2
+2026-03-04 14:01:34,858 - root - INFO - Calibration RMS=129.1
+2026-03-04 14:01:34,922 - root - INFO - Calibration RMS=142.6
+2026-03-04 14:01:34,986 - root - INFO - Calibration RMS=188.2
+2026-03-04 14:01:35,050 - root - INFO - Calibration RMS=711.7
+2026-03-04 14:01:35,114 - root - INFO - Calibration RMS=713.0
+2026-03-04 14:01:35,178 - root - INFO - Calibration RMS=349.5
+2026-03-04 14:01:35,242 - root - INFO - Calibration RMS=277.6
+2026-03-04 14:01:35,306 - root - INFO - Calibration RMS=889.5
+2026-03-04 14:01:35,370 - root - INFO - Calibration RMS=401.6
+2026-03-04 14:01:35,434 - root - INFO - Calibration RMS=732.9
+2026-03-04 14:01:35,498 - root - INFO - Calibration RMS=213.1
+2026-03-04 14:01:35,562 - root - INFO - Calibration RMS=621.7
+2026-03-04 14:01:35,626 - root - INFO - Calibration RMS=281.0
+2026-03-04 14:01:35,690 - root - INFO - Calibration RMS=227.0
+2026-03-04 14:01:35,754 - root - INFO - Calibration RMS=1186.1
+2026-03-04 14:01:35,818 - root - INFO - Calibration RMS=341.4
+2026-03-04 14:01:35,882 - root - INFO - Calibration RMS=302.9
+2026-03-04 14:01:35,947 - root - INFO - Calibration RMS=200.9
+2026-03-04 14:01:36,010 - root - INFO - Calibration RMS=1053.7
+2026-03-04 14:01:36,074 - root - INFO - Calibration RMS=318.4
+2026-03-04 14:01:36,138 - root - INFO - Calibration RMS=1057.8
+2026-03-04 14:01:36,203 - root - INFO - Calibration RMS=794.4
+2026-03-04 14:01:36,266 - root - INFO - Calibration RMS=896.2
+2026-03-04 14:01:36,330 - root - INFO - Calibration RMS=221.2
+2026-03-04 14:01:36,394 - root - INFO - Calibration RMS=258.8
+2026-03-04 14:01:36,395 - root - INFO - Calibrated ambient noise level: 223.7
+2026-03-04 14:01:36,396 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-04 14:01:36,397 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-04 14:02:17,535 - root - INFO - Logger is set up.
+2026-03-04 14:02:17,536 - root - INFO - Default microphone set to: ReSpeaker Lite (Device Index: 1)
+2026-03-04 14:02:17,550 - root - INFO - Warming up Ollama model...
+2026-03-04 14:02:17,820 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-03-04 14:02:17,821 - root - INFO - Herbie officially warmed up
+2026-03-04 14:02:17,821 - root - INFO - Calibrating ambient noise level... 
+2026-03-04 14:02:17,824 - root - INFO - Listening... speak now
+2026-03-04 14:02:17,889 - root - INFO - Calibration RMS=73.0
+2026-03-04 14:02:17,953 - root - INFO - Calibration RMS=96.6
+2026-03-04 14:02:18,017 - root - INFO - Calibration RMS=98.2
+2026-03-04 14:02:18,081 - root - INFO - Calibration RMS=79.7
+2026-03-04 14:02:18,145 - root - INFO - Calibration RMS=81.8
+2026-03-04 14:02:18,209 - root - INFO - Calibration RMS=89.3
+2026-03-04 14:02:18,273 - root - INFO - Calibration RMS=88.0
+2026-03-04 14:02:18,337 - root - INFO - Calibration RMS=93.3
+2026-03-04 14:02:18,401 - root - INFO - Calibration RMS=83.3
+2026-03-04 14:02:18,465 - root - INFO - Calibration RMS=89.7
+2026-03-04 14:02:18,529 - root - INFO - Calibration RMS=84.5
+2026-03-04 14:02:18,593 - root - INFO - Calibration RMS=92.4
+2026-03-04 14:02:18,659 - root - INFO - Calibration RMS=85.0
+2026-03-04 14:02:18,721 - root - INFO - Calibration RMS=90.6
+2026-03-04 14:02:18,785 - root - INFO - Calibration RMS=96.3
+2026-03-04 14:02:18,849 - root - INFO - Calibration RMS=84.3
+2026-03-04 14:02:18,913 - root - INFO - Calibration RMS=85.4
+2026-03-04 14:02:18,977 - root - INFO - Calibration RMS=78.9
+2026-03-04 14:02:19,041 - root - INFO - Calibration RMS=85.9
+2026-03-04 14:02:19,105 - root - INFO - Calibration RMS=91.5
+2026-03-04 14:02:19,169 - root - INFO - Calibration RMS=86.9
+2026-03-04 14:02:19,233 - root - INFO - Calibration RMS=83.2
+2026-03-04 14:02:19,297 - root - INFO - Calibration RMS=89.5
+2026-03-04 14:02:19,361 - root - INFO - Calibration RMS=92.8
+2026-03-04 14:02:19,425 - root - INFO - Calibration RMS=103.8
+2026-03-04 14:02:19,489 - root - INFO - Calibration RMS=93.3
+2026-03-04 14:02:19,553 - root - INFO - Calibration RMS=110.4
+2026-03-04 14:02:19,617 - root - INFO - Calibration RMS=132.4
+2026-03-04 14:02:19,681 - root - INFO - Calibration RMS=107.5
+2026-03-04 14:02:19,745 - root - INFO - Calibration RMS=90.7
+2026-03-04 14:02:19,809 - root - INFO - Calibration RMS=93.7
+2026-03-04 14:02:19,873 - root - INFO - Calibration RMS=86.1
+2026-03-04 14:02:19,937 - root - INFO - Calibration RMS=84.7
+2026-03-04 14:02:20,001 - root - INFO - Calibration RMS=93.9
+2026-03-04 14:02:20,065 - root - INFO - Calibration RMS=121.8
+2026-03-04 14:02:20,129 - root - INFO - Calibration RMS=93.9
+2026-03-04 14:02:20,193 - root - INFO - Calibration RMS=88.0
+2026-03-04 14:02:20,257 - root - INFO - Calibration RMS=86.5
+2026-03-04 14:02:20,321 - root - INFO - Calibration RMS=90.6
+2026-03-04 14:02:20,385 - root - INFO - Calibration RMS=128.6
+2026-03-04 14:02:20,449 - root - INFO - Calibration RMS=86.6
+2026-03-04 14:02:20,513 - root - INFO - Calibration RMS=88.3
+2026-03-04 14:02:20,577 - root - INFO - Calibration RMS=95.8
+2026-03-04 14:02:20,641 - root - INFO - Calibration RMS=82.7
+2026-03-04 14:02:20,705 - root - INFO - Calibration RMS=82.7
+2026-03-04 14:02:20,769 - root - INFO - Calibration RMS=96.7
+2026-03-04 14:02:20,833 - root - INFO - Calibration RMS=131.3
+2026-03-04 14:02:20,897 - root - INFO - Calibration RMS=98.6
+2026-03-04 14:02:20,961 - root - INFO - Calibration RMS=120.9
+2026-03-04 14:02:21,025 - root - INFO - Calibration RMS=90.2
+2026-03-04 14:02:21,089 - root - INFO - Calibration RMS=94.7
+2026-03-04 14:02:21,153 - root - INFO - Calibration RMS=89.2
+2026-03-04 14:02:21,217 - root - INFO - Calibration RMS=99.8
+2026-03-04 14:02:21,281 - root - INFO - Calibration RMS=89.7
+2026-03-04 14:02:21,345 - root - INFO - Calibration RMS=104.9
+2026-03-04 14:02:21,409 - root - INFO - Calibration RMS=84.3
+2026-03-04 14:02:21,473 - root - INFO - Calibration RMS=90.7
+2026-03-04 14:02:21,537 - root - INFO - Calibration RMS=98.5
+2026-03-04 14:02:21,601 - root - INFO - Calibration RMS=99.7
+2026-03-04 14:02:21,665 - root - INFO - Calibration RMS=88.4
+2026-03-04 14:02:21,729 - root - INFO - Calibration RMS=101.8
+2026-03-04 14:02:21,793 - root - INFO - Calibration RMS=94.1
+2026-03-04 14:02:21,857 - root - INFO - Calibration RMS=96.7
+2026-03-04 14:02:21,921 - root - INFO - Calibration RMS=108.8
+2026-03-04 14:02:21,985 - root - INFO - Calibration RMS=87.3
+2026-03-04 14:02:22,049 - root - INFO - Calibration RMS=91.3
+2026-03-04 14:02:22,113 - root - INFO - Calibration RMS=87.6
+2026-03-04 14:02:22,177 - root - INFO - Calibration RMS=87.4
+2026-03-04 14:02:22,241 - root - INFO - Calibration RMS=91.7
+2026-03-04 14:02:22,305 - root - INFO - Calibration RMS=91.3
+2026-03-04 14:02:22,369 - root - INFO - Calibration RMS=88.0
+2026-03-04 14:02:22,433 - root - INFO - Calibration RMS=85.3
+2026-03-04 14:02:22,497 - root - INFO - Calibration RMS=86.5
+2026-03-04 14:02:22,561 - root - INFO - Calibration RMS=90.2
+2026-03-04 14:02:22,625 - root - INFO - Calibration RMS=96.5
+2026-03-04 14:02:22,689 - root - INFO - Calibration RMS=88.6
+2026-03-04 14:02:22,753 - root - INFO - Calibration RMS=94.4
+2026-03-04 14:02:22,818 - root - INFO - Calibration RMS=75.0
+2026-03-04 14:02:22,881 - root - INFO - Calibration RMS=149.3
+2026-03-04 14:02:22,882 - root - INFO - Calibrated ambient noise level: 93.8
+2026-03-04 14:02:22,888 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-04 14:02:22,889 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-04 14:02:46,714 - root - INFO - Logger is set up.
+2026-03-04 14:02:46,715 - root - INFO - Default microphone set to: ReSpeaker Lite (Device Index: 1)
+2026-03-04 14:02:46,726 - root - INFO - soundcore motion boom is already connected.
+2026-03-04 14:02:46,726 - root - INFO - Warming up Ollama model...
+2026-03-04 14:02:46,993 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-03-04 14:02:46,994 - root - INFO - Herbie officially warmed up
+2026-03-04 14:02:46,994 - root - INFO - Calibrating ambient noise level... 
+2026-03-04 14:02:46,997 - root - INFO - Listening... speak now
+2026-03-04 14:02:47,062 - root - INFO - Calibration RMS=69.9
+2026-03-04 14:02:47,126 - root - INFO - Calibration RMS=112.2
+2026-03-04 14:02:47,190 - root - INFO - Calibration RMS=106.0
+2026-03-04 14:02:47,254 - root - INFO - Calibration RMS=98.9
+2026-03-04 14:02:47,318 - root - INFO - Calibration RMS=87.5
+2026-03-04 14:02:47,382 - root - INFO - Calibration RMS=90.9
+2026-03-04 14:02:47,446 - root - INFO - Calibration RMS=84.7
+2026-03-04 14:02:47,510 - root - INFO - Calibration RMS=85.1
+2026-03-04 14:02:47,574 - root - INFO - Calibration RMS=83.8
+2026-03-04 14:02:47,638 - root - INFO - Calibration RMS=90.1
+2026-03-04 14:02:47,702 - root - INFO - Calibration RMS=90.0
+2026-03-04 14:02:47,766 - root - INFO - Calibration RMS=91.0
+2026-03-04 14:02:47,830 - root - INFO - Calibration RMS=143.7
+2026-03-04 14:02:47,894 - root - INFO - Calibration RMS=88.9
+2026-03-04 14:02:47,958 - root - INFO - Calibration RMS=102.5
+2026-03-04 14:02:48,022 - root - INFO - Calibration RMS=91.1
+2026-03-04 14:02:48,086 - root - INFO - Calibration RMS=84.8
+2026-03-04 14:02:48,150 - root - INFO - Calibration RMS=83.9
+2026-03-04 14:02:48,214 - root - INFO - Calibration RMS=99.9
+2026-03-04 14:02:48,278 - root - INFO - Calibration RMS=89.2
+2026-03-04 14:02:48,342 - root - INFO - Calibration RMS=88.6
+2026-03-04 14:02:48,406 - root - INFO - Calibration RMS=89.8
+2026-03-04 14:02:48,470 - root - INFO - Calibration RMS=87.5
+2026-03-04 14:02:48,534 - root - INFO - Calibration RMS=80.1
+2026-03-04 14:02:48,598 - root - INFO - Calibration RMS=87.2
+2026-03-04 14:02:48,662 - root - INFO - Calibration RMS=95.2
+2026-03-04 14:02:48,726 - root - INFO - Calibration RMS=97.3
+2026-03-04 14:02:48,790 - root - INFO - Calibration RMS=89.0
+2026-03-04 14:02:48,854 - root - INFO - Calibration RMS=97.7
+2026-03-04 14:02:48,918 - root - INFO - Calibration RMS=77.4
+2026-03-04 14:02:48,982 - root - INFO - Calibration RMS=97.2
+2026-03-04 14:02:49,046 - root - INFO - Calibration RMS=96.9
+2026-03-04 14:02:49,110 - root - INFO - Calibration RMS=95.6
+2026-03-04 14:02:49,174 - root - INFO - Calibration RMS=113.9
+2026-03-04 14:02:49,238 - root - INFO - Calibration RMS=88.9
+2026-03-04 14:02:49,302 - root - INFO - Calibration RMS=88.7
+2026-03-04 14:02:49,366 - root - INFO - Calibration RMS=86.5
+2026-03-04 14:02:49,430 - root - INFO - Calibration RMS=107.4
+2026-03-04 14:02:49,494 - root - INFO - Calibration RMS=90.8
+2026-03-04 14:02:49,558 - root - INFO - Calibration RMS=93.7
+2026-03-04 14:02:49,622 - root - INFO - Calibration RMS=93.5
+2026-03-04 14:02:49,686 - root - INFO - Calibration RMS=98.6
+2026-03-04 14:02:49,750 - root - INFO - Calibration RMS=92.6
+2026-03-04 14:02:49,814 - root - INFO - Calibration RMS=91.2
+2026-03-04 14:02:49,878 - root - INFO - Calibration RMS=90.2
+2026-03-04 14:02:49,942 - root - INFO - Calibration RMS=85.0
+2026-03-04 14:02:50,006 - root - INFO - Calibration RMS=93.0
+2026-03-04 14:02:50,070 - root - INFO - Calibration RMS=99.0
+2026-03-04 14:02:50,134 - root - INFO - Calibration RMS=89.3
+2026-03-04 14:02:50,198 - root - INFO - Calibration RMS=89.9
+2026-03-04 14:02:50,262 - root - INFO - Calibration RMS=85.4
+2026-03-04 14:02:50,326 - root - INFO - Calibration RMS=87.3
+2026-03-04 14:02:50,390 - root - INFO - Calibration RMS=86.7
+2026-03-04 14:02:50,454 - root - INFO - Calibration RMS=87.0
+2026-03-04 14:02:50,518 - root - INFO - Calibration RMS=87.1
+2026-03-04 14:02:50,582 - root - INFO - Calibration RMS=91.2
+2026-03-04 14:02:50,646 - root - INFO - Calibration RMS=97.5
+2026-03-04 14:02:50,710 - root - INFO - Calibration RMS=93.8
+2026-03-04 14:02:50,774 - root - INFO - Calibration RMS=90.0
+2026-03-04 14:02:50,838 - root - INFO - Calibration RMS=94.7
+2026-03-04 14:02:50,902 - root - INFO - Calibration RMS=91.8
+2026-03-04 14:02:50,966 - root - INFO - Calibration RMS=88.1
+2026-03-04 14:02:51,030 - root - INFO - Calibration RMS=87.0
+2026-03-04 14:02:51,094 - root - INFO - Calibration RMS=87.5
+2026-03-04 14:02:51,158 - root - INFO - Calibration RMS=87.5
+2026-03-04 14:02:51,222 - root - INFO - Calibration RMS=88.2
+2026-03-04 14:02:51,286 - root - INFO - Calibration RMS=97.3
+2026-03-04 14:02:51,350 - root - INFO - Calibration RMS=88.0
+2026-03-04 14:02:51,414 - root - INFO - Calibration RMS=85.0
+2026-03-04 14:02:51,478 - root - INFO - Calibration RMS=81.5
+2026-03-04 14:02:51,542 - root - INFO - Calibration RMS=87.7
+2026-03-04 14:02:51,606 - root - INFO - Calibration RMS=91.8
+2026-03-04 14:02:51,670 - root - INFO - Calibration RMS=84.8
+2026-03-04 14:02:51,734 - root - INFO - Calibration RMS=93.1
+2026-03-04 14:02:51,798 - root - INFO - Calibration RMS=87.7
+2026-03-04 14:02:51,862 - root - INFO - Calibration RMS=87.1
+2026-03-04 14:02:51,926 - root - INFO - Calibration RMS=86.6
+2026-03-04 14:02:51,990 - root - INFO - Calibration RMS=86.9
+2026-03-04 14:02:52,054 - root - INFO - Calibration RMS=88.7
+2026-03-04 14:02:52,054 - root - INFO - Calibrated ambient noise level: 91.4
+2026-03-04 14:02:52,060 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-04 14:02:52,060 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-04 14:03:06,455 - root - INFO - Logger is set up.
+2026-03-04 14:03:06,455 - root - INFO - Default microphone set to: ReSpeaker Lite (Device Index: 1)
+2026-03-04 14:03:06,466 - root - INFO - Soundcore Motion Boom is already connected.
+2026-03-04 14:03:06,466 - root - INFO - Warming up Ollama model...
+2026-03-04 14:03:06,730 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-03-04 14:03:06,730 - root - INFO - Herbie officially warmed up
+2026-03-04 14:03:06,730 - root - INFO - Calibrating ambient noise level... 
+2026-03-04 14:03:06,733 - root - INFO - Listening... speak now
+2026-03-04 14:03:06,798 - root - INFO - Calibration RMS=74.4
+2026-03-04 14:03:06,862 - root - INFO - Calibration RMS=109.6
+2026-03-04 14:03:06,926 - root - INFO - Calibration RMS=93.8
+2026-03-04 14:03:06,990 - root - INFO - Calibration RMS=84.8
+2026-03-04 14:03:07,054 - root - INFO - Calibration RMS=88.4
+2026-03-04 14:03:07,118 - root - INFO - Calibration RMS=89.8
+2026-03-04 14:03:07,182 - root - INFO - Calibration RMS=96.6
+2026-03-04 14:03:07,246 - root - INFO - Calibration RMS=120.9
+2026-03-04 14:03:07,310 - root - INFO - Calibration RMS=116.2
+2026-03-04 14:03:07,374 - root - INFO - Calibration RMS=192.3
+2026-03-04 14:03:07,438 - root - INFO - Calibration RMS=91.8
+2026-03-04 14:03:07,502 - root - INFO - Calibration RMS=86.5
+2026-03-04 14:03:07,566 - root - INFO - Calibration RMS=96.6
+2026-03-04 14:03:07,630 - root - INFO - Calibration RMS=87.2
+2026-03-04 14:03:07,694 - root - INFO - Calibration RMS=87.9
+2026-03-04 14:03:07,758 - root - INFO - Calibration RMS=89.1
+2026-03-04 14:03:07,822 - root - INFO - Calibration RMS=83.5
+2026-03-04 14:03:07,886 - root - INFO - Calibration RMS=92.1
+2026-03-04 14:03:07,950 - root - INFO - Calibration RMS=83.4
+2026-03-04 14:03:08,014 - root - INFO - Calibration RMS=81.9
+2026-03-04 14:03:08,078 - root - INFO - Calibration RMS=90.0
+2026-03-04 14:03:08,142 - root - INFO - Calibration RMS=93.9
+2026-03-04 14:03:08,206 - root - INFO - Calibration RMS=87.9
+2026-03-04 14:03:08,270 - root - INFO - Calibration RMS=89.1
+2026-03-04 14:03:08,334 - root - INFO - Calibration RMS=103.5
+2026-03-04 14:03:08,398 - root - INFO - Calibration RMS=176.4
+2026-03-04 14:03:08,462 - root - INFO - Calibration RMS=83.0
+2026-03-04 14:03:08,527 - root - INFO - Calibration RMS=111.7
+2026-03-04 14:03:08,590 - root - INFO - Calibration RMS=95.3
+2026-03-04 14:03:08,655 - root - INFO - Calibration RMS=89.9
+2026-03-04 14:03:08,718 - root - INFO - Calibration RMS=94.2
+2026-03-04 14:03:08,783 - root - INFO - Calibration RMS=88.0
+2026-03-04 14:03:08,847 - root - INFO - Calibration RMS=84.2
+2026-03-04 14:03:08,910 - root - INFO - Calibration RMS=92.2
+2026-03-04 14:03:08,974 - root - INFO - Calibration RMS=90.7
+2026-03-04 14:03:09,038 - root - INFO - Calibration RMS=93.3
+2026-03-04 14:03:09,102 - root - INFO - Calibration RMS=94.5
+2026-03-04 14:03:09,167 - root - INFO - Calibration RMS=91.0
+2026-03-04 14:03:09,231 - root - INFO - Calibration RMS=91.9
+2026-03-04 14:03:09,295 - root - INFO - Calibration RMS=96.3
+2026-03-04 14:03:09,358 - root - INFO - Calibration RMS=93.1
+2026-03-04 14:03:09,423 - root - INFO - Calibration RMS=93.9
+2026-03-04 14:03:09,487 - root - INFO - Calibration RMS=103.2
+2026-03-04 14:03:09,551 - root - INFO - Calibration RMS=109.8
+2026-03-04 14:03:09,615 - root - INFO - Calibration RMS=209.6
+2026-03-04 14:03:09,679 - root - INFO - Calibration RMS=106.6
+2026-03-04 14:03:09,743 - root - INFO - Calibration RMS=96.1
+2026-03-04 14:03:09,807 - root - INFO - Calibration RMS=91.0
+2026-03-04 14:03:09,871 - root - INFO - Calibration RMS=89.0
+2026-03-04 14:03:09,935 - root - INFO - Calibration RMS=82.9
+2026-03-04 14:03:09,999 - root - INFO - Calibration RMS=84.5
+2026-03-04 14:03:10,063 - root - INFO - Calibration RMS=88.0
+2026-03-04 14:03:10,127 - root - INFO - Calibration RMS=87.6
+2026-03-04 14:03:10,191 - root - INFO - Calibration RMS=85.3
+2026-03-04 14:03:10,255 - root - INFO - Calibration RMS=94.6
+2026-03-04 14:03:10,319 - root - INFO - Calibration RMS=93.7
+2026-03-04 14:03:10,383 - root - INFO - Calibration RMS=95.4
+2026-03-04 14:03:10,447 - root - INFO - Calibration RMS=83.5
+2026-03-04 14:03:10,511 - root - INFO - Calibration RMS=117.8
+2026-03-04 14:03:10,575 - root - INFO - Calibration RMS=89.9
+2026-03-04 14:03:10,639 - root - INFO - Calibration RMS=90.6
+2026-03-04 14:03:10,703 - root - INFO - Calibration RMS=89.8
+2026-03-04 14:03:10,767 - root - INFO - Calibration RMS=88.5
+2026-03-04 14:03:10,831 - root - INFO - Calibration RMS=93.0
+2026-03-04 14:03:10,895 - root - INFO - Calibration RMS=130.5
+2026-03-04 14:03:10,959 - root - INFO - Calibration RMS=85.7
+2026-03-04 14:03:11,023 - root - INFO - Calibration RMS=77.5
+2026-03-04 14:03:11,087 - root - INFO - Calibration RMS=95.1
+2026-03-04 14:03:11,151 - root - INFO - Calibration RMS=83.1
+2026-03-04 14:03:11,215 - root - INFO - Calibration RMS=88.4
+2026-03-04 14:03:11,279 - root - INFO - Calibration RMS=86.4
+2026-03-04 14:03:11,343 - root - INFO - Calibration RMS=98.7
+2026-03-04 14:03:11,407 - root - INFO - Calibration RMS=98.0
+2026-03-04 14:03:11,471 - root - INFO - Calibration RMS=84.9
+2026-03-04 14:03:11,535 - root - INFO - Calibration RMS=96.6
+2026-03-04 14:03:11,599 - root - INFO - Calibration RMS=83.6
+2026-03-04 14:03:11,663 - root - INFO - Calibration RMS=88.5
+2026-03-04 14:03:11,727 - root - INFO - Calibration RMS=86.4
+2026-03-04 14:03:11,791 - root - INFO - Calibration RMS=101.6
+2026-03-04 14:03:11,791 - root - INFO - Calibrated ambient noise level: 96.5
+2026-03-04 14:03:11,793 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-04 14:03:11,793 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-04 14:03:14,146 - root - INFO - Listening... speak now
+2026-03-04 14:03:14,211 - root - INFO - Speech started
+2026-03-04 14:03:21,699 - root - INFO - Silence threshold reached, stopping
+2026-03-04 14:03:21,702 - root - INFO - Saved user input WAV to user_input_temp/user_input_1772629401.wav
+2026-03-04 14:03:24,285 - root - INFO - Transcription result: Please turn the station light brightness to a maximum.
+2026-03-04 14:03:38,456 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2026-03-04 14:03:38,456 - root - INFO - Selected tool for this query: <function station_light_brightness at 0x7fff41418860>
+2026-03-04 14:03:38,456 - root - INFO - Ollama response: 
+2026-03-04 14:03:38,457 - root - INFO - Executing tool: station_light_brightness, with arguments: {'brightness': 100}
+2026-03-04 14:03:38,457 - root - INFO - Changing brightness to 100%: 192.168.178.173, 192.168.178.54, 192.168.178.102
+2026-03-04 14:03:39,609 - root - INFO - Living room lights set to 100% brightness.
+2026-03-04 14:03:39,609 - root - INFO - Tool response: True
+2026-03-04 14:03:39,609 - root - INFO - Ollama response: 

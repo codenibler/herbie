@@ -22,6 +22,7 @@ GENERIC_HERBIE_RESPONSES_DIR = "generic_herbie_responses"
 AMBIENT_NOISE_VALUE = 750  # Reclibrated every RECALIBRATION_INTERVAL seconds
 RECALIBRATION_INTERVAL = int(os.getenv("RECALIBRATION_INTERVAL", 600))  
 LAST_RECALIBRATION_TIME = None
+USE_BLUETOOTH_SPEAKER = os.getenv("USE_BLUETOOTH_SPEAKER", "False").lower() == "true"
 
 # Testing function for wakeword
 def activate_buzzer():
@@ -39,6 +40,9 @@ def main():
     load_dotenv(override=True) # Override environemnt vars with those in .env
     setup_logging() 
     setup_default_microphone()
+    if USE_BLUETOOTH_SPEAKER:
+        from helpers.set_bluetooth_out import bluetooth_ctl_connect
+        bluetooth_ctl_connect()  # Connect to Bluetooth speaker if enabled.
     warm_up_ollama_model()  # Warm up with system prompt. 
     AMBIENT_NOISE_VALUE = calibrate_ambient_noise()  # Calibrate ambient noise level on startup.
     LAST_RECALIBRATION_TIME = time.time()

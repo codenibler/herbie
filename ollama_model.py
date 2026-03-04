@@ -1,4 +1,4 @@
-from toolbox.lights import light_functions
+from toolbox import tools
 
 import datetime as dt
 import logging
@@ -11,12 +11,12 @@ import re
 
 
 TOOL_MAP = {
-    "kitchen_light_on": light_functions.kitchen_light_on,
-    "kitchen_light_off": light_functions.kitchen_light_off,
-    "station_lights_off": light_functions.station_lights_off,
-    "station_lights_on": light_functions.station_lights_on, 
-    "station_light_brightness": light_functions.station_light_brightness,
-    "station_light_color": light_functions.station_light_color,
+    "kitchen_light_on": tools.kitchen_light_on,
+    "kitchen_light_off": tools.kitchen_light_off,
+    "station_lights_off": tools.station_lights_off,
+    "station_lights_on": tools.station_lights_on, 
+    "station_light_brightness": tools.station_light_brightness,
+    "station_light_color": tools.station_light_color,
 }
 KEY_VOCAB = {
     "kitchen","station","light","lights","on","off",
@@ -47,21 +47,21 @@ def determine_relevent_tool(user_text):
     # Keyword match potential toosl to avoid slow model. 
     """ KITCHEN LIGHTING """
     if words_present_in_text(["kitchen", "light", "on"], user_text.lower()):
-        return light_functions.kitchen_light_on, user_text
+        return tools.kitchen_light_on, user_text
     elif words_present_in_text(["kitchen", "light", "off"], user_text.lower()):
-        return light_functions.kitchen_light_off, user_text
+        return tools.kitchen_light_off, user_text
 
     """ LIVING ROOM LIGHTING """
     if words_present_in_text(["station", "lights", "on"], user_text.lower()):
-        return light_functions.station_lights_on, user_text
+        return tools.station_lights_on, user_text
     elif words_present_in_text(["station", "lights", "off"], user_text.lower()):
-        return light_functions.station_lights_off, user_text
+        return tools.station_lights_off, user_text
     elif words_present_in_text(["station", "light", "brightness"], user_text.lower()):
         user_text += "Brightness should be % value between 0 and 100." 
-        return light_functions.station_light_brightness, user_text
+        return tools.station_light_brightness, user_text
     elif words_present_in_text(["station", "light", "turn"], user_text.lower()):
-        user_text += f"Options for colors are: {sorted(list(light_functions.COLORS.keys()))}"
-        return light_functions.station_light_color, user_text # Let herbie know specific color options. 
+        user_text += f"Options for colors are: {sorted(list(tools.COLORS.keys()))}"
+        return tools.station_light_color, user_text # Let herbie know specific color options. 
     """ ADD MORE ELEGANT CHECK FOR PLURAL OF LIGHTS """
 
     """ TO DO: ADD GOOGLE CALENDAR SCHEDULER TOOL """
