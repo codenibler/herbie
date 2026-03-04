@@ -20,7 +20,7 @@ load_dotenv(override=True)
 BUZZER_PIN = 2
 GENERIC_HERBIE_RESPONSES_DIR = "generic_herbie_responses"
 AMBIENT_NOISE_VALUE = 750  # Reclibrated every RECALIBRATION_INTERVAL seconds
-RECALIBRATION_INTERVAL = os.getenv("RECALIBRATION_INTERVAL", 600)  
+RECALIBRATION_INTERVAL = int(os.getenv("RECALIBRATION_INTERVAL", 600))  
 LAST_RECALIBRATION_TIME = None
 
 # Testing function for wakeword

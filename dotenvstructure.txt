@@ -1,0 +1,44 @@
+# dotenvstructure.txt
+# This file documents the environment variables used by Herbie with safe defaults.
+# Sensitive or personal values (tokens, IPs, device names) are intentionally left blank.
+# Use this as a reference; do NOT paste secrets here if you share the file publicly.
+
+# General / timing
+RECALIBRATION_INTERVAL=600
+
+# Piper TTS
+PIPER_VOICE_MODEL_PATH=./piper_voice_model/en_US-hfc_male-medium.onnx
+RESPONSE_AUDIO_DIR=response_audio
+
+# Audio / listening
+AMBIENT_NOISE_THRESHOLD=700.0
+SPEECH_PAUSE_THRESHOLD=1.0
+
+# Wakeword / Porcupine (sensitive - leave blank)
+WAKEWORD_ACCESS_TOKEN=
+
+# Microphone (sensitive: put the device name that matches `sd.query_devices()`)
+MICROPHONE_NAME=
+
+# Whisper (transcription)
+WHISPER_PATH=whisper.cpp/build/bin/whisper-cli
+WHISPER_MODEL=whisper.cpp/models/ggml-base.en.bin
+USER_INPUT_DIR=recorded_wavs
+
+# Ollama model
+OLLAMA_MODEL_NAME=
+OLLAMA_KEEP_ALIVE=false
+
+# Smart lights (IP addresses - sensitive)
+KITCHEN_BULB_IP=
+BULB1_IP=
+BULB2_IP=
+BULB3_IP=
+
+# Logging
+LOG_LEVEL=INFO
+LOG_DIR=logs
+
+# Notes:
+# - Leave sensitive values blank here; populate them in your local `.env` file.
+# - Restart the application after editing environment variables.
