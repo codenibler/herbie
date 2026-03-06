@@ -16,6 +16,8 @@ voice = PiperVoice.load(voice_model_path)
 def read_out_response(text: str):
 
     RESPONSE_AUDIO_DIR = os.getenv("RESPONSE_AUDIO_DIR", "response_audio")
+    BLUETOOTH_ACTIVATED = os.getenv("USE_BLUETOOTH_SPEAKER", "False").lower() == "true"
+
     out_wav = Path(RESPONSE_AUDIO_DIR) / f"{text[:20]}.wav"
     out_wav.parent.mkdir(parents=True, exist_ok=True)  
 
@@ -24,12 +26,12 @@ def read_out_response(text: str):
     with wave.open(str(out_wav), "wb") as wav_file:
         voice.synthesize_wav(text, wav_file)
 
-    logging.info("Playing audio via aplay...")
-    subprocess.run(["aplay", "-q", str(out_wav)], check=False)
+    logging.info("Playing audio via pipewire...")
+    subprocess.run(["pw-play", str(out_wav)], check=False)
 
 
 def read_out_response_from_file(file_path: str):
-    subprocess.run(["aplay", "-q", file_path], check=False)
+    subprocess.run(["pw-play", file_path], check=False)
 
 
 if __name__ == "__main__":

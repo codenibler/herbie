@@ -9,7 +9,7 @@ import os
 def parse_user_input(wav_bytes):
 
     WHISPER_PATH = Path(os.getenv("WHISPER_PATH", "whisper.cpp/build/bin/whisper-cli"))
-    WHISPER_MODEL = Path(os.getenv("WHISPER_MODEL", "whisper.cpp/models/ggml-base.en.bin"))
+    WHISPER_MODEL = Path(os.getenv("WHISPER_MODEL", "whisper.cpp/models/ggml-tiny.en.bin"))
     USER_INPUT_DIR = Path(os.getenv("USER_INPUT_DIR", "recorded_wavs"))
 
     if not os.path.exists(USER_INPUT_DIR):
@@ -35,6 +35,6 @@ def parse_user_input(wav_bytes):
         return transcription
     except subprocess.CalledProcessError as e:
         logging.error(f"Error during transcription: {e.stderr}")
-        """ TO DO: ADD MARVIN ASKING FOR USER TO REPEAT WHAT THEY SAID """
+        """ TO DO: ADD HERBIE ASKING FOR USER TO REPEAT WHAT THEY SAID """
         return None
 

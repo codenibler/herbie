@@ -1,6 +1,8 @@
-from toolbox import tools
+from toolbox import lighting
+from toolbox import gcalendar
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
-import datetime as dt
 import logging
 import asyncio
 import inspect
@@ -9,14 +11,14 @@ import json
 import os
 import re
 
-
 TOOL_MAP = {
-    "kitchen_light_on": tools.kitchen_light_on,
-    "kitchen_light_off": tools.kitchen_light_off,
-    "station_lights_off": tools.station_lights_off,
-    "station_lights_on": tools.station_lights_on, 
-    "station_light_brightness": tools.station_light_brightness,
-    "station_light_color": tools.station_light_color,
+    "kitchen_light_on": lighting.kitchen_light_on,
+    "kitchen_light_off": lighting.kitchen_light_off,
+    "station_lights_off": lighting.station_lights_off,
+    "station_lights_on": lighting.station_lights_on, 
+    "station_light_brightness": lighting.station_light_brightness,
+    "station_light_color": lighting.station_light_color,
+    "make_calendar_event": gcalendar.make_calendar_event
 }
 KEY_VOCAB = {
     "kitchen","station","light","lights","on","off",
@@ -46,25 +48,31 @@ def ollama_query(user_text):
 def determine_relevent_tool(user_text):
     # Keyword match potential toosl to avoid slow model. 
     """ KITCHEN LIGHTING """
-    if words_present_in_text(["kitchen", "light", "on"], user_text.lower()):
-        return tools.kitchen_light_on, user_text
-    elif words_present_in_text(["kitchen", "light", "off"], user_text.lower()):
-        return tools.kitchen_light_off, user_text
+    if words_present_in_text(["kitchen", "on"], user_text.lower()):
+        return lighting.kitchen_light_on, user_text
+    elif words_present_in_text(["kitchen", "off"], user_text.lower()):
+        return lighting.kitchen_light_off, user_text
 
     """ LIVING ROOM LIGHTING """
-    if words_present_in_text(["station", "lights", "on"], user_text.lower()):
-        return tools.station_lights_on, user_text
-    elif words_present_in_text(["station", "lights", "off"], user_text.lower()):
-        return tools.station_lights_off, user_text
-    elif words_present_in_text(["station", "light", "brightness"], user_text.lower()):
+    if words_present_in_text(["station", "on"], user_text.lower()):
+        return lighting.station_lights_on, user_text
+    elif words_present_in_text(["station", "off"], user_text.lower()):
+        return lighting.station_lights_off, user_text
+    elif words_present_in_text(["station", "brightness"], user_text.lower()):
         user_text += "Brightness should be % value between 0 and 100." 
-        return tools.station_light_brightness, user_text
-    elif words_present_in_text(["station", "light", "turn"], user_text.lower()):
-        user_text += f"Options for colors are: {sorted(list(tools.COLORS.keys()))}"
-        return tools.station_light_color, user_text # Let herbie know specific color options. 
-    """ ADD MORE ELEGANT CHECK FOR PLURAL OF LIGHTS """
+        return lighting.station_light_brightness, user_text
+    elif words_present_in_text(["station", "turn"], user_text.lower()):
+        user_text += f"Options for colors are: {sorted(list(lighting.COLORS.keys()))}"
+        return lighting.station_light_color, user_text # Let herbie know specific color options. 
+    elif words_present_in_text(["station"], user_text.lower()):
+        return [lighting.station_lights_on, lighting.station_lights_off, lighting.station_light_brightness, lighting.station_light_color]
 
-    """ TO DO: ADD GOOGLE CALENDAR SCHEDULER TOOL """
+    """ GOOGLE CALENDAR """
+    if words_present_in_text(["schedule"], user_text) or words_present_in_text(["event"], user_text):
+        now = datetime.now(ZoneInfo("Europe/Amsterdam")).isoformat(timespec="seconds")
+        user_text += f"With this tool, generate a short event title. The to_date and from_dates should be in RFC3339 timestamps, like this example. YYYY-MM-DDTHH:MM:SS±HH:MM. Right now, it is: {now}. If no to_date is specified, assume a baseline 1 hour."
+        return gcalendar.make_calendar_event, user_text
+
     """ TO DO: ADD TIMER TOOL """
 
     logging.info("No relevant tool found for this query.")
@@ -74,6 +82,9 @@ def execute_tool_calls(tool_calls):
     for tool_call in tool_calls:
         function_name = tool_call['function']['name']
         function_args = tool_call['function']['arguments']
+        # In the case the model nested the arguments inside of an object, we unwrap.
+        if "object" in function_args and isinstance(function_args["object"], dict):
+            function_args = function_args["object"]
         if function_name in TOOL_MAP:
             logging.info(f"Executing tool: {function_name}, with arguments: {function_args}")
             if inspect.iscoroutinefunction(TOOL_MAP[function_name]):
