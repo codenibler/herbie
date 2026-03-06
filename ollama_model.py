@@ -1,5 +1,7 @@
 from toolbox import lighting
 from toolbox import gcalendar
+from toolbox import timer
+
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -18,11 +20,8 @@ TOOL_MAP = {
     "station_lights_on": lighting.station_lights_on, 
     "station_light_brightness": lighting.station_light_brightness,
     "station_light_color": lighting.station_light_color,
-    "make_calendar_event": gcalendar.make_calendar_event
-}
-KEY_VOCAB = {
-    "kitchen","station","light","lights","on","off",
-    "brightness","color","colors","colored"
+    "station_lights_freaky": lighting.station_lights_freaky,
+    "make_calendar_event": gcalendar.make_calendar_event,
 }
 CANON = {
     "lights": "light",
@@ -38,7 +37,9 @@ def ollama_query(user_text):
         response = ollama.chat(model=MODEL, messages=[{'role': 'user', 'content':user_text}], tools=[tool])  
         logging.info(f"Selected tool for this query: {tool}")
         logging.info(f"Ollama response: {response['message']['content']}")
-        execute_tool_calls(response['message']['tool_calls'])
+        if 'tool_calls' in response["message"]:
+            logging.warning("Tool selected, but Herbie did not call it.")
+            execute_tool_calls(response['message']['tool_calls'])
     else:
         response = ollama.chat(model=MODEL, messages=[{'role': 'user', 'content':user_text}])  
     
@@ -55,8 +56,10 @@ def determine_relevent_tool(user_text):
 
     """ LIVING ROOM LIGHTING """
     if words_present_in_text(["station", "on"], user_text.lower()):
+        user_text += "Use the station_lights_on tool"
         return lighting.station_lights_on, user_text
     elif words_present_in_text(["station", "off"], user_text.lower()):
+        user_text += "Use the station_lights_off tool"
         return lighting.station_lights_off, user_text
     elif words_present_in_text(["station", "brightness"], user_text.lower()):
         user_text += "Brightness should be % value between 0 and 100." 
@@ -64,8 +67,11 @@ def determine_relevent_tool(user_text):
     elif words_present_in_text(["station", "turn"], user_text.lower()):
         user_text += f"Options for colors are: {sorted(list(lighting.COLORS.keys()))}"
         return lighting.station_light_color, user_text # Let herbie know specific color options. 
+    elif words_present_in_text(["freaky"], user_text.lower()):
+        user_text += "Use the station_lights_freaky tool"
+        return lighting.station_lights_freaky, user_text 
     elif words_present_in_text(["station"], user_text.lower()):
-        return [lighting.station_lights_on, lighting.station_lights_off, lighting.station_light_brightness, lighting.station_light_color]
+        return [lighting.station_lights_on, lighting.station_lights_off, lighting.station_light_brightness, lighting.station_light_color], user_text
 
     """ GOOGLE CALENDAR """
     if words_present_in_text(["schedule"], user_text) or words_present_in_text(["event"], user_text):

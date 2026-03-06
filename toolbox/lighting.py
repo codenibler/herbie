@@ -1,6 +1,8 @@
 from pywizlight import wizlight, PilotBuilder
 from datetime import datetime, timezone
+from time import sleep
 
+import subprocess
 import asyncio
 import logging
 import os
@@ -169,36 +171,40 @@ async def station_light_color(color_name: str):
     return False
     
 async def station_lights_freaky():
+
+    process = await asyncio.create_subprocess_exec(
+        "pw-play", "songs/careless_whisper.wav"
+    )
+
     # Turn on the living room lights to red. 
-    """ TO DO: PLAY CARELESSS WHISPER """
     BULB1_IP = os.getenv("BULB1_IP")
     BULB2_IP = os.getenv("BULB2_IP")
     BULB3_IP = os.getenv("BULB3_IP") 
 
     assert BULB1_IP and BULB2_IP and BULB3_IP, "BULB1, 2, and 3 IP environment variables must be set."
-    logging.info(f"Changing color to {color_name}: {BULB1_IP}, {BULB2_IP}, {BULB3_IP}")
+    logging.info(f"Turning the station to freak mode.")
 
     light1 = wizlight(BULB1_IP)
     light2 = wizlight(BULB2_IP)
     light3 = wizlight(BULB3_IP)
 
-    color_rgb = COLORS.get(color_name.upper(), (255, 255, 255))  # Default to white if not found
-    """ TO DO: IF COLOR NOT FOUND, HAVE HERBIE MENTION THIS AND ASK AGAIN """
+    color_rgb = COLORS["DARK_RED"]
     await light1.turn_on(PilotBuilder(rgb=color_rgb))
     await light2.turn_on(PilotBuilder(rgb=color_rgb))
     await light3.turn_on(PilotBuilder(rgb=color_rgb))   
     state1 = await light1.updateState() 
     state2 = await light2.updateState()  
     state3 = await light3.updateState()
+    sleep(1.5) # Time it takes for fade color change.
 
     rgb2 = state2.get_rgb()
     rgb1 = state1.get_rgb()
     rgb3 = state3.get_rgb()
     if rgb1 == color_rgb and rgb2 == color_rgb and rgb3 == color_rgb:
-        logging.info(f"Living room lights set to color {color_name}.")
+        logging.info(f"Living room lights set to color Red.")
         return True
 
-    logging.warning(f"Failed to set living room lights to specified color. Expected RGB: {color_rgb}, Got RGB: ({rgb1}, {rgb2}, {rgb3})")
+    logging.warning("Failed to activate freaky mode")
     return False
 
 

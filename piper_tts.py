@@ -15,8 +15,10 @@ voice = PiperVoice.load(voice_model_path)
 
 def read_out_response(text: str):
 
+    if text is None or len(text) == 0:
+        return 
+
     RESPONSE_AUDIO_DIR = os.getenv("RESPONSE_AUDIO_DIR", "response_audio")
-    BLUETOOTH_ACTIVATED = os.getenv("USE_BLUETOOTH_SPEAKER", "False").lower() == "true"
 
     out_wav = Path(RESPONSE_AUDIO_DIR) / f"{text[:20]}.wav"
     out_wav.parent.mkdir(parents=True, exist_ok=True)  

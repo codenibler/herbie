@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from gpiozero import Buzzer
 from pathlib import Path
 
+import asyncio
 import logging
 import random
 import time
