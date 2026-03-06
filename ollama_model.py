@@ -14,6 +14,8 @@ import os
 import re
 
 TOOL_MAP = {
+    "turn_everything_off": lighting.turn_everything_off,
+    "turn_everything_on": lighting.turn_everything_on,
     "kitchen_light_on": lighting.kitchen_light_on,
     "kitchen_light_off": lighting.kitchen_light_off,
     "station_lights_off": lighting.station_lights_off,
@@ -22,6 +24,7 @@ TOOL_MAP = {
     "station_light_color": lighting.station_light_color,
     "station_lights_freaky": lighting.station_lights_freaky,
     "make_calendar_event": gcalendar.make_calendar_event,
+
 }
 CANON = {
     "lights": "light",
@@ -34,7 +37,7 @@ def ollama_query(user_text):
 
     tool, user_text = determine_relevent_tool(user_text)  
     if tool is not None:
-        response = ollama.chat(model=MODEL, messages=[{'role': 'user', 'content':user_text}], tools=[tool])  
+        response = ollama.chat(model=MODEL, messages=[{'role': 'user', 'content':user_text}], tools=tool)  
         logging.info(f"Selected tool for this query: {tool}")
         logging.info(f"Ollama response: {response['message']['content']}")
         if 'tool_calls' in response["message"]:
@@ -47,39 +50,47 @@ def ollama_query(user_text):
     return response['message']['content']
 
 def determine_relevent_tool(user_text):
-    # Keyword match potential toosl to avoid slow model. 
+    """ ALL LIGHTS """
+    if one_word_present_in_text(["everything", "every", "all", "on"], user_text.lower()):
+        return [lighting.turn_everything_off, lighting.turn_everything_on], user_text
+
     """ KITCHEN LIGHTING """
     if words_present_in_text(["kitchen", "on"], user_text.lower()):
-        return lighting.kitchen_light_on, user_text
+        return [lighting.kitchen_light_on], user_text
     elif words_present_in_text(["kitchen", "off"], user_text.lower()):
-        return lighting.kitchen_light_off, user_text
+        return [lighting.kitchen_light_off], user_text
+
 
     """ LIVING ROOM LIGHTING """
     if words_present_in_text(["station", "on"], user_text.lower()):
         user_text += "Use the station_lights_on tool"
-        return lighting.station_lights_on, user_text
+        return [lighting.station_lights_on], user_text
     elif words_present_in_text(["station", "off"], user_text.lower()):
         user_text += "Use the station_lights_off tool"
-        return lighting.station_lights_off, user_text
+        return [lighting.station_lights_off], user_text
     elif words_present_in_text(["station", "brightness"], user_text.lower()):
         user_text += "Brightness should be % value between 0 and 100." 
-        return lighting.station_light_brightness, user_text
+        return [lighting.station_light_brightness], user_text
     elif words_present_in_text(["station", "turn"], user_text.lower()):
         user_text += f"Options for colors are: {sorted(list(lighting.COLORS.keys()))}"
-        return lighting.station_light_color, user_text # Let herbie know specific color options. 
+        return [lighting.station_light_color], user_text # Let herbie know specific color options. 
     elif words_present_in_text(["freaky"], user_text.lower()):
         user_text += "Use the station_lights_freaky tool"
-        return lighting.station_lights_freaky, user_text 
+        return [lighting.station_lights_freaky], user_text 
     elif words_present_in_text(["station"], user_text.lower()):
         return [lighting.station_lights_on, lighting.station_lights_off, lighting.station_light_brightness, lighting.station_light_color], user_text
 
     """ GOOGLE CALENDAR """
-    if words_present_in_text(["schedule"], user_text) or words_present_in_text(["event"], user_text):
+    if one_word_present_in_text(["schedule", "event"], user_text):
         now = datetime.now(ZoneInfo("Europe/Amsterdam")).isoformat(timespec="seconds")
-        user_text += f"With this tool, generate a short event title. The to_date and from_dates should be in RFC3339 timestamps, like this example. YYYY-MM-DDTHH:MM:SS±HH:MM. Right now, it is: {now}. If no to_date is specified, assume a baseline 1 hour."
-        return gcalendar.make_calendar_event, user_text
+        user_text += f"Generate a short event title. to_date and from_dates should be in RFC3339 timestamps, \
+                        like this example. YYYY-MM-DDTHH:MM:SS±HH:MM. Right now, it is: {now}. If to_date is not mentioned by user, assume 1 hour after from_date"
+        return [gcalendar.make_calendar_event], user_text
 
     """ TO DO: ADD TIMER TOOL """
+    """ TO DO: ADD: WHAT TIME IS IT? """
+    """ TO DO: ADD WHAT TIME DOES BUS 18 LEAVE? """
+
 
     logging.info("No relevant tool found for this query.")
     return None, user_text
@@ -107,6 +118,16 @@ def words_present_in_text(words, text):
         if token in CANON:
             tokens.append(CANON[token])  # Add canonical forms to tokenizer
     return all(word in tokens for word in words) # Truthy if all present
+
+def one_word_present_in_text(words, text):
+    tokens = re.findall(r'\b\w+\b', text.lower())  # Tokenize
+    for token in tokens:
+        if token in CANON:
+            tokens.append(CANON[token])  # Add canonical forms to tokenizer
+    for word in tokens:
+        if word in words:
+            return True
+    return False
 
 """ TO DO: MAKE ASYNC, AS WELL AS MAIN LOOP """
 def warm_up_ollama_model():

@@ -10,47 +10,51 @@ import os
 
 async def kitchen_light_on():
     # Turn on the kitchen light. Requires no parameters.
-    KITCHEN_BULB_IP = os.getenv("KITCHEN_BULB_IP")
-    assert KITCHEN_BULB_IP is not None, "KITCHEN_BULB_IP environment variable not set."
+    k_IP = os.getenv("KITCHEN_BULB_IP")
+    assert k_IP is not None, "k_IP environment variable not set."
 
-    logging.info(f"Turning on kitchen light at IP: {KITCHEN_BULB_IP}")
-    light = wizlight(KITCHEN_BULB_IP)
+    logging.info(f"Turning on kitchen light at IP: {k_IP}")
+    light = wizlight(k_IP)
+    try:
+        await light.turn_on(PilotBuilder(brightness=128))
+        state = await light.updateState()  # Update state to ensure command was sent
+        
+        brightness = state.get_brightness()
+        if brightness == 128:
+            logging.info("Kitchen light brightness set to 128 successfully.")
+            return True
 
-    await light.turn_on(PilotBuilder(brightness=128))
-    state = await light.updateState()  # Update state to ensure command was sent
-    
-    brightness = state.get_brightness()
-    if brightness == 128:
-        logging.info("Kitchen light brightness set to 128 successfully.")
-        return True
-
-    logging.warning("Failed to set kitchen light brightness to 128.")
-    return False
+        logging.warning("Failed to set kitchen light brightness to 128.")
+        return False
+    finally:
+        await light.async_close()
 
 async def kitchen_light_off():
     # Turn off the kitchen light. Requires no parameters.
-    KITCHEN_BULB_IP = os.getenv("KITCHEN_BULB_IP")
-    assert KITCHEN_BULB_IP is not None, "KITCHEN_BULB_IP environment variable not set."
+    k_IP = os.getenv("k_IP")
+    assert k_IP is not None, "k_IP environment variable not set."
 
-    logging.info(f"Turning off kitchen light at IP: {KITCHEN_BULB_IP}")
-    light = wizlight(KITCHEN_BULB_IP)
-
-    await light.turn_off()
-    state = await light.updateState()  # Update state to ensure command was sent
-    
-    brightness = state.get_brightness()
-    if brightness == 0:
-        logging.info("Kitchen light turned off successfully.")
-        return True
-    
-    logging.warning("Failed to turn off kitchen light.")
-    return False
+    logging.info(f"Turning off kitchen light at IP: {k_IP}")
+    light = wizlight(k_IP)
+    try:
+        await light.turn_off()
+        state = await light.updateState()  # Update state to ensure command was sent
+        
+        brightness = state.get_brightness()
+        if brightness == 0:
+            logging.info("Kitchen light turned off successfully.")
+            return True
+        
+        logging.warning("Failed to turn off kitchen light.")
+        return False
+    finally:
+        await light.async_close()
 
 async def station_lights_off():
     # Turn off the kitchen light. Requires no parameters.
     BULB1_IP = os.getenv("BULB1_IP")
     BULB2_IP = os.getenv("BULB2_IP")
-    # BULB3_IP = os.getenv("BULB3_IP") 
+    BULB3_IP = os.getenv("BULB3_IP") 
 
     assert BULB1_IP and BULB2_IP and BULB3_IP, "BULB1, 2, and 3 IP environment variables must be set."
     logging.info(f"Turning off living room lights at IPs: {BULB1_IP}, {BULB2_IP}, {BULB3_IP}")
@@ -58,24 +62,28 @@ async def station_lights_off():
     light1 = wizlight(BULB1_IP)
     light2 = wizlight(BULB2_IP)
     light3 = wizlight(BULB3_IP)
+    try:
+        await light1.turn_off()
+        await light2.turn_off()
+        await light3.turn_off()
+        state1 = await light1.updateState() 
+        state2 = await light2.updateState()  
+        state3 = await light3.updateState()
 
-    await light1.turn_off()
-    await light2.turn_off()
-    await light3.turn_off()
-    state1 = await light1.updateState() 
-    state2 = await light2.updateState()  
-    state3 = await light3.updateState()
 
-
-    brightness1 = state1.get_brightness()
-    brightness2 = state2.get_brightness()
-    brightness3 = state3.get_brightness()
-    if brightness1 == 0 and brightness2 == 0 and brightness3 == 0:
-        logging.info("Living room lights turned off successfully.")
-        return True
-    
-    logging.warning("Failed to turn off living room lights.")
-    return False
+        brightness1 = state1.get_brightness()
+        brightness2 = state2.get_brightness()
+        brightness3 = state3.get_brightness()
+        if brightness1 == 0 and brightness2 == 0 and brightness3 == 0:
+            logging.info("Living room lights turned off successfully.")
+            return True
+        
+        logging.warning("Failed to turn off living room lights.")
+        return False
+    finally:
+        await light1.async_close()
+        await light2.async_close()
+        await light3.async_close()
 
 async def station_lights_on():
     # Turn on the living room lights. Requires no parameters.
@@ -89,23 +97,27 @@ async def station_lights_on():
     light1 = wizlight(BULB1_IP)
     light2 = wizlight(BULB2_IP)
     light3 = wizlight(BULB3_IP)
+    try:
+        await light1.turn_on(PilotBuilder(brightness=128))
+        await light2.turn_on(PilotBuilder(brightness=128))
+        await light3.turn_on(PilotBuilder(brightness=128))
+        state1 = await light1.updateState() 
+        state2 = await light2.updateState()  
+        state3 = await light3.updateState()
 
-    await light1.turn_on(PilotBuilder(brightness=128))
-    await light2.turn_on(PilotBuilder(brightness=128))
-    await light3.turn_on(PilotBuilder(brightness=128))
-    state1 = await light1.updateState() 
-    state2 = await light2.updateState()  
-    state3 = await light3.updateState()
-
-    brightness1 = state1.get_brightness()
-    brightness2 = state2.get_brightness()
-    brightness3 = state3.get_brightness()
-    if brightness1 == 128 and brightness2 == 128 and brightness3 == 128:
-        logging.info("Living room lights turned on successfully.")
-        return True
-    
-    logging.warning("Failed to turn on living room lights.")
-    return False
+        brightness1 = state1.get_brightness()
+        brightness2 = state2.get_brightness()
+        brightness3 = state3.get_brightness()
+        if brightness1 == 128 and brightness2 == 128 and brightness3 == 128:
+            logging.info("Living room lights turned on successfully.")
+            return True
+        
+        logging.warning("Failed to turn on living room lights.")
+        return False
+    finally:
+        await light1.async_close()
+        await light2.async_close()
+        await light3.async_close()
 
 async def station_light_brightness(brightness: int):
     # Turn on the living room lights with a specific brightness %. Requires brightness parameter.
@@ -119,24 +131,28 @@ async def station_light_brightness(brightness: int):
     light1 = wizlight(BULB1_IP)
     light2 = wizlight(BULB2_IP)
     light3 = wizlight(BULB3_IP)
+    try:
+        brightness_value = int((brightness / 100) * 255)  # Convert percentage to 0-255 scale
+        await light1.turn_on(PilotBuilder(brightness=brightness_value))
+        await light2.turn_on(PilotBuilder(brightness=brightness_value))
+        await light3.turn_on(PilotBuilder(brightness=brightness_value))
+        state1 = await light1.updateState() 
+        state2 = await light2.updateState()  
+        state3 = await light3.updateState()
 
-    brightness_value = int((brightness / 100) * 255)  # Convert percentage to 0-255 scale
-    await light1.turn_on(PilotBuilder(brightness=brightness_value))
-    await light2.turn_on(PilotBuilder(brightness=brightness_value))
-    await light3.turn_on(PilotBuilder(brightness=brightness_value))
-    state1 = await light1.updateState() 
-    state2 = await light2.updateState()  
-    state3 = await light3.updateState()
+        brightness1 = state1.get_brightness()
+        brightness2 = state2.get_brightness()
+        brightness3 = state3.get_brightness()
+        if brightness1 == brightness_value and brightness2 == brightness_value and brightness3 == brightness_value:
+            logging.info(f"Living room lights set to {brightness}% brightness.")
+            return True
 
-    brightness1 = state1.get_brightness()
-    brightness2 = state2.get_brightness()
-    brightness3 = state3.get_brightness()
-    if brightness1 == brightness_value and brightness2 == brightness_value and brightness3 == brightness_value:
-        logging.info(f"Living room lights set to {brightness}% brightness.")
-        return True
-
-    logging.warning("Failed to set living room lights to specified brightness.")
-    return False
+        logging.warning("Failed to set living room lights to specified brightness.")
+        return False
+    finally:
+        await light1.async_close()
+        await light2.async_close()
+        await light3.async_close()
 
 async def station_light_color(color_name: str):
     # Turn on the living room lights with a specific color. Requires color_name parameter.
@@ -150,25 +166,29 @@ async def station_light_color(color_name: str):
     light1 = wizlight(BULB1_IP)
     light2 = wizlight(BULB2_IP)
     light3 = wizlight(BULB3_IP)
+    try:
+        color_rgb = COLORS.get(color_name.upper(), (255, 255, 255))  # Default to white if not found
+        """ TO DO: IF COLOR NOT FOUND, HAVE HERBIE MENTION THIS AND ASK AGAIN """
+        await light1.turn_on(PilotBuilder(rgb=color_rgb))
+        await light2.turn_on(PilotBuilder(rgb=color_rgb))
+        await light3.turn_on(PilotBuilder(rgb=color_rgb))
+        state1 = await light1.updateState() 
+        state2 = await light2.updateState()  
+        state3 = await light3.updateState()
 
-    color_rgb = COLORS.get(color_name.upper(), (255, 255, 255))  # Default to white if not found
-    """ TO DO: IF COLOR NOT FOUND, HAVE HERBIE MENTION THIS AND ASK AGAIN """
-    await light1.turn_on(PilotBuilder(rgb=color_rgb))
-    await light2.turn_on(PilotBuilder(rgb=color_rgb))
-    await light3.turn_on(PilotBuilder(rgb=color_rgb))
-    state1 = await light1.updateState() 
-    state2 = await light2.updateState()  
-    state3 = await light3.updateState()
+        rgb2 = state2.get_rgb()
+        rgb1 = state1.get_rgb()
+        rgb3 = state3.get_rgb()
+        if rgb1 == color_rgb and rgb2 == color_rgb and rgb3 == color_rgb:
+            logging.info(f"Living room lights set to color {color_name}.")
+            return True
 
-    rgb2 = state2.get_rgb()
-    rgb1 = state1.get_rgb()
-    rgb3 = state3.get_rgb()
-    if rgb1 == color_rgb and rgb2 == color_rgb and rgb3 == color_rgb:
-        logging.info(f"Living room lights set to color {color_name}.")
-        return True
-
-    logging.warning("Failed to set living room lights to specified color.")
-    return False
+        logging.warning("Failed to set living room lights to specified color.")
+        return False
+    finally:
+        await light1.async_close()
+        await light2.async_close()
+        await light3.async_close()
     
 async def station_lights_freaky():
 
@@ -195,17 +215,120 @@ async def station_lights_freaky():
     state1 = await light1.updateState() 
     state2 = await light2.updateState()  
     state3 = await light3.updateState()
-    sleep(1.5) # Time it takes for fade color change.
 
     rgb2 = state2.get_rgb()
     rgb1 = state1.get_rgb()
     rgb3 = state3.get_rgb()
     if rgb1 == color_rgb and rgb2 == color_rgb and rgb3 == color_rgb:
         logging.info(f"Living room lights set to color Red.")
+        await light1.async_close()
+        await light2.async_close()
+        await light3.async_close()
         return True
 
     logging.warning("Failed to activate freaky mode")
+    await light1.async_close()
+    await light2.async_close()
+    await light3.async_close()
     return False
+
+
+async def turn_everything_off():
+
+    BULB1_IP = os.getenv("BULB1_IP")
+    BULB2_IP = os.getenv("BULB2_IP")
+    BULB3_IP = os.getenv("BULB3_IP")
+    k_IP = os.getenv("k_IP")
+
+    assert BULB1_IP and BULB2_IP and BULB3_IP and k_IP, "BULB1, BULB2, BULB3 and k_IP must be set."
+    logging.info("Turning everything off: BULB1, BULB2, BULB3, and kitchen bulb")
+
+    light1 = wizlight(BULB1_IP)
+    light2 = wizlight(BULB2_IP)
+    light3 = wizlight(BULB3_IP)
+    klight = wizlight(k_IP)
+    try:
+        # Send off commands in parallel
+        await asyncio.gather(
+            light1.turn_off(),
+            light2.turn_off(),
+            light3.turn_off(),
+            klight.turn_off(),
+        )
+
+        # Update states in parallel
+        state1, state2, state3, kstate = await asyncio.gather(
+            light1.updateState(),
+            light2.updateState(),
+            light3.updateState(),
+            klight.updateState(),
+        )
+
+        b1 = state1.get_brightness()
+        b2 = state2.get_brightness()
+        b3 = state3.get_brightness()
+        kb = kstate.get_brightness()
+
+        if b1 == 0 and b2 == 0 and b3 == 0 and kb == 0:
+            logging.info("All bulbs turned off successfully.")
+            return True
+
+        logging.warning("Not all bulbs reached off state.")
+        return False
+    finally:
+        await light1.async_close()
+        await light2.async_close()
+        await light3.async_close()
+        await klight.async_close()
+
+
+async def turn_everything_on():
+
+    BULB1_IP = os.getenv("BULB1_IP")
+    BULB2_IP = os.getenv("BULB2_IP")
+    BULB3_IP = os.getenv("BULB3_IP")
+    k_IP = os.getenv("k_IP")
+
+    assert BULB1_IP and BULB2_IP and BULB3_IP and k_IP, "BULB1, BULB2, BULB3 and k_IP must be set."
+    logging.info("Turning everything on: BULB1, BULB2, BULB3, and kitchen bulb")
+
+    light1 = wizlight(BULB1_IP)
+    light2 = wizlight(BULB2_IP)
+    light3 = wizlight(BULB3_IP)
+    klight = wizlight(k_IP)
+    try:
+        # Send on commands in parallel (default brightness 128)
+        await asyncio.gather(
+            light1.turn_on(PilotBuilder(brightness=128)),
+            light2.turn_on(PilotBuilder(brightness=128)),
+            light3.turn_on(PilotBuilder(brightness=128)),
+            klight.turn_on(PilotBuilder(brightness=128)),
+        )
+
+        # Update states in parallel
+        state1, state2, state3, kstate = await asyncio.gather(
+            light1.updateState(),
+            light2.updateState(),
+            light3.updateState(),
+            klight.updateState(),
+        )
+
+        b1 = state1.get_brightness()
+        b2 = state2.get_brightness()
+        b3 = state3.get_brightness()
+        kb = kstate.get_brightness()
+
+        if b1 == 128 and b2 == 128 and b3 == 128 and kb == 128:
+            logging.info("All bulbs turned on to default brightness successfully.")
+            return True
+
+        logging.warning("Not all bulbs reached the target brightness.")
+        return False
+    finally:
+        await light1.async_close()
+        await light2.async_close()
+        await light3.async_close()
+        await klight.async_close()
 
 
 COLORS = {
