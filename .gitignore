@@ -30,8 +30,9 @@ pip-wheel-metadata/
 *.temp
 .lgd*
 
-.wav
+*.wav
 
+songs/
 wav_temp/
 whisper.cpp/
 

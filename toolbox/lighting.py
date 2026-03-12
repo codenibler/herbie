@@ -10,11 +10,11 @@ import os
 
 async def kitchen_light_on():
     # Turn on the kitchen light. Requires no parameters.
-    k_IP = os.getenv("KITCHEN_BULB_IP")
-    assert k_IP is not None, "k_IP environment variable not set."
+    KBULB_IP = os.getenv("KITCHEN_BULB_IP")
+    assert KBULB_IP is not None, "KBULB_IP environment variable not set."
 
-    logging.info(f"Turning on kitchen light at IP: {k_IP}")
-    light = wizlight(k_IP)
+    logging.info(f"Turning on kitchen light at IP: {KBULB_IP}")
+    light = wizlight(KBULB_IP)
     try:
         await light.turn_on(PilotBuilder(brightness=128))
         state = await light.updateState()  # Update state to ensure command was sent
@@ -31,11 +31,11 @@ async def kitchen_light_on():
 
 async def kitchen_light_off():
     # Turn off the kitchen light. Requires no parameters.
-    k_IP = os.getenv("k_IP")
-    assert k_IP is not None, "k_IP environment variable not set."
+    KBULB_IP = os.getenv("KBULB_IP")
+    assert KBULB_IP is not None, "KBULB_IP environment variable not set."
 
-    logging.info(f"Turning off kitchen light at IP: {k_IP}")
-    light = wizlight(k_IP)
+    logging.info(f"Turning off kitchen light at IP: {KBULB_IP}")
+    light = wizlight(KBULB_IP)
     try:
         await light.turn_off()
         state = await light.updateState()  # Update state to ensure command was sent
@@ -238,15 +238,15 @@ async def turn_everything_off():
     BULB1_IP = os.getenv("BULB1_IP")
     BULB2_IP = os.getenv("BULB2_IP")
     BULB3_IP = os.getenv("BULB3_IP")
-    k_IP = os.getenv("k_IP")
+    KBULB_IP = os.getenv("KBULB_IP")
 
-    assert BULB1_IP and BULB2_IP and BULB3_IP and k_IP, "BULB1, BULB2, BULB3 and k_IP must be set."
+    assert BULB1_IP and BULB2_IP and BULB3_IP and KBULB_IP, "BULB1, BULB2, BULB3 and KBULB_IP must be set."
     logging.info("Turning everything off: BULB1, BULB2, BULB3, and kitchen bulb")
 
     light1 = wizlight(BULB1_IP)
     light2 = wizlight(BULB2_IP)
     light3 = wizlight(BULB3_IP)
-    klight = wizlight(k_IP)
+    klight = wizlight(KBULB_IP)
     try:
         # Send off commands in parallel
         await asyncio.gather(
@@ -287,15 +287,15 @@ async def turn_everything_on():
     BULB1_IP = os.getenv("BULB1_IP")
     BULB2_IP = os.getenv("BULB2_IP")
     BULB3_IP = os.getenv("BULB3_IP")
-    k_IP = os.getenv("k_IP")
+    KBULB_IP = os.getenv("KBULB_IP")
 
-    assert BULB1_IP and BULB2_IP and BULB3_IP and k_IP, "BULB1, BULB2, BULB3 and k_IP must be set."
+    assert BULB1_IP and BULB2_IP and BULB3_IP and KBULB_IP, "BULB1, BULB2, BULB3 and KBULB_IP must be set."
     logging.info("Turning everything on: BULB1, BULB2, BULB3, and kitchen bulb")
 
     light1 = wizlight(BULB1_IP)
     light2 = wizlight(BULB2_IP)
     light3 = wizlight(BULB3_IP)
-    klight = wizlight(k_IP)
+    klight = wizlight(KBULB_IP)
     try:
         # Send on commands in parallel (default brightness 128)
         await asyncio.gather(

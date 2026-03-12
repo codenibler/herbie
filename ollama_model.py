@@ -1,6 +1,7 @@
 from toolbox import lighting
 from toolbox import gcalendar
 from toolbox import timer
+from toolbox import music
 
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -24,6 +25,8 @@ TOOL_MAP = {
     "station_light_color": lighting.station_light_color,
     "station_lights_freaky": lighting.station_lights_freaky,
     "make_calendar_event": gcalendar.make_calendar_event,
+    "play_random_songs": music.play_random_songs,
+    "play_specific_song": music.play_specific_song
 
 }
 CANON = {
@@ -51,7 +54,7 @@ def ollama_query(user_text):
 
 def determine_relevent_tool(user_text):
     """ ALL LIGHTS """
-    if one_word_present_in_text(["everything", "every", "all", "on"], user_text.lower()):
+    if one_word_present_in_text(["everything", "every", "on"], user_text.lower()):
         return [lighting.turn_everything_off, lighting.turn_everything_on], user_text
 
     """ KITCHEN LIGHTING """
@@ -60,6 +63,13 @@ def determine_relevent_tool(user_text):
     elif words_present_in_text(["kitchen", "off"], user_text.lower()):
         return [lighting.kitchen_light_off], user_text
 
+    """ MUSIC """ 
+    if one_word_present_in_text(["bangers", "song", "music"], user_text.lower()):
+        user_text += f"If user wants specific song choice, select from the following options: {os.listdir('songs')}, and send in as the parameter. Otherwise, call play_random_songs with no parameters"
+        return [music.play_random_songs, music.play_specific_song], user_text
+    if words_present_in_text(["play"], user_text.lower()):
+        user_text += f"If user wants specific song choice, select from the following options: {os.listdir('songs')}, and send in as the parameter. Otherwise, call play_random_songs with no parameters"
+        return [music.play_specific_song], user_text
 
     """ LIVING ROOM LIGHTING """
     if words_present_in_text(["station", "on"], user_text.lower()):
@@ -88,8 +98,13 @@ def determine_relevent_tool(user_text):
         return [gcalendar.make_calendar_event], user_text
 
     """ TO DO: ADD TIMER TOOL """
-    """ TO DO: ADD: WHAT TIME IS IT? """
+    """ TO DO: ADD: WHAT TIME IS IT? 
+    - Should add as special case right after speech-to-text parse/ """
+
     """ TO DO: ADD WHAT TIME DOES BUS 18 LEAVE? """
+
+    # Perhaps, depending on the performance impact, add classification one-shot model to see whether or not tool is appplicable to user prompt
+    # Or, whether an adequare prompt was skipped.  
 
 
     logging.info("No relevant tool found for this query.")
