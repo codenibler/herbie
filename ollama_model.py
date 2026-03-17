@@ -124,8 +124,52 @@ def determine_relevent_tool(user_text):
     logging.info("No relevant tool found for this query.")
     return None, user_text
 
+def validate_tool_call_arguments(function, function_args):
+    if function_args is None:
+        function_args = {}
+
+    signature = inspect.signature(function)
+    parameters = signature.parameters
+    accepts_var_keyword = any(
+        parameter.kind == inspect.Parameter.VAR_KEYWORD
+        for parameter in parameters.values()
+    )
+
+    if accepts_var_keyword:
+        sanitized_args = dict(function_args)
+        stripped_args = {}
+    else:
+        allowed_names = {
+            name
+            for name, parameter in parameters.items()
+            if parameter.kind in (
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                inspect.Parameter.KEYWORD_ONLY,
+            )
+        }
+        sanitized_args = {
+            name: value for name, value in function_args.items() if name in allowed_names
+        }
+        stripped_args = {
+            name: value for name, value in function_args.items() if name not in allowed_names
+        }
+
+    missing_required_args = [
+        name
+        for name, parameter in parameters.items()
+        if parameter.kind in (
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            inspect.Parameter.KEYWORD_ONLY,
+        )
+        and parameter.default is inspect.Parameter.empty
+        and name not in sanitized_args
+    ]
+
+    return sanitized_args, missing_required_args, stripped_args
+
 def execute_tool_calls(tool_calls):
     tool_complete_dir = Path("herbie_responses/tool_complete")
+    needs_clarification_message = False
 
     for tool_call in tool_calls:
         function_name = tool_call['function']['name']
@@ -134,15 +178,31 @@ def execute_tool_calls(tool_calls):
         if "object" in function_args and isinstance(function_args["object"], dict):
             function_args = function_args["object"]
         if function_name in TOOL_MAP:
-            logging.info(f"Executing tool: {function_name}, with arguments: {function_args}")
+            sanitized_args, missing_required_args, stripped_args = validate_tool_call_arguments(
+                TOOL_MAP[function_name], function_args
+            )
+            if stripped_args:
+                logging.warning(
+                    f"Stripping unsupported arguments for {function_name}: {stripped_args}"
+                )
+            if missing_required_args:
+                needs_clarification_message = True
+                logging.warning(
+                    f"Missing required arguments for {function_name}: {missing_required_args}"
+                )
+                logging.warning("TODO: add Herbie clarification message before retrying tool call.")
+                continue
+
+            logging.info(f"Executing tool: {function_name}, with arguments: {sanitized_args}")
             if inspect.iscoroutinefunction(TOOL_MAP[function_name]):
-                tool_response = asyncio.run(TOOL_MAP[function_name](**function_args))  # Await if it's a coroutine
+                tool_response = asyncio.run(TOOL_MAP[function_name](**sanitized_args))  # Await if it's a coroutine
             else:   
-                tool_response = TOOL_MAP[function_name](**function_args)  # Execute the tool function with arguments
+                tool_response = TOOL_MAP[function_name](**sanitized_args)  # Execute the tool function with arguments
             logging.info(f"Tool response: {tool_response}")
             read_out_response_from_file(tool_complete_dir / random.choice(os.listdir(tool_complete_dir)))
         else:
             logging.warning(f"Tool {function_name} not found in tool map.")
+    return needs_clarification_message
 
 def words_present_in_text(words, text):
     tokens = re.findall(r'\b\w+\b', text.lower())  # Tokenize
