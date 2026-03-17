@@ -1,5 +1,8 @@
+from toolbox.music import play_specific_song
+
 from pywizlight import wizlight, PilotBuilder
 from datetime import datetime, timezone
+from pathlib import Path
 from time import sleep
 
 import subprocess
@@ -192,9 +195,7 @@ async def station_light_color(color_name: str):
     
 async def station_lights_freaky():
 
-    process = await asyncio.create_subprocess_exec(
-        "pw-play", "songs/careless_whisper.wav"
-    )
+    await play_specific_song(Path("careless_whisper.wav"))
 
     # Turn on the living room lights to red. 
     BULB1_IP = os.getenv("BULB1_IP")

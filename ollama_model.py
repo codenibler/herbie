@@ -43,6 +43,12 @@ def ollama_query(user_text):
 
     tool, user_text = determine_relevent_tool(user_text)  
     if tool is not None:
+        logging.info(tool)
+        if lighting.station_lights_freaky not in tool: # Special case, own response
+            ack_tool_dir = Path("herbie_responses/ack_tool")
+            herbie_random_ack_response = random.choice(os.listdir(ack_tool_dir))
+            read_out_response_from_file(ack_tool_dir / herbie_random_ack_response)
+            logging.info(f"Tool ack response {herbie_random_ack_response}")
         response = ollama.chat(model=MODEL, messages=[{'role': 'user', 'content':user_text}], tools=tool)  
         logging.info(f"Selected tool for this query: {tool}")
         logging.info(f"Ollama response: {response['message']['content']}")
@@ -55,6 +61,7 @@ def ollama_query(user_text):
     return response['message']['content']
 
 def determine_relevent_tool(user_text):
+    
     """ ALL LIGHTS """
     if one_word_present_in_text(["everything", "every", "on"], user_text.lower()):
         return [lighting.turn_everything_off, lighting.turn_everything_on], user_text
@@ -88,6 +95,7 @@ def determine_relevent_tool(user_text):
         return [lighting.station_light_color], user_text # Let herbie know specific color options. 
     elif words_present_in_text(["freaky"], user_text.lower()):
         user_text += "Use the station_lights_freaky tool"
+        read_out_response_from_file(Path("herbie_responses/special_cases/just_how_i_like_it.wav"))
         return [lighting.station_lights_freaky], user_text 
     elif words_present_in_text(["station"], user_text.lower()):
         return [lighting.station_lights_on, lighting.station_lights_off, lighting.station_light_brightness, lighting.station_light_color], user_text
@@ -113,10 +121,8 @@ def determine_relevent_tool(user_text):
     return None, user_text
 
 def execute_tool_calls(tool_calls):
-    ack_tool_dir = Path("herbie_responses/ack_tool")
     tool_complete_dir = Path("herbie_responses/tool_complete")
 
-    read_out_response_from_file(ack_tool_dir / random.choice(os.listdir(ack_tool_dir)))
     for tool_call in tool_calls:
         function_name = tool_call['function']['name']
         function_args = tool_call['function']['arguments']
