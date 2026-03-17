@@ -71,6 +71,8 @@ def determine_relevent_tool(user_text):
         return [lighting.kitchen_light_on], user_text
     elif words_present_in_text(["kitchen", "off"], user_text.lower()):
         return [lighting.kitchen_light_off], user_text
+    elif one_word_present_in_text(["kitchen"], user_text.lower()):
+        return [lighting.kitchen_light_off], user_text 
 
     """ MUSIC """ 
     if one_word_present_in_text(["bangers", "song", "music"], user_text.lower()):
