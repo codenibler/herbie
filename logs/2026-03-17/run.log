@@ -2501,3 +2501,111 @@
 2026-03-17 20:15:03,634 - root - INFO - Ollama response: 
 2026-03-17 20:15:04,043 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
 2026-03-17 20:15:04,043 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-17 20:19:53,473 - root - INFO - Logger is set up.
+2026-03-17 20:19:53,473 - root - INFO - Default microphone set to: ReSpeaker Lite (Device Index: 1)
+2026-03-17 20:19:53,474 - root - INFO - Warming up Ollama model...
+2026-03-17 20:19:53,731 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-03-17 20:19:53,731 - root - INFO - Herbie officially warmed up
+2026-03-17 20:19:53,731 - root - INFO - Calibrating ambient noise level... 
+2026-03-17 20:19:53,734 - root - INFO - Listening... speak now
+2026-03-17 20:19:53,799 - root - INFO - Calibration RMS=12.1
+2026-03-17 20:19:53,863 - root - INFO - Calibration RMS=21.7
+2026-03-17 20:19:53,927 - root - INFO - Calibration RMS=31.0
+2026-03-17 20:19:53,991 - root - INFO - Calibration RMS=32.1
+2026-03-17 20:19:54,055 - root - INFO - Calibration RMS=31.3
+2026-03-17 20:19:54,119 - root - INFO - Calibration RMS=23.1
+2026-03-17 20:19:54,183 - root - INFO - Calibration RMS=22.9
+2026-03-17 20:19:54,247 - root - INFO - Calibration RMS=23.0
+2026-03-17 20:19:54,311 - root - INFO - Calibration RMS=22.0
+2026-03-17 20:19:54,375 - root - INFO - Calibration RMS=17.1
+2026-03-17 20:19:54,439 - root - INFO - Calibration RMS=20.3
+2026-03-17 20:19:54,503 - root - INFO - Calibration RMS=22.1
+2026-03-17 20:19:54,567 - root - INFO - Calibration RMS=27.2
+2026-03-17 20:19:54,631 - root - INFO - Calibration RMS=28.5
+2026-03-17 20:19:54,695 - root - INFO - Calibration RMS=23.3
+2026-03-17 20:19:54,759 - root - INFO - Calibration RMS=26.9
+2026-03-17 20:19:54,823 - root - INFO - Calibration RMS=24.4
+2026-03-17 20:19:54,887 - root - INFO - Calibration RMS=32.8
+2026-03-17 20:19:54,951 - root - INFO - Calibration RMS=24.1
+2026-03-17 20:19:55,015 - root - INFO - Calibration RMS=26.7
+2026-03-17 20:19:55,079 - root - INFO - Calibration RMS=36.8
+2026-03-17 20:19:55,143 - root - INFO - Calibration RMS=35.7
+2026-03-17 20:19:55,207 - root - INFO - Calibration RMS=32.2
+2026-03-17 20:19:55,271 - root - INFO - Calibration RMS=544.2
+2026-03-17 20:19:55,335 - root - INFO - Calibration RMS=159.4
+2026-03-17 20:19:55,399 - root - INFO - Calibration RMS=91.4
+2026-03-17 20:19:55,463 - root - INFO - Calibration RMS=51.9
+2026-03-17 20:19:55,527 - root - INFO - Calibration RMS=31.4
+2026-03-17 20:19:55,591 - root - INFO - Calibration RMS=25.9
+2026-03-17 20:19:55,655 - root - INFO - Calibration RMS=360.7
+2026-03-17 20:19:55,719 - root - INFO - Calibration RMS=224.7
+2026-03-17 20:19:55,783 - root - INFO - Calibration RMS=131.8
+2026-03-17 20:19:55,847 - root - INFO - Calibration RMS=26.0
+2026-03-17 20:19:55,911 - root - INFO - Calibration RMS=75.1
+2026-03-17 20:19:55,975 - root - INFO - Calibration RMS=29.0
+2026-03-17 20:19:56,039 - root - INFO - Calibration RMS=29.2
+2026-03-17 20:19:56,103 - root - INFO - Calibration RMS=63.8
+2026-03-17 20:19:56,167 - root - INFO - Calibration RMS=30.8
+2026-03-17 20:19:56,231 - root - INFO - Calibration RMS=21.6
+2026-03-17 20:19:56,295 - root - INFO - Calibration RMS=70.1
+2026-03-17 20:19:56,359 - root - INFO - Calibration RMS=61.0
+2026-03-17 20:19:56,423 - root - INFO - Calibration RMS=59.8
+2026-03-17 20:19:56,487 - root - INFO - Calibration RMS=34.9
+2026-03-17 20:19:56,551 - root - INFO - Calibration RMS=25.8
+2026-03-17 20:19:56,615 - root - INFO - Calibration RMS=33.7
+2026-03-17 20:19:56,680 - root - INFO - Calibration RMS=34.1
+2026-03-17 20:19:56,743 - root - INFO - Calibration RMS=27.0
+2026-03-17 20:19:56,807 - root - INFO - Calibration RMS=26.0
+2026-03-17 20:19:56,871 - root - INFO - Calibration RMS=23.3
+2026-03-17 20:19:56,935 - root - INFO - Calibration RMS=25.7
+2026-03-17 20:19:56,999 - root - INFO - Calibration RMS=33.6
+2026-03-17 20:19:57,063 - root - INFO - Calibration RMS=23.6
+2026-03-17 20:19:57,127 - root - INFO - Calibration RMS=31.7
+2026-03-17 20:19:57,191 - root - INFO - Calibration RMS=29.5
+2026-03-17 20:19:57,255 - root - INFO - Calibration RMS=24.7
+2026-03-17 20:19:57,319 - root - INFO - Calibration RMS=22.9
+2026-03-17 20:19:57,383 - root - INFO - Calibration RMS=20.4
+2026-03-17 20:19:57,447 - root - INFO - Calibration RMS=24.8
+2026-03-17 20:19:57,511 - root - INFO - Calibration RMS=48.1
+2026-03-17 20:19:57,575 - root - INFO - Calibration RMS=34.6
+2026-03-17 20:19:57,639 - root - INFO - Calibration RMS=20.3
+2026-03-17 20:19:57,704 - root - INFO - Calibration RMS=21.2
+2026-03-17 20:19:57,767 - root - INFO - Calibration RMS=30.2
+2026-03-17 20:19:57,831 - root - INFO - Calibration RMS=36.5
+2026-03-17 20:19:57,896 - root - INFO - Calibration RMS=39.7
+2026-03-17 20:19:57,959 - root - INFO - Calibration RMS=37.3
+2026-03-17 20:19:58,023 - root - INFO - Calibration RMS=29.3
+2026-03-17 20:19:58,087 - root - INFO - Calibration RMS=27.1
+2026-03-17 20:19:58,151 - root - INFO - Calibration RMS=41.1
+2026-03-17 20:19:58,215 - root - INFO - Calibration RMS=29.6
+2026-03-17 20:19:58,279 - root - INFO - Calibration RMS=45.2
+2026-03-17 20:19:58,344 - root - INFO - Calibration RMS=29.8
+2026-03-17 20:19:58,407 - root - INFO - Calibration RMS=50.0
+2026-03-17 20:19:58,471 - root - INFO - Calibration RMS=31.4
+2026-03-17 20:19:58,535 - root - INFO - Calibration RMS=25.9
+2026-03-17 20:19:58,600 - root - INFO - Calibration RMS=23.3
+2026-03-17 20:19:58,664 - root - INFO - Calibration RMS=33.2
+2026-03-17 20:19:58,728 - root - INFO - Calibration RMS=25.1
+2026-03-17 20:19:58,792 - root - INFO - Calibration RMS=26.7
+2026-03-17 20:19:58,792 - root - INFO - Calibrated ambient noise level: 48.3
+2026-03-17 20:19:58,801 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-17 20:19:58,801 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-17 20:20:05,277 - root - INFO - Selected Herbie response: hey_boss.wav, reading it out.
+2026-03-17 20:20:06,243 - root - INFO - Listening... speak now
+2026-03-17 20:20:07,012 - root - INFO - Speech started
+2026-03-17 20:20:09,124 - root - INFO - Silence threshold reached, stopping
+2026-03-17 20:20:09,126 - root - INFO - Saved user input WAV to user_input_temp/user_input_1773775209.wav
+2026-03-17 20:20:10,086 - root - INFO - Transcription result: Let's get freaky.
+2026-03-17 20:20:11,313 - root - INFO - [<function station_lights_freaky at 0x7ffef06e8c20>]
+2026-03-17 20:20:16,698 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2026-03-17 20:20:16,699 - root - INFO - Selected tool for this query: [<function station_lights_freaky at 0x7ffef06e8c20>]
+2026-03-17 20:20:16,700 - root - INFO - Ollama response: 
+2026-03-17 20:20:16,700 - root - INFO - Executing tool: station_lights_freaky, with arguments: {}
+2026-03-17 20:20:16,700 - root - INFO - Herbie called for specific song at songs/careless_whisper.wav to be played.
+2026-03-17 20:20:16,700 - root - INFO - Song at songs/careless_whisper.wav not found.
+2026-03-17 20:20:16,700 - root - INFO - Turning the station to freak mode.
+2026-03-17 20:20:17,545 - root - WARNING - Failed to activate freaky mode
+2026-03-17 20:20:17,546 - root - INFO - Tool response: False
+2026-03-17 20:20:19,360 - root - INFO - Ollama response: 
+2026-03-17 20:20:19,768 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-17 20:20:19,768 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)

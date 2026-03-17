@@ -195,7 +195,7 @@ async def station_light_color(color_name: str):
     
 async def station_lights_freaky():
 
-    await play_specific_song(Path("careless_whisper.wav"))
+    await play_specific_song(Path("songs/careless_whisper.wav"))
 
     # Turn on the living room lights to red. 
     BULB1_IP = os.getenv("BULB1_IP")
@@ -355,4 +355,3 @@ COLORS = {
     "LIGHT_BLUE": (173, 216, 230),   # #ADD8E6
     "LIGHT_YELLOW": (255, 255, 224), # #FFFFE0
 }
-

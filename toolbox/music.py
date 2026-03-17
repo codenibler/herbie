@@ -1,4 +1,5 @@
 from time import sleep
+from pathlib import Path
 
 import subprocess
 import logging
@@ -23,19 +24,21 @@ async def play_random_songs():
     return True
 
 async def play_specific_song(song_path):
-    logging.info(f"Herbie called for specific song at songs/{song_path} to be played.")
-    if song_path in os.listdir("songs"):
+    song_path = Path(song_path)
+    logging.info(f"Herbie called for specific song at {song_path} to be played.")
+
+    if song_path.exists() and song_path.is_file():
         logging.info(f"Playing {song_path}")
         if os.getenv("USE_BLUETOOTH_SPEAKER") == True:
             process = await asyncio.create_subprocess_exec(
-                "pw-play", f"songs/{song_path}"
+                "pw-play", str(song_path)
             ) 
         else:
             process = await asyncio.create_subprocess_exec(
-                "aplay", f"songs/{song_path}"
+                "aplay", str(song_path)
             ) 
         await process.wait()
     else:
-        logging.info(f"Song at songs/{song_path} not found.")
+        logging.info(f"Song at {song_path} not found.")
         return False
     return True

@@ -74,10 +74,12 @@ def determine_relevent_tool(user_text):
 
     """ MUSIC """ 
     if one_word_present_in_text(["bangers", "song", "music"], user_text.lower()):
-        user_text += f"If user wants specific song choice, select from the following options: {os.listdir('songs')}, and send in as the parameter. Otherwise, call play_random_songs with no parameters"
+        song_paths = [f"songs/{song}" for song in os.listdir("songs")]
+        user_text += f"If user wants specific song choice, select from the following options: {song_paths}, and send the full path as the parameter. Otherwise, call play_random_songs with no parameters"
         return [music.play_random_songs, music.play_specific_song], user_text
     if words_present_in_text(["play"], user_text.lower()):
-        user_text += f"If user wants specific song choice, select from the following options: {os.listdir('songs')}, and send in as the parameter. Otherwise, call play_random_songs with no parameters"
+        song_paths = [f"songs/{song}" for song in os.listdir("songs")]
+        user_text += f"If user wants specific song choice, select from the following options: {song_paths}, and send the full path as the parameter. Otherwise, call play_random_songs with no parameters"
         return [music.play_specific_song], user_text
 
     """ LIVING ROOM LIGHTING """
