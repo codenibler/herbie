@@ -19,7 +19,6 @@ import os
 load_dotenv(override=True)  
 
 BUZZER_PIN = 2
-GENERIC_HERBIE_RESPONSES_DIR = "generic_herbie_responses"
 AMBIENT_NOISE_VALUE = 750  # Reclibrated every RECALIBRATION_INTERVAL seconds
 RECALIBRATION_INTERVAL = int(os.getenv("RECALIBRATION_INTERVAL", 600))  
 LAST_RECALIBRATION_TIME = None
@@ -58,10 +57,9 @@ def main():
 
         wakeword_detected = initialize_wakeword_loop() # Returns when heard
         # activate_buzzer()  # Indicate wakeword detection with buzzer        
-        herbie_responses = os.listdir(GENERIC_HERBIE_RESPONSES_DIR)
-        random_herbie_response = random.choice(herbie_responses)
+        random_herbie_response = random.choice(os.listdir("herbie_responses/greetings"))
         logging.info(f"Selected Herbie response: {random_herbie_response}, reading it out.")
-        read_out_response_from_file(Path(f"{GENERIC_HERBIE_RESPONSES_DIR}/{random_herbie_response}"))
+        read_out_response_from_file(Path(f"herbie_responses/greetings/{random_herbie_response}"))
 
         if wakeword_detected:
             """ TO DO: SET UP LED ANIMATIONS AND SOUND FOR HERBIE ACTIVATION """

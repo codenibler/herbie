@@ -29,11 +29,19 @@ def read_out_response(text: str):
         voice.synthesize_wav(text, wav_file)
 
     logging.info("Playing audio via pipewire...")
-    subprocess.run(["pw-play", str(out_wav)], check=False)
+
+    if os.getenv("USE_BLUETOOTH_SPEAKER") == True:
+        subprocess.run(["pw-play", str(out_wav)], check=False)
+    else:
+        subprocess.run(["aplay", str(out_wav)], check=False)
+
 
 
 def read_out_response_from_file(file_path: str):
-    subprocess.run(["pw-play", file_path], check=False)
+    if os.getenv("USE_BLUETOOTH_SPEAKER") == True:
+        subprocess.run(["pw-play", file_path], check=False)
+    else:
+        subprocess.run(["aplay", file_path], check=False)
 
 
 if __name__ == "__main__":

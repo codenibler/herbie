@@ -1,16 +1,18 @@
+from piper_tts import read_out_response_from_file
 from toolbox import lighting
 from toolbox import gcalendar
 from toolbox import timer
 from toolbox import music
 
+from pathlib import Path
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+import random
 import logging
 import asyncio
 import inspect
 import ollama
-import json
 import os
 import re
 
@@ -33,6 +35,7 @@ CANON = {
     "lights": "light",
 }
 
+""" TO DO: ADD SOME SORT OF CONFIRMATION TTS WHEN TOOL CALLED. """
 def ollama_query(user_text):
     # Determine through string matching if tool is usable.
     MODEL = os.getenv("OLLAMA_MODEL_NAME")
@@ -44,7 +47,6 @@ def ollama_query(user_text):
         logging.info(f"Selected tool for this query: {tool}")
         logging.info(f"Ollama response: {response['message']['content']}")
         if 'tool_calls' in response["message"]:
-            logging.warning("Tool selected, but Herbie did not call it.")
             execute_tool_calls(response['message']['tool_calls'])
     else:
         response = ollama.chat(model=MODEL, messages=[{'role': 'user', 'content':user_text}])  
@@ -111,6 +113,10 @@ def determine_relevent_tool(user_text):
     return None, user_text
 
 def execute_tool_calls(tool_calls):
+    ack_tool_dir = Path("herbie_responses/ack_tool")
+    tool_complete_dir = Path("herbie_responses/tool_complete")
+
+    read_out_response_from_file(ack_tool_dir / random.choice(os.listdir(ack_tool_dir)))
     for tool_call in tool_calls:
         function_name = tool_call['function']['name']
         function_args = tool_call['function']['arguments']
@@ -124,6 +130,7 @@ def execute_tool_calls(tool_calls):
             else:   
                 tool_response = TOOL_MAP[function_name](**function_args)  # Execute the tool function with arguments
             logging.info(f"Tool response: {tool_response}")
+            read_out_response_from_file(tool_complete_dir / random.choice(os.listdir(tool_complete_dir)))
         else:
             logging.warning(f"Tool {function_name} not found in tool map.")
 
@@ -132,7 +139,7 @@ def words_present_in_text(words, text):
     for token in tokens:
         if token in CANON:
             tokens.append(CANON[token])  # Add canonical forms to tokenizer
-    return all(word in tokens for word in words) # Truthy if all present
+    return all(word in tokens for word in words) 
 
 def one_word_present_in_text(words, text):
     tokens = re.findall(r'\b\w+\b', text.lower())  # Tokenize
@@ -155,4 +162,3 @@ def warm_up_ollama_model():
     logging.info("Warming up Ollama model...")
     ollama.generate(model=model, keep_alive=keep_alive)
     logging.info("Herbie officially warmed up")
-

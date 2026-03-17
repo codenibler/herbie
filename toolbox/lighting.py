@@ -7,7 +7,7 @@ import asyncio
 import logging
 import os
 
-
+""" TO DO: IF LIGHT SWITCH IS OFF, GRACEFULLY RESPOND: COULDN"T TURN ON CASE """
 async def kitchen_light_on():
     # Turn on the kitchen light. Requires no parameters.
     KBULB_IP = os.getenv("KITCHEN_BULB_IP")
