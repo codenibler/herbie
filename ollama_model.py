@@ -43,6 +43,27 @@ CANON = {
     "lights": "light",
 }
 
+TIME_QUERY_PATTERNS = (
+    "what time is it",
+    "whats the time",
+    "what's the time",
+    "tell me the time",
+    "current time",
+)
+BACKGROUND_AUDIO_STOP_PATTERNS = (
+    "stop it",
+    "stop that",
+    "stop the music",
+    "stop the song",
+    "turn the speaker off",
+    "turn speaker off",
+    "stop the speaker",
+    "mute the speaker",
+    "stop the timer",
+    "stop the timer sound",
+    "stop the alarm",
+)
+
 """ TO DO: ADD SOME SORT OF CONFIRMATION TTS WHEN TOOL CALLED. """
 def ollama_query(user_text):
     # Determine through string matching if tool is usable.
@@ -69,6 +90,22 @@ def ollama_query(user_text):
     
     logging.info(f"Ollama response: {response['message']['content']}")
     return response['message']['content']
+
+def normalize_user_text(text: str) -> str:
+    return " ".join(re.findall(r"\b[\w']+\b", text.lower()))
+
+def is_time_query(user_text: str) -> bool:
+    normalized_text = normalize_user_text(user_text)
+    return any(pattern in normalized_text for pattern in TIME_QUERY_PATTERNS)
+
+def build_time_query_response() -> str:
+    current_time = datetime.now(ZoneInfo(APP_TIMEZONE))
+    formatted_time = current_time.strftime("%I:%M %p")
+    return f"It is {formatted_time}."
+
+def is_background_audio_stop_request(user_text: str) -> bool:
+    normalized_text = normalize_user_text(user_text)
+    return any(pattern in normalized_text for pattern in BACKGROUND_AUDIO_STOP_PATTERNS)
 
 def determine_relevent_tool(user_text):
     

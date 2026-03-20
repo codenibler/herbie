@@ -3,11 +3,13 @@ from __future__ import annotations
 import logging
 import numpy as np
 import os
+import re
 import subprocess
 import tempfile
 import wave
 from functools import lru_cache
 from pathlib import Path
+from threading import Lock
 
 from dotenv import load_dotenv
 
@@ -18,12 +20,16 @@ PREFERRED_USB_AUDIO_DEVICE = "plughw:CARD=Audio,DEV=0"
 USB_AUDIO_NAME = "USB Audio"
 DEFAULT_WAV_SILENCE_PREFIX_MS = 100
 DEFAULT_WAV_LEAD_IN_GAIN = 0.02
+DEFAULT_WAKEWORD_DUCKED_VOLUME_PERCENT = 20
 
 PCM_DTYPE_BY_SAMPLE_WIDTH = {
     1: np.uint8,
     2: np.int16,
     4: np.int32,
 }
+
+_ducked_volume_lock = Lock()
+_ducked_volume_restore_percent: int | None = None
 
 
 @lru_cache(maxsize=1)
@@ -64,6 +70,143 @@ def build_wav_playback_command(file_path: str | Path) -> list[str]:
         logging.warning("Preferred USB Audio device not found. Falling back to default aplay output.")
     command.append(str(file_path))
     return command
+
+
+@lru_cache(maxsize=1)
+def get_preferred_alsa_card_name() -> str | None:
+    preferred_device_name = os.getenv("PREFERRED_WAV_OUTPUT_DEVICE", PREFERRED_USB_AUDIO_DEVICE)
+    match = re.search(r"CARD=([^,]+)", preferred_device_name)
+    if match:
+        return match.group(1)
+
+    preferred_device = get_preferred_alsa_output_device()
+    if preferred_device is None:
+        return None
+
+    match = re.search(r"CARD=([^,]+)", preferred_device)
+    if match:
+        return match.group(1)
+    return None
+
+
+def get_preferred_output_volume_percent() -> int | None:
+    card_name = get_preferred_alsa_card_name()
+    if card_name is None:
+        logging.warning("Could not determine ALSA card for preferred output volume control.")
+        return None
+
+    result = subprocess.run(
+        ["amixer", "-c", card_name, "get", "PCM"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        logging.warning("amixer get PCM failed for ALSA card %s.", card_name)
+        return None
+
+    match = re.search(r"\[(\d+)%\]", result.stdout)
+    if match is None:
+        logging.warning("Could not parse current PCM volume for ALSA card %s.", card_name)
+        return None
+
+    return int(match.group(1))
+
+
+def set_preferred_output_volume_percent(volume_percent: int) -> bool:
+    card_name = get_preferred_alsa_card_name()
+    if card_name is None:
+        logging.warning("Could not determine ALSA card for preferred output volume control.")
+        return False
+
+    normalized_volume_percent = max(0, min(100, int(volume_percent)))
+    result = subprocess.run(
+        ["amixer", "-c", card_name, "set", "PCM", f"{normalized_volume_percent}%"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        logging.warning(
+            "Failed to set PCM volume to %s%% on ALSA card %s.",
+            normalized_volume_percent,
+            card_name,
+        )
+        return False
+
+    logging.info(
+        "Set preferred output volume to %s%% on ALSA card %s.",
+        normalized_volume_percent,
+        card_name,
+    )
+    return True
+
+
+def is_aplay_process_active() -> bool:
+    result = subprocess.run(
+        ["pgrep", "-x", "aplay"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.returncode == 0
+
+
+def duck_preferred_output_volume_if_playing(
+    ducked_volume_percent: int = DEFAULT_WAKEWORD_DUCKED_VOLUME_PERCENT,
+) -> bool:
+    global _ducked_volume_restore_percent
+
+    if not is_aplay_process_active():
+        return False
+
+    with _ducked_volume_lock:
+        if _ducked_volume_restore_percent is not None:
+            return True
+
+        current_volume_percent = get_preferred_output_volume_percent()
+        if current_volume_percent is None:
+            return False
+
+        if not set_preferred_output_volume_percent(ducked_volume_percent):
+            return False
+
+        _ducked_volume_restore_percent = current_volume_percent
+        logging.info(
+            "Ducked preferred output volume from %s%% to %s%% while listening.",
+            current_volume_percent,
+            ducked_volume_percent,
+        )
+        return True
+
+
+def restore_preferred_output_volume() -> bool:
+    global _ducked_volume_restore_percent
+
+    with _ducked_volume_lock:
+        restore_percent = _ducked_volume_restore_percent
+        if restore_percent is None:
+            return False
+
+        if not set_preferred_output_volume_percent(restore_percent):
+            return False
+
+        _ducked_volume_restore_percent = None
+        logging.info("Restored preferred output volume to %s%%.", restore_percent)
+        return True
+
+
+def stop_active_aplay_playback() -> bool:
+    result = subprocess.run(
+        ["pkill", "-x", "aplay"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode == 0:
+        logging.info("Stopped active aplay playback processes.")
+        return True
+    return False
 
 
 @lru_cache(maxsize=1)
