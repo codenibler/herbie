@@ -43,7 +43,6 @@ GREETING_RESPONSES_DIR = Path(os.getenv("GREETING_RESPONSES_DIR", "herbie_respon
 STARTUP_OUTPUT_VOLUME_PERCENT = int(os.getenv("STARTUP_OUTPUT_VOLUME_PERCENT", 100))
 WAKEWORD_DUCKED_VOLUME_PERCENT = int(os.getenv("WAKEWORD_DUCKED_VOLUME_PERCENT", 20))
 
-# Testing function for wakeword
 def activate_buzzer():
     buzzer = Buzzer(BUZZER_PIN)
     for _ in range(BUZZER_BEEP_COUNT):
@@ -73,13 +72,11 @@ def main():
     setup_default_microphone()
     if USE_BLUETOOTH_SPEAKER:
         from helpers.set_bluetooth_out import bluetooth_ctl_connect
-        bluetooth_ctl_connect()  # Connect to Bluetooth speaker if enabled.
+        bluetooth_ctl_connect()  
     set_preferred_output_volume_percent(STARTUP_OUTPUT_VOLUME_PERCENT)
     AMBIENT_NOISE_VALUE, LAST_RECALIBRATION_TIME = asyncio.run(initialize_startup_tasks())
 
     while True:
-
-        """ TO DO: MAKE ASYNC """
         if (time.time() - LAST_RECALIBRATION_TIME) >= RECALIBRATION_INTERVAL:
             logging.info("Recalibrating ambient noise level...")
             AMBIENT_NOISE_VALUE = calibrate_ambient_noise()
@@ -107,7 +104,6 @@ def main():
                     restore_preferred_output_volume()
                 continue
         
-        """ TO DO: ADD ERROR LIMIT UPPER BOUND, AND SET THIS UP AS MORE ROBUST SUPERLOOP """
         user_text = parse_user_input(wav_bytes)
         if user_text is None:
             logging.error("Failed to parse user input. Retrying...")
@@ -148,8 +144,6 @@ def main():
         ollama_response = ollama_query(user_text)
         read_out_response(ollama_response)  
         activate_buzzer()
-
-
 
 
 if __name__ == "__main__":

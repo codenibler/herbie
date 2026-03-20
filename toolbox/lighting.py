@@ -1,4 +1,5 @@
 from toolbox.music import play_specific_song
+from piper_tts import read_out_response
 
 from pywizlight import wizlight, PilotBuilder
 from datetime import datetime, timezone
@@ -12,6 +13,18 @@ import os
 
 DEFAULT_LIGHT_BRIGHTNESS = int(os.getenv("DEFAULT_LIGHT_BRIGHTNESS", 128))
 FREAK_MODE_SONG_PATH = os.getenv("FREAK_MODE_SONG_PATH", "songs/careless_whisper.wav")
+LIGHT_TURN_ON_FAILURE_MESSAGE = (
+    "Turning on the light failed. Check if the light switch is off, and I'll try again"
+)
+
+
+async def return_light_turn_on_failure(log_message: str, error: Exception | None = None) -> bool:
+    if error is None:
+        logging.warning(log_message)
+    else:
+        logging.warning("%s Error: %s", log_message, error)
+    await asyncio.to_thread(read_out_response, LIGHT_TURN_ON_FAILURE_MESSAGE)
+    return False
 
 """ TO DO: IF LIGHT SWITCH IS OFF, GRACEFULLY RESPOND: COULDN"T TURN ON CASE """
 async def kitchen_light_on():
@@ -30,8 +43,11 @@ async def kitchen_light_on():
             logging.info(f"Kitchen light brightness set to {DEFAULT_LIGHT_BRIGHTNESS} successfully.")
             return True
 
-        logging.warning(f"Failed to set kitchen light brightness to {DEFAULT_LIGHT_BRIGHTNESS}.")
-        return False
+        return await return_light_turn_on_failure(
+            f"Failed to set kitchen light brightness to {DEFAULT_LIGHT_BRIGHTNESS}."
+        )
+    except Exception as error:
+        return await return_light_turn_on_failure("Failed to turn on kitchen light.", error)
     finally:
         await light.async_close()
 
@@ -121,9 +137,10 @@ async def station_lights_on():
         ):
             logging.info("Living room lights turned on successfully.")
             return True
-        
-        logging.warning("Failed to turn on living room lights.")
-        return False
+
+        return await return_light_turn_on_failure("Failed to turn on living room lights.")
+    except Exception as error:
+        return await return_light_turn_on_failure("Failed to turn on living room lights.", error)
     finally:
         await light1.async_close()
         await light2.async_close()
@@ -157,8 +174,14 @@ async def station_light_brightness(brightness: int):
             logging.info(f"Living room lights set to {brightness}% brightness.")
             return True
 
-        logging.warning("Failed to set living room lights to specified brightness.")
-        return False
+        return await return_light_turn_on_failure(
+            "Failed to set living room lights to specified brightness."
+        )
+    except Exception as error:
+        return await return_light_turn_on_failure(
+            "Failed to set living room lights to specified brightness.",
+            error,
+        )
     finally:
         await light1.async_close()
         await light2.async_close()
@@ -193,8 +216,12 @@ async def station_light_color(color_name: str):
             logging.info(f"Living room lights set to color {color_name}.")
             return True
 
-        logging.warning("Failed to set living room lights to specified color.")
-        return False
+        return await return_light_turn_on_failure("Failed to set living room lights to specified color.")
+    except Exception as error:
+        return await return_light_turn_on_failure(
+            "Failed to set living room lights to specified color.",
+            error,
+        )
     finally:
         await light1.async_close()
         await light2.async_close()
@@ -215,30 +242,29 @@ async def station_lights_freaky():
     light1 = wizlight(BULB1_IP)
     light2 = wizlight(BULB2_IP)
     light3 = wizlight(BULB3_IP)
+    try:
+        color_rgb = COLORS["DARK_RED"]
+        await light1.turn_on(PilotBuilder(rgb=color_rgb))
+        await light2.turn_on(PilotBuilder(rgb=color_rgb))
+        await light3.turn_on(PilotBuilder(rgb=color_rgb))
+        state1 = await light1.updateState()
+        state2 = await light2.updateState()
+        state3 = await light3.updateState()
 
-    color_rgb = COLORS["DARK_RED"]
-    await light1.turn_on(PilotBuilder(rgb=color_rgb))
-    await light2.turn_on(PilotBuilder(rgb=color_rgb))
-    await light3.turn_on(PilotBuilder(rgb=color_rgb))   
-    state1 = await light1.updateState() 
-    state2 = await light2.updateState()  
-    state3 = await light3.updateState()
+        rgb2 = state2.get_rgb()
+        rgb1 = state1.get_rgb()
+        rgb3 = state3.get_rgb()
+        if rgb1 == color_rgb and rgb2 == color_rgb and rgb3 == color_rgb:
+            logging.info("Living room lights set to color Red.")
+            return True
 
-    rgb2 = state2.get_rgb()
-    rgb1 = state1.get_rgb()
-    rgb3 = state3.get_rgb()
-    if rgb1 == color_rgb and rgb2 == color_rgb and rgb3 == color_rgb:
-        logging.info(f"Living room lights set to color Red.")
+        return await return_light_turn_on_failure("Failed to activate freaky mode.")
+    except Exception as error:
+        return await return_light_turn_on_failure("Failed to activate freaky mode.", error)
+    finally:
         await light1.async_close()
         await light2.async_close()
         await light3.async_close()
-        return True
-
-    logging.warning("Failed to activate freaky mode")
-    await light1.async_close()
-    await light2.async_close()
-    await light3.async_close()
-    return False
 
 
 async def turn_everything_off():
@@ -305,12 +331,12 @@ async def turn_everything_on():
     light3 = wizlight(BULB3_IP)
     klight = wizlight(KBULB_IP)
     try:
-        # Send on commands in parallel (default brightness 128)
+        # Send on commands in parallel.
         await asyncio.gather(
-            light1.turn_on(PilotBuilder(brightness=128)),
-            light2.turn_on(PilotBuilder(brightness=128)),
-            light3.turn_on(PilotBuilder(brightness=128)),
-            klight.turn_on(PilotBuilder(brightness=128)),
+            light1.turn_on(PilotBuilder(brightness=DEFAULT_LIGHT_BRIGHTNESS)),
+            light2.turn_on(PilotBuilder(brightness=DEFAULT_LIGHT_BRIGHTNESS)),
+            light3.turn_on(PilotBuilder(brightness=DEFAULT_LIGHT_BRIGHTNESS)),
+            klight.turn_on(PilotBuilder(brightness=DEFAULT_LIGHT_BRIGHTNESS)),
         )
 
         # Update states in parallel
@@ -326,12 +352,18 @@ async def turn_everything_on():
         b3 = state3.get_brightness()
         kb = kstate.get_brightness()
 
-        if b1 == 128 and b2 == 128 and b3 == 128 and kb == 128:
+        if (
+            b1 == DEFAULT_LIGHT_BRIGHTNESS
+            and b2 == DEFAULT_LIGHT_BRIGHTNESS
+            and b3 == DEFAULT_LIGHT_BRIGHTNESS
+            and kb == DEFAULT_LIGHT_BRIGHTNESS
+        ):
             logging.info("All bulbs turned on to default brightness successfully.")
             return True
 
-        logging.warning("Not all bulbs reached the target brightness.")
-        return False
+        return await return_light_turn_on_failure("Not all bulbs reached the target brightness.")
+    except Exception as error:
+        return await return_light_turn_on_failure("Failed to turn everything on.", error)
     finally:
         await light1.async_close()
         await light2.async_close()

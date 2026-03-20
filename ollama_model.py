@@ -286,6 +286,13 @@ def execute_tool_calls(tool_calls):
             else:   
                 tool_response = TOOL_MAP[function_name](**sanitized_args)  # Execute the tool function with arguments
             logging.info(f"Tool response: {tool_response}")
+            if tool_response is False:
+                logging.info(
+                    "Skipping tool completion response because %s reported failure.",
+                    function_name,
+                )
+                continue
+
             read_out_response_from_file(
                 TOOL_COMPLETE_RESPONSES_DIR / random.choice(os.listdir(TOOL_COMPLETE_RESPONSES_DIR))
             )
