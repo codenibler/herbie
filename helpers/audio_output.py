@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import numpy as np
 import os
 import subprocess
 import tempfile
@@ -16,6 +17,13 @@ load_dotenv(override=True)
 PREFERRED_USB_AUDIO_DEVICE = "plughw:CARD=Audio,DEV=0"
 USB_AUDIO_NAME = "USB Audio"
 DEFAULT_WAV_SILENCE_PREFIX_MS = 100
+DEFAULT_WAV_LEAD_IN_GAIN = 0.02
+
+PCM_DTYPE_BY_SAMPLE_WIDTH = {
+    1: np.uint8,
+    2: np.int16,
+    4: np.int32,
+}
 
 
 @lru_cache(maxsize=1)
@@ -82,6 +90,58 @@ def get_wav_silence_prefix_ms() -> int:
     return silence_ms
 
 
+@lru_cache(maxsize=1)
+def get_wav_lead_in_gain() -> float:
+    raw_value = os.getenv("WAV_LEAD_IN_GAIN", str(DEFAULT_WAV_LEAD_IN_GAIN))
+    try:
+        lead_in_gain = float(raw_value)
+    except ValueError:
+        logging.warning(
+            "Invalid WAV_LEAD_IN_GAIN value %r. Falling back to %.3f.",
+            raw_value,
+            DEFAULT_WAV_LEAD_IN_GAIN,
+        )
+        return DEFAULT_WAV_LEAD_IN_GAIN
+
+    if not 0 <= lead_in_gain <= 1:
+        logging.warning(
+            "WAV_LEAD_IN_GAIN %.3f is out of range. Falling back to %.3f.",
+            lead_in_gain,
+            DEFAULT_WAV_LEAD_IN_GAIN,
+        )
+        return DEFAULT_WAV_LEAD_IN_GAIN
+
+    return lead_in_gain
+
+
+def scale_pcm_frames(frames: bytes, sample_width: int, gain: float) -> bytes:
+    if not frames:
+        return frames
+
+    dtype = PCM_DTYPE_BY_SAMPLE_WIDTH.get(sample_width)
+    if dtype is None:
+        logging.warning(
+            "Unsupported WAV sample width %d for lead-in scaling. Falling back to silence.",
+            sample_width,
+        )
+        return b"\x00" * len(frames)
+
+    samples = np.frombuffer(frames, dtype=dtype).copy()
+
+    if sample_width == 1:
+        centered = samples.astype(np.float32) - 128.0
+        scaled = np.clip(np.round(centered * gain + 128.0), 0, 255).astype(np.uint8)
+        return scaled.tobytes()
+
+    info = np.iinfo(dtype)
+    scaled = np.clip(
+        np.round(samples.astype(np.float32) * gain),
+        info.min,
+        info.max,
+    ).astype(dtype)
+    return scaled.tobytes()
+
+
 def prepend_silence_to_wav(file_path: str | Path, silence_ms: int | None = None) -> Path:
     source_path = Path(file_path)
     if silence_ms is None:
@@ -93,8 +153,12 @@ def prepend_silence_to_wav(file_path: str | Path, silence_ms: int | None = None)
         sample_rate = source_wav.getframerate()
         frames = source_wav.readframes(source_wav.getnframes())
 
-    silence_frame_count = int(sample_rate * silence_ms / 1000)
-    silence_bytes = b"\x00" * silence_frame_count * channels * sample_width
+    prefix_frame_count = int(sample_rate * silence_ms / 1000)
+    prefix_byte_count = prefix_frame_count * channels * sample_width
+    lead_in_source = frames[:prefix_byte_count]
+    lead_in_bytes = scale_pcm_frames(lead_in_source, sample_width, get_wav_lead_in_gain())
+    if len(lead_in_bytes) < prefix_byte_count:
+        lead_in_bytes += b"\x00" * (prefix_byte_count - len(lead_in_bytes))
 
     with tempfile.NamedTemporaryFile(
         prefix=f"{source_path.stem}_prefixed_",
@@ -107,7 +171,7 @@ def prepend_silence_to_wav(file_path: str | Path, silence_ms: int | None = None)
         padded_wav.setnchannels(channels)
         padded_wav.setsampwidth(sample_width)
         padded_wav.setframerate(sample_rate)
-        padded_wav.writeframes(silence_bytes + frames)
+        padded_wav.writeframes(lead_in_bytes + frames)
 
     return padded_path
 

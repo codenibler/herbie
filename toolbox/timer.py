@@ -1,9 +1,19 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+from pathlib import Path
 from threading import Event, Lock, Thread
 
 import logging
+import os
+import random
+
+from piper_tts import read_out_response_from_file
+
+
+TIMER_COMPLETE_RESPONSES_DIR = Path(
+    os.getenv("TIMER_COMPLETE_RESPONSES_DIR", "herbie_responses/timer_complete")
+)
 
 
 class TimerManager:
@@ -85,13 +95,35 @@ class TimerManager:
             self._timer_thread = None
             self._alert_pending = True
 
-        logging.info("Timer finished. Alert sound pending implementation.")
+        logging.info("Timer finished. Playing timer completion sound.")
+        self._play_timer_complete_sound()
 
     def clear_pending_alert(self) -> bool:
         with self._lock:
             had_alert_pending = self._alert_pending
             self._alert_pending = False
             return had_alert_pending
+
+    def _play_timer_complete_sound(self) -> bool:
+        if not TIMER_COMPLETE_RESPONSES_DIR.exists():
+            logging.warning(
+                "Timer complete responses directory does not exist: %s",
+                TIMER_COMPLETE_RESPONSES_DIR,
+            )
+            return False
+
+        sound_files = [path for path in TIMER_COMPLETE_RESPONSES_DIR.iterdir() if path.is_file()]
+        if not sound_files:
+            logging.warning(
+                "No timer completion sound files found in %s",
+                TIMER_COMPLETE_RESPONSES_DIR,
+            )
+            return False
+
+        selected_sound = random.choice(sound_files)
+        logging.info("Playing timer completion sound: %s", selected_sound)
+        read_out_response_from_file(selected_sound)
+        return True
 
 
 timer_manager = TimerManager()
