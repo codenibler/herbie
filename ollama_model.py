@@ -28,7 +28,8 @@ TOOL_MAP = {
     "station_lights_freaky": lighting.station_lights_freaky,
     "make_calendar_event": gcalendar.make_calendar_event,
     "play_random_songs": music.play_random_songs,
-    "play_specific_song": music.play_specific_song
+    "play_specific_song": music.play_specific_song,
+    "stop_music": music.stop_music,
 
 }
 CANON = {
@@ -75,6 +76,8 @@ def determine_relevent_tool(user_text):
         return [lighting.kitchen_light_off], user_text 
 
     """ MUSIC """ 
+    if words_present_in_text(["stop", "music"], user_text.lower()) or words_present_in_text(["stop", "song"], user_text.lower()) or words_present_in_text(["stop", "playing"], user_text.lower()):
+        return [music.stop_music], user_text
     if one_word_present_in_text(["bangers", "song", "music"], user_text.lower()):
         song_paths = [f"songs/{song}" for song in os.listdir("songs")]
         user_text += f"If user wants specific song choice, select from the following options: {song_paths}, and send the full path as the parameter. Otherwise, call play_random_songs with no parameters"
