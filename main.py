@@ -11,6 +11,7 @@ from ollama_model import (
 from helpers.audio_output import (
     duck_preferred_output_volume_if_playing,
     restore_preferred_output_volume,
+    set_preferred_output_volume_percent,
     stop_active_aplay_playback,
 )
 from toolbox.music import stop_music
@@ -72,6 +73,7 @@ def main():
     if USE_BLUETOOTH_SPEAKER:
         from helpers.set_bluetooth_out import bluetooth_ctl_connect
         bluetooth_ctl_connect()  # Connect to Bluetooth speaker if enabled.
+    set_preferred_output_volume_percent(100)
     AMBIENT_NOISE_VALUE, LAST_RECALIBRATION_TIME = asyncio.run(initialize_startup_tasks())
 
     while True:

@@ -6,6 +6,7 @@ import os
 import re
 import subprocess
 import tempfile
+import time
 import wave
 from functools import lru_cache
 from pathlib import Path
@@ -21,6 +22,8 @@ USB_AUDIO_NAME = "USB Audio"
 DEFAULT_WAV_SILENCE_PREFIX_MS = 100
 DEFAULT_WAV_LEAD_IN_GAIN = 0.02
 DEFAULT_WAKEWORD_DUCKED_VOLUME_PERCENT = 20
+DEFAULT_WAKEWORD_DUCK_FADE_DURATION_MS = 350
+DEFAULT_WAKEWORD_DUCK_FADE_STEP_COUNT = 7
 
 PCM_DTYPE_BY_SAMPLE_WIDTH = {
     1: np.uint8,
@@ -113,7 +116,7 @@ def get_preferred_output_volume_percent() -> int | None:
     return int(match.group(1))
 
 
-def set_preferred_output_volume_percent(volume_percent: int) -> bool:
+def set_preferred_output_volume_percent(volume_percent: int, *, log_change: bool = True) -> bool:
     card_name = get_preferred_alsa_card_name()
     if card_name is None:
         logging.warning("Could not determine ALSA card for preferred output volume control.")
@@ -134,10 +137,63 @@ def set_preferred_output_volume_percent(volume_percent: int) -> bool:
         )
         return False
 
+    if log_change:
+        logging.info(
+            "Set preferred output volume to %s%% on ALSA card %s.",
+            normalized_volume_percent,
+            card_name,
+        )
+    return True
+
+
+def build_volume_fade_steps(
+    start_volume_percent: int,
+    end_volume_percent: int,
+    step_count: int,
+) -> list[int]:
+    normalized_step_count = max(1, int(step_count))
+    if start_volume_percent == end_volume_percent:
+        return [int(end_volume_percent)]
+
+    step_values = []
+    for step_index in range(1, normalized_step_count + 1):
+        progress = step_index / normalized_step_count
+        interpolated = round(
+            start_volume_percent + (end_volume_percent - start_volume_percent) * progress
+        )
+        if not step_values or step_values[-1] != interpolated:
+            step_values.append(interpolated)
+
+    if step_values[-1] != int(end_volume_percent):
+        step_values.append(int(end_volume_percent))
+    return step_values
+
+
+def fade_preferred_output_volume_percent(
+    start_volume_percent: int,
+    end_volume_percent: int,
+    duration_ms: int = DEFAULT_WAKEWORD_DUCK_FADE_DURATION_MS,
+    step_count: int = DEFAULT_WAKEWORD_DUCK_FADE_STEP_COUNT,
+) -> bool:
+    fade_steps = build_volume_fade_steps(
+        start_volume_percent=start_volume_percent,
+        end_volume_percent=end_volume_percent,
+        step_count=step_count,
+    )
+    sleep_interval_seconds = max(0.0, duration_ms / 1000.0 / max(1, len(fade_steps)))
+
+    for index, volume_percent in enumerate(fade_steps):
+        is_last_step = index == len(fade_steps) - 1
+        if not set_preferred_output_volume_percent(volume_percent, log_change=is_last_step):
+            return False
+        if not is_last_step and sleep_interval_seconds > 0:
+            time.sleep(sleep_interval_seconds)
+
     logging.info(
-        "Set preferred output volume to %s%% on ALSA card %s.",
-        normalized_volume_percent,
-        card_name,
+        "Faded preferred output volume from %s%% to %s%% in %d ms.",
+        start_volume_percent,
+        end_volume_percent,
+        duration_ms,
     )
     return True
 
@@ -168,7 +224,18 @@ def duck_preferred_output_volume_if_playing(
         if current_volume_percent is None:
             return False
 
-        if not set_preferred_output_volume_percent(ducked_volume_percent):
+        fade_duration_ms = int(
+            os.getenv("WAKEWORD_DUCK_FADE_DURATION_MS", str(DEFAULT_WAKEWORD_DUCK_FADE_DURATION_MS))
+        )
+        fade_step_count = int(
+            os.getenv("WAKEWORD_DUCK_FADE_STEP_COUNT", str(DEFAULT_WAKEWORD_DUCK_FADE_STEP_COUNT))
+        )
+        if not fade_preferred_output_volume_percent(
+            start_volume_percent=current_volume_percent,
+            end_volume_percent=ducked_volume_percent,
+            duration_ms=fade_duration_ms,
+            step_count=fade_step_count,
+        ):
             return False
 
         _ducked_volume_restore_percent = current_volume_percent
