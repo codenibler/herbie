@@ -3,6 +3,7 @@ from toolbox import lighting
 from toolbox import gcalendar
 from toolbox import timer
 from toolbox import music
+from toolbox import volume
 
 from pathlib import Path
 from datetime import datetime
@@ -37,6 +38,7 @@ TOOL_MAP = {
     "stop_music": music.stop_music,
     "start_timer": timer.start_timer,
     "stop_timer": timer.stop_timer,
+    "set_output_volume": volume.set_output_volume,
 
 }
 CANON = {
@@ -139,6 +141,11 @@ def determine_relevent_tool(user_text):
     if one_word_present_in_text(["timer", "countdown"], user_text.lower()):
         user_text += " If the user wants to start a timer, call start_timer with duration_seconds as a positive integer. Convert minutes or hours into total seconds before calling the tool. If the user wants to stop or cancel a timer, call stop_timer."
         return [timer.start_timer, timer.stop_timer], user_text
+
+    """ SPEAKER VOLUME """
+    if one_word_present_in_text(["volume"], user_text.lower()):
+        user_text += " If the user wants to change the speaker volume, call set_output_volume with volume_percent as an integer from 0 to 100."
+        return [volume.set_output_volume], user_text
 
     """ LIVING ROOM LIGHTING """
     if words_present_in_text(["station", "on"], user_text.lower()):

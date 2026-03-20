@@ -40,6 +40,7 @@ RECALIBRATION_INTERVAL = int(os.getenv("RECALIBRATION_INTERVAL", 600))
 LAST_RECALIBRATION_TIME = None
 USE_BLUETOOTH_SPEAKER = os.getenv("USE_BLUETOOTH_SPEAKER", "False").lower() == "true"
 GREETING_RESPONSES_DIR = Path(os.getenv("GREETING_RESPONSES_DIR", "herbie_responses/greetings"))
+STARTUP_OUTPUT_VOLUME_PERCENT = int(os.getenv("STARTUP_OUTPUT_VOLUME_PERCENT", 100))
 WAKEWORD_DUCKED_VOLUME_PERCENT = int(os.getenv("WAKEWORD_DUCKED_VOLUME_PERCENT", 20))
 
 # Testing function for wakeword
@@ -73,7 +74,7 @@ def main():
     if USE_BLUETOOTH_SPEAKER:
         from helpers.set_bluetooth_out import bluetooth_ctl_connect
         bluetooth_ctl_connect()  # Connect to Bluetooth speaker if enabled.
-    set_preferred_output_volume_percent(100)
+    set_preferred_output_volume_percent(STARTUP_OUTPUT_VOLUME_PERCENT)
     AMBIENT_NOISE_VALUE, LAST_RECALIBRATION_TIME = asyncio.run(initialize_startup_tasks())
 
     while True:
