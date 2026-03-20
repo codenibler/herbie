@@ -9,13 +9,22 @@ RECALIBRATION_INTERVAL=600
 # Piper TTS
 PIPER_VOICE_MODEL_PATH=./piper_voice_model/en_US-hfc_male-medium.onnx
 RESPONSE_AUDIO_DIR=response_audio
+PREFERRED_WAV_OUTPUT_DEVICE=plughw:CARD=Audio,DEV=0
 
 # Audio / listening
 AMBIENT_NOISE_THRESHOLD=700.0
 SPEECH_PAUSE_THRESHOLD=1.0
+WAV_SILENCE_PREFIX_MS=100
+CALIBRATION_DURATION_SECONDS=5.0
+LISTENING_SAMPLE_RATE=16000
+LISTENING_CHANNELS=2
+LISTENING_BLOCK_SIZE=1024
+MAX_RECORDING_DURATION_SECONDS=100.0
 
 # Wakeword / Porcupine (sensitive - leave blank)
 WAKEWORD_ACCESS_TOKEN=
+WAKEWORD_PATH=herbie_wakewords/Hey-Herbie_en_raspberry-pi_v4_0_0.ppn
+WAKEWORD_LOG_INTERVAL_SECONDS=5.0
 
 # Microphone (sensitive: put the device name that matches `sd.query_devices()`)
 MICROPHONE_NAME=
@@ -28,12 +37,28 @@ USER_INPUT_DIR=recorded_wavs
 # Ollama model
 OLLAMA_MODEL_NAME=
 OLLAMA_KEEP_ALIVE=false
+APP_TIMEZONE=Europe/Amsterdam
+CALENDAR_TIMEZONE=Europe/Amsterdam
+
+# Response assets
+GREETING_RESPONSES_DIR=herbie_responses/greetings
+ACK_TOOL_RESPONSES_DIR=herbie_responses/ack_tool
+TOOL_COMPLETE_RESPONSES_DIR=herbie_responses/tool_complete
+SPECIAL_CASE_RESPONSES_DIR=herbie_responses/special_cases
+
+# Buzzer
+BUZZER_PIN=2
+BUZZER_BEEP_COUNT=2
+BUZZER_BEEP_ON_SECONDS=0.1
+BUZZER_BEEP_OFF_SECONDS=0.1
 
 # Smart lights (IP addresses - sensitive)
 KITCHEN_BULB_IP=
 BULB1_IP=
 BULB2_IP=
 BULB3_IP=
+DEFAULT_LIGHT_BRIGHTNESS=128
+FREAK_MODE_SONG_PATH=songs/careless_whisper.wav
 
 # Logging
 LOG_LEVEL=INFO

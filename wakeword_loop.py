@@ -5,6 +5,11 @@ import logging
 import time
 import os
 
+WAKEWORD_PATH = os.getenv(
+    "WAKEWORD_PATH",
+    "herbie_wakewords/Hey-Herbie_en_raspberry-pi_v4_0_0.ppn",
+)
+WAKEWORD_LOG_INTERVAL_SECONDS = float(os.getenv("WAKEWORD_LOG_INTERVAL_SECONDS", 5.0))
 
 def initialize_wakeword_loop():
     # Ensure porcupine access token is set
@@ -19,7 +24,7 @@ def initialize_wakeword_loop():
             logging.info(f"Default input device: {device['name']} (ID: {idx})")
 
     # Initialize Porcupine wake word detection
-    porcupine = pvporcupine.create(access_key=ACCESS_TOKEN, keyword_paths=['herbie_wakewords/Hey-Herbie_en_raspberry-pi_v4_0_0.ppn'])
+    porcupine = pvporcupine.create(access_key=ACCESS_TOKEN, keyword_paths=[WAKEWORD_PATH])
 
     # Initialize audio stream which model checks for wake word. 
     stream = sd.InputStream(samplerate=porcupine.sample_rate,
@@ -43,6 +48,6 @@ def initialize_wakeword_loop():
             stream.stop()
             stream.close()
             return True
-        elif time.time() - last_wakeword_not_detected_time > 5:  # Log every 5 seconds if no wake word detected
+        elif time.time() - last_wakeword_not_detected_time > WAKEWORD_LOG_INTERVAL_SECONDS:
             logging.debug("No wake word detected in this frame.")   
             last_wakeword_not_detected_time = time.time()

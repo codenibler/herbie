@@ -4,6 +4,7 @@ import wave
 import sys
 import os
 
+from helpers.audio_output import build_wav_playback_command, cleanup_temp_wav, prepend_silence_to_wav
 from pathlib import Path
 from dotenv import load_dotenv
 from piper import PiperVoice, SynthesisConfig
@@ -28,20 +29,24 @@ def read_out_response(text: str):
     with wave.open(str(out_wav), "wb") as wav_file:
         voice.synthesize_wav(text, wav_file)
 
-    logging.info("Playing audio via pipewire...")
-
-    if os.getenv("USE_BLUETOOTH_SPEAKER") == True:
-        subprocess.run(["pw-play", str(out_wav)], check=False)
-    else:
-        subprocess.run(["aplay", str(out_wav)], check=False)
+    padded_wav = prepend_silence_to_wav(out_wav)
+    try:
+        playback_command = build_wav_playback_command(padded_wav)
+        logging.info(f"Playing audio via preferred USB Audio output: {' '.join(playback_command)}")
+        subprocess.run(playback_command, check=False)
+    finally:
+        cleanup_temp_wav(padded_wav)
 
 
 
 def read_out_response_from_file(file_path: str):
-    if os.getenv("USE_BLUETOOTH_SPEAKER") == True:
-        subprocess.run(["pw-play", file_path], check=False)
-    else:
-        subprocess.run(["aplay", file_path], check=False)
+    padded_wav = prepend_silence_to_wav(file_path)
+    try:
+        playback_command = build_wav_playback_command(padded_wav)
+        logging.info(f"Playing audio file via preferred USB Audio output: {' '.join(playback_command)}")
+        subprocess.run(playback_command, check=False)
+    finally:
+        cleanup_temp_wav(padded_wav)
 
 
 if __name__ == "__main__":

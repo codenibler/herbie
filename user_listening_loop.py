@@ -1,13 +1,25 @@
 import sounddevice as sd
 import numpy as np
 import logging
+import asyncio
 import time
 import wave
 import io
 import os
 
+CALIBRATION_DURATION_SECONDS = float(os.getenv("CALIBRATION_DURATION_SECONDS", 5.0))
+LISTENING_SAMPLE_RATE = int(os.getenv("LISTENING_SAMPLE_RATE", 16000))
+LISTENING_CHANNELS = int(os.getenv("LISTENING_CHANNELS", 2))
+LISTENING_BLOCK_SIZE = int(os.getenv("LISTENING_BLOCK_SIZE", 1024))
+MAX_RECORDING_DURATION_SECONDS = float(os.getenv("MAX_RECORDING_DURATION_SECONDS", 100.0))
+
 """ Recalibrates ambient noise to set silence threshold to finish user input recording """
-def calibrate_ambient_noise(duration: float = 5.0, samplerate: int = 16000, channels: int = 2, blocksize: int = 1024) -> float:
+def calibrate_ambient_noise(
+    duration: float = CALIBRATION_DURATION_SECONDS,
+    samplerate: int = LISTENING_SAMPLE_RATE,
+    channels: int = LISTENING_CHANNELS,
+    blocksize: int = LISTENING_BLOCK_SIZE,
+) -> float:
     logging.info("Calibrating ambient noise level... ")
     stream = sd.InputStream(samplerate=samplerate, channels=channels, dtype='int16', blocksize=blocksize)
     try:
@@ -30,6 +42,21 @@ def calibrate_ambient_noise(duration: float = 5.0, samplerate: int = 16000, chan
         stream.stop()
         stream.close()
 
+
+async def calibrate_ambient_noise_async(
+    duration: float = CALIBRATION_DURATION_SECONDS,
+    samplerate: int = LISTENING_SAMPLE_RATE,
+    channels: int = LISTENING_CHANNELS,
+    blocksize: int = LISTENING_BLOCK_SIZE,
+) -> float:
+    return await asyncio.to_thread(
+        calibrate_ambient_noise,
+        duration,
+        samplerate,
+        channels,
+        blocksize,
+    )
+
 """Compute RMS energy for a chunk of Mono audio"""
 def mono_to_rms16(mono_chunk: np.ndarray) -> float:
     x = mono_chunk.astype(np.float32)
@@ -50,12 +77,12 @@ def stereo_to_mono(chunk: np.ndarray) -> np.ndarray:
 
 """ TO DO: COMPUTE BACKGROUND ENERGY LEVEL NOT HARDCODED VALUE """
 def record_until_silence(
-    samplerate: int = 16000,
-    channels: int = 2,          # ReSpeaker hw endpoint requires 2
-    blocksize: int = 1024,
+    samplerate: int = LISTENING_SAMPLE_RATE,
+    channels: int = LISTENING_CHANNELS,
+    blocksize: int = LISTENING_BLOCK_SIZE,
     energy_threshold: float = 0,        # Set as env param 
     pause_threshold: float = 1.0,       # Seconds of silence before stop
-    max_duration: float = 100.0         # Max cap
+    max_duration: float = MAX_RECORDING_DURATION_SECONDS
 ):
     """
     Record from mic until silence exceeds pause_threshold seconds.
@@ -143,11 +170,12 @@ def record_until_silence(
 
 def listen_for_user_input():
     wav_bytes = record_until_silence(
-        samplerate=16000,
-        channels=2,
-        blocksize=1024,
+        samplerate=LISTENING_SAMPLE_RATE,
+        channels=LISTENING_CHANNELS,
+        blocksize=LISTENING_BLOCK_SIZE,
         energy_threshold=float(os.getenv("AMBIENT_NOISE_THRESHOLD", 700.0)),  # tune this
         pause_threshold=float(os.getenv("SPEECH_PAUSE_THRESHOLD", 1.0)),     # seconds of silence to stop
+        max_duration=MAX_RECORDING_DURATION_SECONDS,
     )
     if wav_bytes:
         return wav_bytes

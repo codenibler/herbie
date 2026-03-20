@@ -14,6 +14,7 @@ load_dotenv(override=True)
 CALENDAR_SCOPE = ["https://www.googleapis.com/auth/calendar.events"]
 CALENDAR_CLIENT_ID = os.getenv("CALENDAR_CLIENT_ID")
 CALENDAR_CLIENT_SECRET = os.getenv("CALENDAR_CLIENT_SECRET")
+CALENDAR_TIMEZONE = os.getenv("CALENDAR_TIMEZONE", "Europe/Amsterdam")
 client_config = {
     "installed": {
         "client_id": CALENDAR_CLIENT_ID,
@@ -51,11 +52,11 @@ def make_calendar_event(title, from_date, to_date):
         "summary": title,
         "start": {
             "dateTime": from_date,
-            "timeZone": "Europe/Amsterdam",
+            "timeZone": CALENDAR_TIMEZONE,
         },
         "end": {
             "dateTime": to_date,
-            "timeZone": "Europe/Amsterdam",
+            "timeZone": CALENDAR_TIMEZONE,
         },
     }
     created = service.events().insert(calendarId="primary", body=event).execute()

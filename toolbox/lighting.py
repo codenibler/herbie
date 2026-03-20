@@ -10,6 +10,9 @@ import asyncio
 import logging
 import os
 
+DEFAULT_LIGHT_BRIGHTNESS = int(os.getenv("DEFAULT_LIGHT_BRIGHTNESS", 128))
+FREAK_MODE_SONG_PATH = os.getenv("FREAK_MODE_SONG_PATH", "songs/careless_whisper.wav")
+
 """ TO DO: IF LIGHT SWITCH IS OFF, GRACEFULLY RESPOND: COULDN"T TURN ON CASE """
 async def kitchen_light_on():
     # Turn on the kitchen light. Requires no parameters.
@@ -19,15 +22,15 @@ async def kitchen_light_on():
     logging.info(f"Turning on kitchen light at IP: {KBULB_IP}")
     light = wizlight(KBULB_IP)
     try:
-        await light.turn_on(PilotBuilder(brightness=128))
+        await light.turn_on(PilotBuilder(brightness=DEFAULT_LIGHT_BRIGHTNESS))
         state = await light.updateState()  # Update state to ensure command was sent
         
         brightness = state.get_brightness()
-        if brightness == 128:
-            logging.info("Kitchen light brightness set to 128 successfully.")
+        if brightness == DEFAULT_LIGHT_BRIGHTNESS:
+            logging.info(f"Kitchen light brightness set to {DEFAULT_LIGHT_BRIGHTNESS} successfully.")
             return True
 
-        logging.warning("Failed to set kitchen light brightness to 128.")
+        logging.warning(f"Failed to set kitchen light brightness to {DEFAULT_LIGHT_BRIGHTNESS}.")
         return False
     finally:
         await light.async_close()
@@ -101,9 +104,9 @@ async def station_lights_on():
     light2 = wizlight(BULB2_IP)
     light3 = wizlight(BULB3_IP)
     try:
-        await light1.turn_on(PilotBuilder(brightness=128))
-        await light2.turn_on(PilotBuilder(brightness=128))
-        await light3.turn_on(PilotBuilder(brightness=128))
+        await light1.turn_on(PilotBuilder(brightness=DEFAULT_LIGHT_BRIGHTNESS))
+        await light2.turn_on(PilotBuilder(brightness=DEFAULT_LIGHT_BRIGHTNESS))
+        await light3.turn_on(PilotBuilder(brightness=DEFAULT_LIGHT_BRIGHTNESS))
         state1 = await light1.updateState() 
         state2 = await light2.updateState()  
         state3 = await light3.updateState()
@@ -111,7 +114,11 @@ async def station_lights_on():
         brightness1 = state1.get_brightness()
         brightness2 = state2.get_brightness()
         brightness3 = state3.get_brightness()
-        if brightness1 == 128 and brightness2 == 128 and brightness3 == 128:
+        if (
+            brightness1 == DEFAULT_LIGHT_BRIGHTNESS
+            and brightness2 == DEFAULT_LIGHT_BRIGHTNESS
+            and brightness3 == DEFAULT_LIGHT_BRIGHTNESS
+        ):
             logging.info("Living room lights turned on successfully.")
             return True
         
@@ -195,7 +202,7 @@ async def station_light_color(color_name: str):
     
 async def station_lights_freaky():
 
-    await play_specific_song(Path("songs/careless_whisper.wav"))
+    await play_specific_song(Path(FREAK_MODE_SONG_PATH))
 
     # Turn on the living room lights to red. 
     BULB1_IP = os.getenv("BULB1_IP")

@@ -16,6 +16,11 @@ import ollama
 import os
 import re
 
+ACK_TOOL_RESPONSES_DIR = Path(os.getenv("ACK_TOOL_RESPONSES_DIR", "herbie_responses/ack_tool"))
+TOOL_COMPLETE_RESPONSES_DIR = Path(os.getenv("TOOL_COMPLETE_RESPONSES_DIR", "herbie_responses/tool_complete"))
+SPECIAL_CASE_RESPONSES_DIR = Path(os.getenv("SPECIAL_CASE_RESPONSES_DIR", "herbie_responses/special_cases"))
+APP_TIMEZONE = os.getenv("APP_TIMEZONE", "Europe/Amsterdam")
+
 TOOL_MAP = {
     "turn_everything_off": lighting.turn_everything_off,
     "turn_everything_on": lighting.turn_everything_on,
@@ -30,6 +35,8 @@ TOOL_MAP = {
     "play_random_songs": music.play_random_songs,
     "play_specific_song": music.play_specific_song,
     "stop_music": music.stop_music,
+    "start_timer": timer.start_timer,
+    "stop_timer": timer.stop_timer,
 
 }
 CANON = {
@@ -46,15 +53,17 @@ def ollama_query(user_text):
     if tool is not None:
         logging.info(tool)
         if lighting.station_lights_freaky not in tool: # Special case, own response
-            ack_tool_dir = Path("herbie_responses/ack_tool")
-            herbie_random_ack_response = random.choice(os.listdir(ack_tool_dir))
-            read_out_response_from_file(ack_tool_dir / herbie_random_ack_response)
+            herbie_random_ack_response = random.choice(os.listdir(ACK_TOOL_RESPONSES_DIR))
+            read_out_response_from_file(ACK_TOOL_RESPONSES_DIR / herbie_random_ack_response)
             logging.info(f"Tool ack response {herbie_random_ack_response}")
         response = ollama.chat(model=MODEL, messages=[{'role': 'user', 'content':user_text}], tools=tool)  
         logging.info(f"Selected tool for this query: {tool}")
         logging.info(f"Ollama response: {response['message']['content']}")
         if 'tool_calls' in response["message"]:
-            execute_tool_calls(response['message']['tool_calls'])
+            clarification_message = execute_tool_calls(response['message']['tool_calls'])
+            if clarification_message is not None:
+                logging.info(f"Tool clarification requested: {clarification_message}")
+                return clarification_message
     else:
         response = ollama.chat(model=MODEL, messages=[{'role': 'user', 'content':user_text}])  
     
@@ -87,6 +96,13 @@ def determine_relevent_tool(user_text):
         user_text += f"If user wants specific song choice, select from the following options: {song_paths}, and send the full path as the parameter. Otherwise, call play_random_songs with no parameters"
         return [music.play_specific_song], user_text
 
+    """ TIMER """
+    if words_present_in_text(["stop", "timer"], user_text.lower()) or words_present_in_text(["cancel", "timer"], user_text.lower()) or words_present_in_text(["end", "timer"], user_text.lower()):
+        return [timer.stop_timer], user_text
+    if one_word_present_in_text(["timer", "countdown"], user_text.lower()):
+        user_text += " If the user wants to start a timer, call start_timer with duration_seconds as a positive integer. Convert minutes or hours into total seconds before calling the tool. If the user wants to stop or cancel a timer, call stop_timer."
+        return [timer.start_timer, timer.stop_timer], user_text
+
     """ LIVING ROOM LIGHTING """
     if words_present_in_text(["station", "on"], user_text.lower()):
         user_text += "Use the station_lights_on tool"
@@ -102,14 +118,14 @@ def determine_relevent_tool(user_text):
         return [lighting.station_light_color], user_text # Let herbie know specific color options. 
     elif words_present_in_text(["freaky"], user_text.lower()):
         user_text += "Use the station_lights_freaky tool"
-        read_out_response_from_file(Path("herbie_responses/special_cases/just_how_i_like_it.wav"))
+        read_out_response_from_file(SPECIAL_CASE_RESPONSES_DIR / "just_how_i_like_it.wav")
         return [lighting.station_lights_freaky], user_text 
     elif words_present_in_text(["station"], user_text.lower()):
         return [lighting.station_lights_on, lighting.station_lights_off, lighting.station_light_brightness, lighting.station_light_color], user_text
 
     """ GOOGLE CALENDAR """
     if one_word_present_in_text(["schedule", "event"], user_text):
-        now = datetime.now(ZoneInfo("Europe/Amsterdam")).isoformat(timespec="seconds")
+        now = datetime.now(ZoneInfo(APP_TIMEZONE)).isoformat(timespec="seconds")
         user_text += f"Generate a short event title. to_date and from_dates should be in RFC3339 timestamps, \
                         like this example. YYYY-MM-DDTHH:MM:SS±HH:MM. Right now, it is: {now}. If to_date is not mentioned by user, assume 1 hour after from_date"
         return [gcalendar.make_calendar_event], user_text
@@ -170,9 +186,28 @@ def validate_tool_call_arguments(function, function_args):
 
     return sanitized_args, missing_required_args, stripped_args
 
+def _humanize_parameter_name(parameter_name: str) -> str:
+    return parameter_name.replace("_", " ")
+
+def build_tool_clarification_message(function_name, missing_required_args, stripped_args):
+    function_name_human = function_name.replace("_", " ")
+    details = []
+
+    if missing_required_args:
+        missing_human = ", ".join(_humanize_parameter_name(arg) for arg in missing_required_args)
+        details.append(f"I still need {missing_human}")
+
+    if stripped_args:
+        stripped_human = ", ".join(_humanize_parameter_name(arg) for arg in stripped_args.keys())
+        details.append(f"I could not use {stripped_human}")
+
+    if not details:
+        return None
+
+    return f"I need a bit more detail to {function_name_human}. {' '.join(details)}. Please try again with that information."
+
 def execute_tool_calls(tool_calls):
-    tool_complete_dir = Path("herbie_responses/tool_complete")
-    needs_clarification_message = False
+    clarification_messages = []
 
     for tool_call in tool_calls:
         function_name = tool_call['function']['name']
@@ -188,12 +223,17 @@ def execute_tool_calls(tool_calls):
                 logging.warning(
                     f"Stripping unsupported arguments for {function_name}: {stripped_args}"
                 )
-            if missing_required_args:
-                needs_clarification_message = True
+            if missing_required_args or stripped_args:
                 logging.warning(
                     f"Missing required arguments for {function_name}: {missing_required_args}"
                 )
-                logging.warning("TODO: add Herbie clarification message before retrying tool call.")
+                clarification_message = build_tool_clarification_message(
+                    function_name,
+                    missing_required_args,
+                    stripped_args,
+                )
+                if clarification_message is not None:
+                    clarification_messages.append(clarification_message)
                 continue
 
             logging.info(f"Executing tool: {function_name}, with arguments: {sanitized_args}")
@@ -202,10 +242,18 @@ def execute_tool_calls(tool_calls):
             else:   
                 tool_response = TOOL_MAP[function_name](**sanitized_args)  # Execute the tool function with arguments
             logging.info(f"Tool response: {tool_response}")
-            read_out_response_from_file(tool_complete_dir / random.choice(os.listdir(tool_complete_dir)))
+            read_out_response_from_file(
+                TOOL_COMPLETE_RESPONSES_DIR / random.choice(os.listdir(TOOL_COMPLETE_RESPONSES_DIR))
+            )
         else:
             logging.warning(f"Tool {function_name} not found in tool map.")
-    return needs_clarification_message
+            clarification_messages.append(
+                f"I could not run {function_name.replace('_', ' ')} because that tool is not available. Please try again."
+            )
+
+    if clarification_messages:
+        return " ".join(clarification_messages)
+    return None
 
 def words_present_in_text(words, text):
     tokens = re.findall(r'\b\w+\b', text.lower())  # Tokenize
@@ -235,3 +283,7 @@ def warm_up_ollama_model():
     logging.info("Warming up Ollama model...")
     ollama.generate(model=model, keep_alive=keep_alive)
     logging.info("Herbie officially warmed up")
+
+
+async def warm_up_ollama_model_async():
+    await asyncio.to_thread(warm_up_ollama_model)

@@ -1,22 +1,14 @@
 from __future__ import annotations
 
+from helpers.audio_output import build_wav_playback_command, cleanup_temp_wav, prepend_silence_to_wav
 from pathlib import Path
 from threading import Event, Lock
 from threading import Thread
 
 import asyncio
 import logging
-import os
 import random
 import subprocess
-
-
-def _use_bluetooth_speaker() -> bool:
-    return os.getenv("USE_BLUETOOTH_SPEAKER", "").strip().lower() == "true"
-
-
-def _playback_command() -> str:
-    return "pw-play" if _use_bluetooth_speaker() else "aplay"
 
 
 class MusicManager:
@@ -87,9 +79,10 @@ music_manager = MusicManager()
 MUSIC_MANAGER = music_manager
 
 
-def _watch_process_exit(process: subprocess.Popen) -> None:
+def _watch_process_exit(process: subprocess.Popen, temp_wav_path: Path | None = None) -> None:
     process.wait()
     music_manager.clear_if_current(process)
+    cleanup_temp_wav(temp_wav_path)
 
 
 async def play_random_songs() -> bool:
@@ -108,13 +101,15 @@ async def play_random_songs() -> bool:
             break
 
         logging.info(f"Playing {song_path}")
-        process = await asyncio.create_subprocess_exec(_playback_command(), str(song_path))
+        padded_song_path = prepend_silence_to_wav(song_path)
+        process = await asyncio.create_subprocess_exec(*build_wav_playback_command(padded_song_path))
         music_manager.mark_playing(song_path, process)
 
         try:
             await process.wait()
         finally:
             music_manager.clear_if_current(process)
+            cleanup_temp_wav(padded_song_path)
 
         if music_manager.stop_requested():
             break
@@ -134,9 +129,10 @@ async def play_specific_song(song_path: str) -> bool:
     music_manager.reset_stop_request()
 
     logging.info(f"Playing {song_path}")
-    process = subprocess.Popen([_playback_command(), str(song_path)])
+    padded_song_path = prepend_silence_to_wav(song_path)
+    process = subprocess.Popen(build_wav_playback_command(padded_song_path))
     music_manager.mark_playing(song_path, process)
-    Thread(target=_watch_process_exit, args=(process,), daemon=True).start()
+    Thread(target=_watch_process_exit, args=(process, padded_song_path), daemon=True).start()
     return True
 
 
