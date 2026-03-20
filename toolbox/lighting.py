@@ -4,7 +4,6 @@ from piper_tts import read_out_response
 from pywizlight import wizlight, PilotBuilder
 from datetime import datetime, timezone
 from pathlib import Path
-from time import sleep
 
 import subprocess
 import asyncio
@@ -12,6 +11,7 @@ import logging
 import os
 
 DEFAULT_LIGHT_BRIGHTNESS = int(os.getenv("DEFAULT_LIGHT_BRIGHTNESS", 128))
+LIGHT_STATE_SETTLE_SECONDS = float(os.getenv("LIGHT_STATE_SETTLE_SECONDS", 1.5))
 FREAK_MODE_SONG_PATH = os.getenv("FREAK_MODE_SONG_PATH", "songs/careless_whisper.wav")
 LIGHT_TURN_ON_FAILURE_MESSAGE = (
     "Turning on the light failed. Check if the light switch is off, and I'll try again"
@@ -26,6 +26,12 @@ async def return_light_turn_on_failure(log_message: str, error: Exception | None
     await asyncio.to_thread(read_out_response, LIGHT_TURN_ON_FAILURE_MESSAGE)
     return False
 
+
+async def wait_for_light_state_settle() -> None:
+    if LIGHT_STATE_SETTLE_SECONDS <= 0:
+        return
+    await asyncio.sleep(LIGHT_STATE_SETTLE_SECONDS)
+
 """ TO DO: IF LIGHT SWITCH IS OFF, GRACEFULLY RESPOND: COULDN"T TURN ON CASE """
 async def kitchen_light_on():
     # Turn on the kitchen light. Requires no parameters.
@@ -36,6 +42,7 @@ async def kitchen_light_on():
     light = wizlight(KBULB_IP)
     try:
         await light.turn_on(PilotBuilder(brightness=DEFAULT_LIGHT_BRIGHTNESS))
+        await wait_for_light_state_settle()
         state = await light.updateState()  # Update state to ensure command was sent
         
         brightness = state.get_brightness()
@@ -60,6 +67,7 @@ async def kitchen_light_off():
     light = wizlight(KBULB_IP)
     try:
         await light.turn_off()
+        await wait_for_light_state_settle()
         state = await light.updateState()  # Update state to ensure command was sent
         
         brightness = state.get_brightness()
@@ -88,6 +96,7 @@ async def station_lights_off():
         await light1.turn_off()
         await light2.turn_off()
         await light3.turn_off()
+        await wait_for_light_state_settle()
         state1 = await light1.updateState() 
         state2 = await light2.updateState()  
         state3 = await light3.updateState()
@@ -123,6 +132,7 @@ async def station_lights_on():
         await light1.turn_on(PilotBuilder(brightness=DEFAULT_LIGHT_BRIGHTNESS))
         await light2.turn_on(PilotBuilder(brightness=DEFAULT_LIGHT_BRIGHTNESS))
         await light3.turn_on(PilotBuilder(brightness=DEFAULT_LIGHT_BRIGHTNESS))
+        await wait_for_light_state_settle()
         state1 = await light1.updateState() 
         state2 = await light2.updateState()  
         state3 = await light3.updateState()
@@ -163,6 +173,7 @@ async def station_light_brightness(brightness: int):
         await light1.turn_on(PilotBuilder(brightness=brightness_value))
         await light2.turn_on(PilotBuilder(brightness=brightness_value))
         await light3.turn_on(PilotBuilder(brightness=brightness_value))
+        await wait_for_light_state_settle()
         state1 = await light1.updateState() 
         state2 = await light2.updateState()  
         state3 = await light3.updateState()
@@ -205,6 +216,7 @@ async def station_light_color(color_name: str):
         await light1.turn_on(PilotBuilder(rgb=color_rgb))
         await light2.turn_on(PilotBuilder(rgb=color_rgb))
         await light3.turn_on(PilotBuilder(rgb=color_rgb))
+        await wait_for_light_state_settle()
         state1 = await light1.updateState() 
         state2 = await light2.updateState()  
         state3 = await light3.updateState()
@@ -247,6 +259,7 @@ async def station_lights_freaky():
         await light1.turn_on(PilotBuilder(rgb=color_rgb))
         await light2.turn_on(PilotBuilder(rgb=color_rgb))
         await light3.turn_on(PilotBuilder(rgb=color_rgb))
+        await wait_for_light_state_settle()
         state1 = await light1.updateState()
         state2 = await light2.updateState()
         state3 = await light3.updateState()
@@ -289,6 +302,7 @@ async def turn_everything_off():
             light3.turn_off(),
             klight.turn_off(),
         )
+        await wait_for_light_state_settle()
 
         # Update states in parallel
         state1, state2, state3, kstate = await asyncio.gather(
@@ -338,6 +352,7 @@ async def turn_everything_on():
             light3.turn_on(PilotBuilder(brightness=DEFAULT_LIGHT_BRIGHTNESS)),
             klight.turn_on(PilotBuilder(brightness=DEFAULT_LIGHT_BRIGHTNESS)),
         )
+        await wait_for_light_state_settle()
 
         # Update states in parallel
         state1, state2, state3, kstate = await asyncio.gather(
