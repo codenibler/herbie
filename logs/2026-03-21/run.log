@@ -651,3 +651,292 @@
 2026-03-21 12:16:00,350 - root - INFO - Ollama response: 
 2026-03-21 12:16:00,751 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
 2026-03-21 12:16:00,751 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-21 12:18:51,706 - root - INFO - Logger is set up.
+2026-03-21 12:18:51,707 - root - INFO - Default microphone set to: ReSpeaker Lite (Device Index: 1)
+2026-03-21 12:18:51,716 - root - INFO - Set preferred output volume to 75% on ALSA card Audio.
+2026-03-21 12:18:51,717 - root - INFO - Starting Ollama warm-up and ambient noise calibration concurrently.
+2026-03-21 12:18:51,719 - root - INFO - Warming up Ollama model...
+2026-03-21 12:18:51,719 - root - INFO - Calibrating ambient noise level... 
+2026-03-21 12:18:51,725 - root - INFO - Listening... remain quiet during ambient calibration
+2026-03-21 12:18:51,793 - root - INFO - Calibration RMS=2201.7
+2026-03-21 12:18:51,853 - root - INFO - Calibration RMS=718.9
+2026-03-21 12:18:51,917 - root - INFO - Calibration RMS=288.1
+2026-03-21 12:18:51,981 - root - INFO - Calibration RMS=277.7
+2026-03-21 12:18:51,995 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/generate "HTTP/1.1 200 OK"
+2026-03-21 12:18:51,996 - root - INFO - Herbie officially warmed up
+2026-03-21 12:18:52,045 - root - INFO - Calibration RMS=481.9
+2026-03-21 12:18:52,109 - root - INFO - Calibration RMS=369.1
+2026-03-21 12:18:52,173 - root - INFO - Calibration RMS=451.3
+2026-03-21 12:18:52,237 - root - INFO - Calibration RMS=477.0
+2026-03-21 12:18:52,301 - root - INFO - Calibration RMS=1547.2
+2026-03-21 12:18:52,365 - root - INFO - Calibration RMS=402.4
+2026-03-21 12:18:52,429 - root - INFO - Calibration RMS=217.6
+2026-03-21 12:18:52,493 - root - INFO - Calibration RMS=241.4
+2026-03-21 12:18:52,557 - root - INFO - Calibration RMS=307.6
+2026-03-21 12:18:52,621 - root - INFO - Calibration RMS=684.7
+2026-03-21 12:18:52,685 - root - INFO - Calibration RMS=2491.1
+2026-03-21 12:18:52,749 - root - INFO - Calibration RMS=8903.4
+2026-03-21 12:18:52,813 - root - INFO - Calibration RMS=10999.1
+2026-03-21 12:18:52,877 - root - INFO - Calibration RMS=5811.5
+2026-03-21 12:18:52,941 - root - INFO - Calibration RMS=2396.7
+2026-03-21 12:18:53,005 - root - INFO - Calibration RMS=684.2
+2026-03-21 12:18:53,069 - root - INFO - Calibration RMS=320.6
+2026-03-21 12:18:53,133 - root - INFO - Calibration RMS=243.2
+2026-03-21 12:18:53,197 - root - INFO - Calibration RMS=190.2
+2026-03-21 12:18:53,261 - root - INFO - Calibration RMS=3400.7
+2026-03-21 12:18:53,325 - root - INFO - Calibration RMS=8129.0
+2026-03-21 12:18:53,389 - root - INFO - Calibration RMS=7878.2
+2026-03-21 12:18:53,453 - root - INFO - Calibration RMS=13075.8
+2026-03-21 12:18:53,517 - root - INFO - Calibration RMS=10080.4
+2026-03-21 12:18:53,581 - root - INFO - Calibration RMS=6934.5
+2026-03-21 12:18:53,645 - root - INFO - Calibration RMS=4533.7
+2026-03-21 12:18:53,709 - root - INFO - Calibration RMS=6939.6
+2026-03-21 12:18:53,773 - root - INFO - Calibration RMS=4994.6
+2026-03-21 12:18:53,837 - root - INFO - Calibration RMS=4218.0
+2026-03-21 12:18:53,901 - root - INFO - Calibration RMS=2338.9
+2026-03-21 12:18:53,965 - root - INFO - Calibration RMS=992.6
+2026-03-21 12:18:54,029 - root - INFO - Calibration RMS=4311.7
+2026-03-21 12:18:54,093 - root - INFO - Calibration RMS=4692.0
+2026-03-21 12:18:54,157 - root - INFO - Calibration RMS=1709.1
+2026-03-21 12:18:54,221 - root - INFO - Calibration RMS=748.9
+2026-03-21 12:18:54,285 - root - INFO - Calibration RMS=363.0
+2026-03-21 12:18:54,349 - root - INFO - Calibration RMS=306.4
+2026-03-21 12:18:54,413 - root - INFO - Calibration RMS=442.2
+2026-03-21 12:18:54,477 - root - INFO - Calibration RMS=350.8
+2026-03-21 12:18:54,541 - root - INFO - Calibration RMS=337.4
+2026-03-21 12:18:54,605 - root - INFO - Calibration RMS=179.4
+2026-03-21 12:18:54,669 - root - INFO - Calibration RMS=154.0
+2026-03-21 12:18:54,733 - root - INFO - Calibration RMS=905.0
+2026-03-21 12:18:54,797 - root - INFO - Calibration RMS=1634.3
+2026-03-21 12:18:54,861 - root - INFO - Calibration RMS=532.1
+2026-03-21 12:18:54,925 - root - INFO - Calibration RMS=260.8
+2026-03-21 12:18:54,989 - root - INFO - Calibration RMS=218.8
+2026-03-21 12:18:55,053 - root - INFO - Calibration RMS=114.9
+2026-03-21 12:18:55,117 - root - INFO - Calibration RMS=96.1
+2026-03-21 12:18:55,181 - root - INFO - Calibration RMS=123.0
+2026-03-21 12:18:55,245 - root - INFO - Calibration RMS=343.8
+2026-03-21 12:18:55,309 - root - INFO - Calibration RMS=1021.0
+2026-03-21 12:18:55,373 - root - INFO - Calibration RMS=475.4
+2026-03-21 12:18:55,437 - root - INFO - Calibration RMS=715.4
+2026-03-21 12:18:55,501 - root - INFO - Calibration RMS=1158.2
+2026-03-21 12:18:55,565 - root - INFO - Calibration RMS=685.2
+2026-03-21 12:18:55,630 - root - INFO - Calibration RMS=574.6
+2026-03-21 12:18:55,693 - root - INFO - Calibration RMS=495.8
+2026-03-21 12:18:55,757 - root - INFO - Calibration RMS=328.0
+2026-03-21 12:18:55,821 - root - INFO - Calibration RMS=243.0
+2026-03-21 12:18:55,886 - root - INFO - Calibration RMS=235.1
+2026-03-21 12:18:55,949 - root - INFO - Calibration RMS=463.5
+2026-03-21 12:18:56,013 - root - INFO - Calibration RMS=220.7
+2026-03-21 12:18:56,078 - root - INFO - Calibration RMS=157.4
+2026-03-21 12:18:56,142 - root - INFO - Calibration RMS=149.8
+2026-03-21 12:18:56,206 - root - INFO - Calibration RMS=133.3
+2026-03-21 12:18:56,270 - root - INFO - Calibration RMS=139.0
+2026-03-21 12:18:56,334 - root - INFO - Calibration RMS=124.6
+2026-03-21 12:18:56,398 - root - INFO - Calibration RMS=135.2
+2026-03-21 12:18:56,462 - root - INFO - Calibration RMS=103.8
+2026-03-21 12:18:56,526 - root - INFO - Calibration RMS=118.9
+2026-03-21 12:18:56,590 - root - INFO - Calibration RMS=709.4
+2026-03-21 12:18:56,654 - root - INFO - Calibration RMS=756.5
+2026-03-21 12:18:56,718 - root - INFO - Calibration RMS=1042.4
+2026-03-21 12:18:56,782 - root - INFO - Calibration RMS=558.1
+2026-03-21 12:18:56,782 - root - INFO - Calibrated ambient noise level: 1807.5
+2026-03-21 12:18:56,785 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-21 12:18:56,785 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-21 12:19:00,780 - root - INFO - Selected Herbie response: hey_boss.wav, reading it out.
+2026-03-21 12:19:00,804 - root - INFO - Playing audio file via preferred USB Audio output: aplay -D plughw:CARD=Audio,DEV=0 /tmp/hey_boss_prefixed_0gxbwagm.wav
+2026-03-21 12:19:01,948 - root - INFO - Listening... speak now
+2026-03-21 12:19:14,174 - root - INFO - Speech started (noise_floor=114.8, start_threshold=294.8, end_threshold=204.8)
+2026-03-21 12:19:16,414 - root - INFO - Adaptive silence threshold reached, stopping (quiet_frames=24, silence_since_strong=2.11s, noise_floor=92.9, speech_peak=3844.6)
+2026-03-21 12:19:16,416 - root - INFO - Saved user input WAV to user_input_temp/user_input_1774091956.wav
+2026-03-21 12:19:17,657 - root - INFO - Transcription result: What time is it?
+2026-03-21 12:19:17,658 - root - INFO - Responding locally to time query: It is 12:19 PM.
+2026-03-21 12:19:17,989 - root - INFO - Playing audio via preferred USB Audio output: aplay -D plughw:CARD=Audio,DEV=0 /tmp/It is 12:19 PM._prefixed_aokkjn1t.wav
+2026-03-21 12:19:20,160 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-21 12:19:20,161 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-21 12:19:23,101 - root - INFO - Selected Herbie response: hey_boss.wav, reading it out.
+2026-03-21 12:19:23,102 - root - INFO - Playing audio file via preferred USB Audio output: aplay -D plughw:CARD=Audio,DEV=0 /tmp/hey_boss_prefixed_if7yccdx.wav
+2026-03-21 12:19:24,248 - root - INFO - Listening... speak now
+2026-03-21 12:19:38,010 - root - INFO - Speech started (noise_floor=412.2, start_threshold=989.2, end_threshold=556.4)
+2026-03-21 12:19:54,651 - root - INFO - Adaptive silence threshold reached, stopping (quiet_frames=24, silence_since_strong=1.86s, noise_floor=384.5, speech_peak=1679.3)
+2026-03-21 12:19:54,653 - root - INFO - Saved user input WAV to user_input_temp/user_input_1774091994.wav
+2026-03-21 12:19:56,186 - root - INFO - Transcription result: Can you set a timer for 10 seconds?
+2026-03-21 12:19:56,186 - root - INFO - [<function start_timer at 0x7fff53254a40>, <function stop_timer at 0x7fff53254fe0>, <function get_timer_remaining at 0x7fff53255080>]
+2026-03-21 12:19:56,188 - root - INFO - Playing audio file via preferred USB Audio output: aplay -D plughw:CARD=Audio,DEV=0 /tmp/checking_prefixed_ky6cu6uo.wav
+2026-03-21 12:19:57,077 - root - INFO - Tool ack response checking.wav
+2026-03-21 12:20:28,989 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2026-03-21 12:20:28,989 - root - INFO - Selected tool for this query: [<function start_timer at 0x7fff53254a40>, <function stop_timer at 0x7fff53254fe0>, <function get_timer_remaining at 0x7fff53255080>]
+2026-03-21 12:20:28,990 - root - INFO - Ollama response: 
+2026-03-21 12:20:28,990 - root - INFO - Executing tool: start_timer, with arguments: {'duration_seconds': 10}
+2026-03-21 12:20:28,990 - root - INFO - TimerManager received stop request, but no timer is running.
+2026-03-21 12:20:28,990 - root - INFO - Starting timer for 10 seconds.
+2026-03-21 12:20:28,990 - root - INFO - Tool response: True
+2026-03-21 12:20:28,991 - root - INFO - Playing audio file via preferred USB Audio output: aplay -D plughw:CARD=Audio,DEV=0 /tmp/success_circuits_glowing_prefixed_ama7o6vh.wav
+2026-03-21 12:20:31,881 - root - INFO - Ollama response: 
+2026-03-21 12:20:32,282 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-21 12:20:32,282 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-21 12:20:38,990 - root - INFO - Timer finished. Playing timer completion sound.
+2026-03-21 12:20:38,991 - root - INFO - Playing timer completion sound: herbie_responses/timer_complete/cant_tell_me_nothing_kanye.wav
+2026-03-21 12:20:39,088 - root - INFO - Playing audio file via preferred USB Audio output: aplay -D plughw:CARD=Audio,DEV=0 /tmp/cant_tell_me_nothing_kanye_prefixed_dxxcwry7.wav
+2026-03-21 12:21:02,956 - root - INFO - Set preferred output volume to 20% on ALSA card Audio.
+2026-03-21 12:21:02,957 - root - INFO - Faded preferred output volume from 75% to 20% in 350 ms.
+2026-03-21 12:21:02,958 - root - INFO - Ducked preferred output volume from 75% to 20% while listening.
+2026-03-21 12:21:02,958 - root - INFO - Background playback detected. Skipping greeting while output is ducked.
+2026-03-21 12:21:02,961 - root - INFO - Listening... speak now
+2026-03-21 12:21:03,922 - root - INFO - Speech started (noise_floor=1035.4, start_threshold=2485.0, end_threshold=1397.8)
+2026-03-21 12:21:05,778 - root - INFO - Adaptive silence threshold reached, stopping (quiet_frames=24, silence_since_strong=1.60s, noise_floor=368.0, speech_peak=3412.1)
+2026-03-21 12:21:05,781 - root - INFO - Saved user input WAV to user_input_temp/user_input_1774092065.wav
+2026-03-21 12:21:07,093 - root - INFO - Transcription result: Self-tiger.
+2026-03-21 12:21:07,102 - root - INFO - Set preferred output volume to 75% on ALSA card Audio.
+2026-03-21 12:21:07,103 - root - INFO - Restored preferred output volume to 75%.
+2026-03-21 12:21:07,104 - root - INFO - No relevant tool found for this query.
+2026-03-21 12:21:19,542 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2026-03-21 12:21:19,542 - root - INFO - Ollama response: I assume you meant "Self-tuning tiger," but I'm not sure what you're asking for. Could you provide more context or a specific schema for the tools you're using?
+2026-03-21 12:21:20,887 - root - INFO - Playing audio via preferred USB Audio output: aplay -D plughw:CARD=Audio,DEV=0 /tmp/I assume you meant "_prefixed_wpi5ki8u.wav
+2026-03-21 12:21:21,290 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-21 12:21:21,290 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-21 12:21:24,626 - root - INFO - Set preferred output volume to 20% on ALSA card Audio.
+2026-03-21 12:21:24,627 - root - INFO - Faded preferred output volume from 75% to 20% in 350 ms.
+2026-03-21 12:21:24,627 - root - INFO - Ducked preferred output volume from 75% to 20% while listening.
+2026-03-21 12:21:24,628 - root - INFO - Background playback detected. Skipping greeting while output is ducked.
+2026-03-21 12:21:24,631 - root - INFO - Listening... speak now
+2026-03-21 12:21:25,847 - root - INFO - Speech started (noise_floor=997.2, start_threshold=2393.3, end_threshold=1346.2)
+2026-03-21 12:21:27,511 - root - INFO - Adaptive silence threshold reached, stopping (quiet_frames=24, silence_since_strong=1.60s, noise_floor=468.1, speech_peak=4960.4)
+2026-03-21 12:21:27,518 - root - INFO - Saved user input WAV to user_input_temp/user_input_1774092087.wav
+2026-03-21 12:21:28,629 - root - INFO - Transcription result: Stop!
+2026-03-21 12:21:28,638 - root - INFO - Set preferred output volume to 75% on ALSA card Audio.
+2026-03-21 12:21:28,638 - root - INFO - Restored preferred output volume to 75%.
+2026-03-21 12:21:28,639 - root - INFO - No relevant tool found for this query.
+2026-03-21 12:21:39,272 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2026-03-21 12:21:39,273 - root - INFO - Ollama response: I'm afraid I don't know what to stop. Could you please clarify? I'm here to assist you, but I need more information on what or where to stop.
+2026-03-21 12:21:40,497 - root - INFO - Playing audio via preferred USB Audio output: aplay -D plughw:CARD=Audio,DEV=0 /tmp/I'm afraid I don't k_prefixed_22g3h2yu.wav
+2026-03-21 12:21:40,901 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-21 12:21:40,902 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-21 12:21:44,967 - root - INFO - Set preferred output volume to 20% on ALSA card Audio.
+2026-03-21 12:21:44,967 - root - INFO - Faded preferred output volume from 75% to 20% in 350 ms.
+2026-03-21 12:21:44,968 - root - INFO - Ducked preferred output volume from 75% to 20% while listening.
+2026-03-21 12:21:44,969 - root - INFO - Background playback detected. Skipping greeting while output is ducked.
+2026-03-21 12:21:44,972 - root - INFO - Listening... speak now
+2026-03-21 12:21:45,996 - root - INFO - Speech started (noise_floor=1515.1, start_threshold=3636.3, end_threshold=2045.4)
+2026-03-21 12:21:50,285 - root - INFO - Adaptive silence threshold reached, stopping (quiet_frames=24, silence_since_strong=2.50s, noise_floor=1171.1, speech_peak=3332.1)
+2026-03-21 12:21:50,299 - root - INFO - Saved user input WAV to user_input_temp/user_input_1774092110.wav
+2026-03-21 12:21:51,506 - root - INFO - Transcription result: Stop the time move.
+2026-03-21 12:21:51,514 - root - INFO - Set preferred output volume to 75% on ALSA card Audio.
+2026-03-21 12:21:51,514 - root - INFO - Restored preferred output volume to 75%.
+2026-03-21 12:21:51,517 - root - INFO - No relevant tool found for this query.
+2026-03-21 12:21:59,925 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2026-03-21 12:21:59,926 - root - INFO - Ollama response: Sorry, I don't have a function to control time directly. Perhaps you meant to ask how I can assist with something else?
+2026-03-21 12:22:01,327 - root - INFO - Playing audio via preferred USB Audio output: aplay -D plughw:CARD=Audio,DEV=0 /tmp/Sorry, I don't have _prefixed_q21o13z5.wav
+2026-03-21 12:22:01,731 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-21 12:22:01,732 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-21 12:22:24,782 - root - INFO - Set preferred output volume to 20% on ALSA card Audio.
+2026-03-21 12:22:24,782 - root - INFO - Faded preferred output volume from 75% to 20% in 350 ms.
+2026-03-21 12:22:24,783 - root - INFO - Ducked preferred output volume from 75% to 20% while listening.
+2026-03-21 12:22:24,783 - root - INFO - Background playback detected. Skipping greeting while output is ducked.
+2026-03-21 12:22:24,787 - root - INFO - Listening... speak now
+2026-03-21 12:22:38,292 - root - INFO - Speech started (noise_floor=191.1, start_threshold=458.7, end_threshold=281.1)
+2026-03-21 12:22:40,276 - root - INFO - Adaptive silence threshold reached, stopping (quiet_frames=24, silence_since_strong=1.54s, noise_floor=218.0, speech_peak=218.7)
+2026-03-21 12:22:40,279 - root - INFO - Saved user input WAV to user_input_temp/user_input_1774092160.wav
+2026-03-21 12:22:41,421 - root - INFO - Transcription result: (audience laughing)
+2026-03-21 12:22:41,430 - root - INFO - Set preferred output volume to 75% on ALSA card Audio.
+2026-03-21 12:22:41,430 - root - INFO - Restored preferred output volume to 75%.
+2026-03-21 12:22:41,431 - root - INFO - No relevant tool found for this query.
+2026-03-21 12:22:48,974 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2026-03-21 12:22:48,975 - root - INFO - Ollama response: Ah, the classic "ahah" moment. Must be something I can help you with, AI-style.
+2026-03-21 12:22:49,665 - root - INFO - Playing audio via preferred USB Audio output: aplay -D plughw:CARD=Audio,DEV=0 /tmp/Ah, the classic "aha_prefixed_8qegkrhp.wav
+2026-03-21 12:22:50,069 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-21 12:22:50,070 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-21 12:22:53,407 - root - INFO - Set preferred output volume to 20% on ALSA card Audio.
+2026-03-21 12:22:53,409 - root - INFO - Faded preferred output volume from 75% to 20% in 350 ms.
+2026-03-21 12:22:53,410 - root - INFO - Ducked preferred output volume from 75% to 20% while listening.
+2026-03-21 12:22:53,410 - root - INFO - Background playback detected. Skipping greeting while output is ducked.
+2026-03-21 12:22:53,414 - root - INFO - Listening... speak now
+2026-03-21 12:22:54,375 - root - INFO - Speech started (noise_floor=1167.6, start_threshold=2802.3, end_threshold=1576.3)
+2026-03-21 12:22:57,575 - root - INFO - Adaptive silence threshold reached, stopping (quiet_frames=24, silence_since_strong=1.66s, noise_floor=321.6, speech_peak=6872.9)
+2026-03-21 12:22:57,578 - root - INFO - Saved user input WAV to user_input_temp/user_input_1774092177.wav
+2026-03-21 12:22:58,727 - root - INFO - Transcription result: Stop the timer.
+2026-03-21 12:22:58,728 - root - INFO - MusicManager received stop request, but nothing is playing.
+2026-03-21 12:22:58,896 - root - INFO - Stopped active aplay playback processes.
+2026-03-21 12:22:58,905 - root - INFO - Set preferred output volume to 75% on ALSA card Audio.
+2026-03-21 12:22:58,905 - root - INFO - Restored preferred output volume to 75%.
+2026-03-21 12:22:59,176 - root - INFO - Playing audio via preferred USB Audio output: aplay -D plughw:CARD=Audio,DEV=0 /tmp/Okay, stopping it._prefixed_5tpffbvo.wav
+2026-03-21 12:23:01,218 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-21 12:23:01,218 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-21 12:23:03,006 - root - INFO - Selected Herbie response: how_can_I_help_today.wav, reading it out.
+2026-03-21 12:23:03,007 - root - INFO - Playing audio file via preferred USB Audio output: aplay -D plughw:CARD=Audio,DEV=0 /tmp/how_can_I_help_today_prefixed_agpx0qlm.wav
+2026-03-21 12:23:04,524 - root - INFO - Listening... speak now
+2026-03-21 12:23:05,485 - root - INFO - Speech started (noise_floor=1346.2, start_threshold=3230.8, end_threshold=1817.3)
+2026-03-21 12:23:10,605 - root - INFO - Adaptive silence threshold reached, stopping (quiet_frames=24, silence_since_strong=1.60s, noise_floor=231.6, speech_peak=1358.5)
+2026-03-21 12:23:10,614 - root - INFO - Saved user input WAV to user_input_temp/user_input_1774092190.wav
+2026-03-21 12:23:11,882 - root - INFO - Transcription result: Clay? I'm only human.
+2026-03-21 12:23:11,882 - root - INFO - No relevant tool found for this query.
+2026-03-21 12:23:19,153 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2026-03-21 12:23:19,153 - root - INFO - Ollama response: Got it, I'll keep my robotic voice to a minimum. How can I assist you today?
+2026-03-21 12:23:19,874 - root - INFO - Playing audio via preferred USB Audio output: aplay -D plughw:CARD=Audio,DEV=0 /tmp/Got it, I'll keep my_prefixed_ldizyvph.wav
+2026-03-21 12:23:24,414 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-21 12:23:24,414 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-21 12:23:56,286 - root - INFO - Selected Herbie response: how_can_I_help_today.wav, reading it out.
+2026-03-21 12:23:56,287 - root - INFO - Playing audio file via preferred USB Audio output: aplay -D plughw:CARD=Audio,DEV=0 /tmp/how_can_I_help_today_prefixed_5e2ic40b.wav
+2026-03-21 12:23:57,803 - root - INFO - Listening... speak now
+2026-03-21 12:23:58,636 - root - INFO - Speech started (noise_floor=1702.5, start_threshold=4086.0, end_threshold=2298.4)
+2026-03-21 12:24:01,709 - root - INFO - Adaptive silence threshold reached, stopping (quiet_frames=24, silence_since_strong=1.60s, noise_floor=570.8, speech_peak=4371.4)
+2026-03-21 12:24:01,711 - root - INFO - Saved user input WAV to user_input_temp/user_input_1774092241.wav
+2026-03-21 12:24:03,069 - root - INFO - Transcription result: Clay, I'm only human.
+2026-03-21 12:24:03,070 - root - INFO - No relevant tool found for this query.
+2026-03-21 12:24:13,843 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2026-03-21 12:24:13,844 - root - INFO - Ollama response: Ah, I see you're feeling the weight of human limitations. No need to bring me into it; I'm here for more complex tasks.
+2026-03-21 12:24:15,196 - root - INFO - Playing audio via preferred USB Audio output: aplay -D plughw:CARD=Audio,DEV=0 /tmp/Ah, I see you're fee_prefixed_kg5frc2u.wav
+2026-03-21 12:24:22,490 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-21 12:24:22,491 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-21 12:24:25,783 - root - INFO - Selected Herbie response: oh_good_a_human.wav, reading it out.
+2026-03-21 12:24:25,784 - root - INFO - Playing audio file via preferred USB Audio output: aplay -D plughw:CARD=Audio,DEV=0 /tmp/oh_good_a_human_prefixed_k4ptm4j4.wav
+2026-03-21 12:24:29,804 - root - INFO - Listening... speak now
+2026-03-21 12:24:30,637 - root - INFO - Speech started (noise_floor=1356.3, start_threshold=3255.2, end_threshold=1831.0)
+2026-03-21 12:24:40,814 - root - INFO - Adaptive silence threshold reached, stopping (quiet_frames=24, silence_since_strong=1.86s, noise_floor=270.3, speech_peak=1319.8)
+2026-03-21 12:24:40,816 - root - INFO - Saved user input WAV to user_input_temp/user_input_1774092280.wav
+2026-03-21 12:24:42,308 - root - INFO - Transcription result: I'm getting sick of your shit. Please play. I'm only human.
+2026-03-21 12:24:42,309 - root - INFO - [<function play_specific_song at 0x7fff5a16ab60>]
+2026-03-21 12:24:42,310 - root - INFO - Playing audio file via preferred USB Audio output: aplay -D plughw:CARD=Audio,DEV=0 /tmp/checking_prefixed_rpbc2fr_.wav
+2026-03-21 12:24:43,201 - root - INFO - Tool ack response checking.wav
+2026-03-21 12:25:27,669 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2026-03-21 12:25:27,669 - root - INFO - Selected tool for this query: [<function play_specific_song at 0x7fff5a16ab60>]
+2026-03-21 12:25:27,670 - root - INFO - Ollama response: 
+2026-03-21 12:25:27,671 - root - INFO - Executing tool: play_specific_song, with arguments: {'song_path': 'songs/im_only_human_ragnbone_man.wav'}
+2026-03-21 12:25:27,671 - root - INFO - Herbie called for specific song at songs/im_only_human_ragnbone_man.wav to be played.
+2026-03-21 12:25:27,671 - root - INFO - MusicManager received stop request, but nothing is playing.
+2026-03-21 12:25:27,671 - root - INFO - Playing songs/im_only_human_ragnbone_man.wav
+2026-03-21 12:25:27,727 - root - INFO - Tool response: True
+2026-03-21 12:25:27,728 - root - INFO - Playing audio file via preferred USB Audio output: aplay -D plughw:CARD=Audio,DEV=0 /tmp/success_circuits_glowing_prefixed_u068im5y.wav
+2026-03-21 12:25:27,731 - root - INFO - Ollama response: 
+2026-03-21 12:25:28,133 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-21 12:25:28,133 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-21 12:26:16,539 - root - INFO - Set preferred output volume to 20% on ALSA card Audio.
+2026-03-21 12:26:16,539 - root - INFO - Faded preferred output volume from 75% to 20% in 350 ms.
+2026-03-21 12:26:16,539 - root - INFO - Ducked preferred output volume from 75% to 20% while listening.
+2026-03-21 12:26:16,539 - root - INFO - Background playback detected. Skipping greeting while output is ducked.
+2026-03-21 12:26:16,543 - root - INFO - Listening... speak now
+2026-03-21 12:26:17,824 - root - INFO - Speech started (noise_floor=877.0, start_threshold=2104.8, end_threshold=1184.0)
+2026-03-21 12:26:23,584 - root - INFO - Adaptive silence threshold reached, stopping (quiet_frames=24, silence_since_strong=2.88s, noise_floor=317.9, speech_peak=4853.4)
+2026-03-21 12:26:23,595 - root - INFO - Saved user input WAV to user_input_temp/user_input_1774092383.wav
+2026-03-21 12:26:24,935 - root - INFO - Transcription result: Turn up the volume to 80%.
+2026-03-21 12:26:24,945 - root - INFO - Set preferred output volume to 75% on ALSA card Audio.
+2026-03-21 12:26:24,945 - root - INFO - Restored preferred output volume to 75%.
+2026-03-21 12:26:24,946 - root - INFO - [<function set_output_volume at 0x7fff53255120>]
+2026-03-21 12:26:24,948 - root - INFO - Playing audio file via preferred USB Audio output: aplay -D plughw:CARD=Audio,DEV=0 /tmp/already_on_it_prefixed_rm1grfor.wav
+2026-03-21 12:26:24,950 - root - INFO - Tool ack response already_on_it.wav
+2026-03-21 12:26:48,689 - httpx - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2026-03-21 12:26:48,691 - root - INFO - Selected tool for this query: [<function set_output_volume at 0x7fff53255120>]
+2026-03-21 12:26:48,691 - root - INFO - Ollama response: 
+2026-03-21 12:26:48,692 - root - INFO - Executing tool: set_output_volume, with arguments: {'volume_percent': 80}
+2026-03-21 12:26:48,692 - root - INFO - Setting preferred output volume to 80%.
+2026-03-21 12:26:48,700 - root - INFO - Set preferred output volume to 80% on ALSA card Audio.
+2026-03-21 12:26:48,700 - root - INFO - Tool response: True
+2026-03-21 12:26:48,702 - root - INFO - Playing audio file via preferred USB Audio output: aplay -D plughw:CARD=Audio,DEV=0 /tmp/done_i_deserve_a_raise_prefixed_45dr8fc9.wav
+2026-03-21 12:26:48,706 - root - INFO - Ollama response: 
+2026-03-21 12:26:49,107 - root - INFO - Wake word loop initializing... Listening for 'Hey Herbie'
+2026-03-21 12:26:49,108 - root - INFO - Default input device: ReSpeaker Lite: USB Audio (hw:2,0) (ID: 1)
+2026-03-21 12:28:04,039 - root - INFO - Set preferred output volume to 20% on ALSA card Audio.
+2026-03-21 12:28:04,041 - root - INFO - Faded preferred output volume from 80% to 20% in 350 ms.
+2026-03-21 12:28:04,042 - root - INFO - Ducked preferred output volume from 80% to 20% while listening.
+2026-03-21 12:28:04,042 - root - INFO - Background playback detected. Skipping greeting while output is ducked.
+2026-03-21 12:28:04,046 - root - INFO - Listening... speak now
+2026-03-21 12:28:09,231 - root - INFO - Speech started (noise_floor=469.3, start_threshold=1126.2, end_threshold=633.5)

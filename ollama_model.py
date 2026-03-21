@@ -4,6 +4,7 @@ from toolbox import gcalendar
 from toolbox import timer
 from toolbox import music
 from toolbox import volume
+from toolbox import background_audio
 
 from pathlib import Path
 from datetime import datetime
@@ -36,6 +37,7 @@ TOOL_MAP = {
     "play_random_songs": music.play_random_songs,
     "play_specific_song": music.play_specific_song,
     "stop_music": music.stop_music,
+    "stop_background_playback": background_audio.stop_background_playback,
     "start_timer": timer.start_timer,
     "stop_timer": timer.stop_timer,
     "get_timer_remaining": timer.get_timer_remaining,
@@ -52,6 +54,9 @@ TIME_QUERY_PATTERNS = (
     "what's the time",
     "tell me the time",
     "current time",
+)
+GENERIC_STOP_QUERY_PATTERNS = (
+    "stop",
 )
 TIMER_STATUS_QUERY_PATTERNS = (
     "time left on timer",
@@ -152,6 +157,10 @@ def is_time_query(user_text: str) -> bool:
     normalized_text = normalize_user_text(user_text)
     return any(pattern in normalized_text for pattern in TIME_QUERY_PATTERNS)
 
+def is_generic_stop_query(user_text: str) -> bool:
+    normalized_text = normalize_user_text(user_text)
+    return normalized_text in GENERIC_STOP_QUERY_PATTERNS
+
 def build_time_query_response() -> str:
     current_time = datetime.now(ZoneInfo(APP_TIMEZONE))
     formatted_time = current_time.strftime("%I:%M %p")
@@ -163,6 +172,8 @@ def is_timer_status_query(user_text: str) -> bool:
 
 def is_background_audio_stop_request(user_text: str) -> bool:
     normalized_text = normalize_user_text(user_text)
+    if normalized_text in GENERIC_STOP_QUERY_PATTERNS:
+        return True
     return any(pattern in normalized_text for pattern in BACKGROUND_AUDIO_STOP_PATTERNS)
 
 def determine_relevent_tool(user_text):
@@ -181,6 +192,14 @@ def determine_relevent_tool(user_text):
         return [lighting.kitchen_light_off], user_text
     elif one_word_present_in_text(["kitchen"], user_text.lower()):
         return [lighting.kitchen_light_off], user_text 
+
+    """ GENERIC STOP """
+    if is_generic_stop_query(user_text):
+        user_text += (
+            " The user wants to stop any background music, timer countdown, or timer"
+            " alarm audio. Call stop_background_playback."
+        )
+        return [background_audio.stop_background_playback], user_text
 
     """ MUSIC """ 
     if words_present_in_text(["stop", "music"], user_text.lower()) or words_present_in_text(["stop", "song"], user_text.lower()) or words_present_in_text(["stop", "playing"], user_text.lower()):

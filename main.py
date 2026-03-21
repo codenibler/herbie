@@ -12,9 +12,8 @@ from helpers.audio_output import (
     duck_preferred_output_volume_if_playing,
     restore_preferred_output_volume,
     set_preferred_output_volume_percent,
-    stop_active_aplay_playback,
 )
-from toolbox.music import stop_music
+from toolbox.background_audio import stop_background_playback
 from wakeword_loop import initialize_wakeword_loop
 from parse_user_input import parse_user_input
 from setup.microphone_setup import setup_default_microphone
@@ -119,13 +118,9 @@ def main():
                 continue
 
         if background_audio_ducked and is_background_audio_stop_request(user_text):
-            stopped_music = stop_music()
-            stopped_aplay = stop_active_aplay_playback()
+            stop_response = stop_background_playback()
             restore_preferred_output_volume()
-            if stopped_music or stopped_aplay:
-                read_out_response("Okay, stopping it.")
-            else:
-                read_out_response("Nothing is playing right now.")
+            read_out_response(stop_response)
             activate_buzzer()
             continue
 
