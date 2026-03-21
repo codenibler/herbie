@@ -23,6 +23,66 @@ TOOL_COMPLETE_RESPONSES_DIR = Path(os.getenv("TOOL_COMPLETE_RESPONSES_DIR", "her
 SPECIAL_CASE_RESPONSES_DIR = Path(os.getenv("SPECIAL_CASE_RESPONSES_DIR", "herbie_responses/special_cases"))
 APP_TIMEZONE = os.getenv("APP_TIMEZONE", "Europe/Amsterdam")
 
+TOOL_COMPLETION_AUDIO_MAP = {
+    "turn_everything_off": [
+        TOOL_COMPLETE_RESPONSES_DIR / "lights" / "all_off.wav",
+    ],
+    "turn_everything_on": [
+        TOOL_COMPLETE_RESPONSES_DIR / "lights" / "everythings_on.wav",
+    ],
+    "kitchen_light_on": [
+        TOOL_COMPLETE_RESPONSES_DIR / "lights" / "done_kitchens_on.wav",
+    ],
+    "kitchen_light_off": [
+        TOOL_COMPLETE_RESPONSES_DIR / "lights" / "kitchens_off.wav",
+    ],
+    "station_lights_on": [
+        TOOL_COMPLETE_RESPONSES_DIR / "lights" / "station_lights_on.wav",
+    ],
+    "station_lights_off": [
+        TOOL_COMPLETE_RESPONSES_DIR / "lights" / "stations_off.wav",
+    ],
+    "station_light_brightness": [
+        TOOL_COMPLETE_RESPONSES_DIR / "lights" / "station_lights_on.wav",
+    ],
+    "station_light_color": [
+        TOOL_COMPLETE_RESPONSES_DIR / "lights" / "station_lights_on.wav",
+    ],
+    "station_lights_freaky": [
+        TOOL_COMPLETE_RESPONSES_DIR / "lights" / "station_lights_on.wav",
+    ],
+    "play_random_songs": [
+        TOOL_COMPLETE_RESPONSES_DIR / "music" / "on_shuffle.wav",
+    ],
+    "play_specific_song": [
+        TOOL_COMPLETE_RESPONSES_DIR / "music" / "heres_your_song.wav",
+    ],
+    "stop_music": [
+        TOOL_COMPLETE_RESPONSES_DIR / "music" / "stopped.wav",
+    ],
+    "stop_background_playback": [
+        TOOL_COMPLETE_RESPONSES_DIR / "music" / "stopped.wav",
+        TOOL_COMPLETE_RESPONSES_DIR / "timer" / "timer_stopped.wav",
+        TOOL_COMPLETE_RESPONSES_DIR / "timer" / "timers_cancelled.wav",
+    ],
+    "start_timer": [
+        TOOL_COMPLETE_RESPONSES_DIR / "timer" / "timers_set.wav",
+    ],
+    "stop_timer": [
+        TOOL_COMPLETE_RESPONSES_DIR / "timer" / "timer_stopped.wav",
+        TOOL_COMPLETE_RESPONSES_DIR / "timer" / "timers_cancelled.wav",
+    ],
+    "set_output_volume": [
+        TOOL_COMPLETE_RESPONSES_DIR / "volume" / "volume_set.wav",
+        TOOL_COMPLETE_RESPONSES_DIR / "volume" / "done.wav",
+    ],
+    "make_calendar_event": [
+        TOOL_COMPLETE_RESPONSES_DIR / "calendar" / "events_in.wav",
+        TOOL_COMPLETE_RESPONSES_DIR / "calendar" / "added_to_your_calendar.wav",
+        TOOL_COMPLETE_RESPONSES_DIR / "calendar" / "done_its_on_the_schedule.wav",
+    ],
+}
+
 TOOL_MAP = {
     "turn_everything_off": lighting.turn_everything_off,
     "turn_everything_on": lighting.turn_everything_on,
@@ -336,6 +396,40 @@ def build_tool_clarification_message(function_name, missing_required_args, strip
 
     return f"I need a bit more detail to {function_name_human}. {' '.join(details)}. Please try again with that information."
 
+
+def _should_read_dynamic_tool_response(function_name: str, tool_response) -> bool:
+    if not isinstance(tool_response, str):
+        return False
+
+    if function_name == "get_timer_remaining":
+        return True
+
+    normalized_response = tool_response.lower()
+
+    if function_name == "stop_timer":
+        return "no timer running" in normalized_response or "nothing is playing" in normalized_response
+
+    if function_name == "stop_background_playback":
+        return "nothing is playing" in normalized_response
+
+    return function_name not in TOOL_COMPLETION_AUDIO_MAP
+
+
+def _play_tool_completion_audio(function_name: str) -> bool:
+    candidate_paths = TOOL_COMPLETION_AUDIO_MAP.get(function_name)
+    if not candidate_paths:
+        return False
+
+    existing_paths = [path for path in candidate_paths if path.is_file()]
+    if not existing_paths:
+        logging.warning("No completion audio files found for tool %s.", function_name)
+        return False
+
+    selected_path = random.choice(existing_paths)
+    logging.info("Playing completion audio for %s: %s", function_name, selected_path)
+    read_out_response_from_file(selected_path)
+    return True
+
 def execute_tool_calls(tool_calls):
     clarification_messages = []
 
@@ -378,13 +472,16 @@ def execute_tool_calls(tool_calls):
                     function_name,
                 )
                 continue
-            if isinstance(tool_response, str):
+
+            if _should_read_dynamic_tool_response(function_name, tool_response):
                 read_out_response(tool_response)
                 continue
 
-            read_out_response_from_file(
-                TOOL_COMPLETE_RESPONSES_DIR / random.choice(os.listdir(TOOL_COMPLETE_RESPONSES_DIR))
-            )
+            if _play_tool_completion_audio(function_name):
+                continue
+
+            if isinstance(tool_response, str):
+                read_out_response(tool_response)
         else:
             logging.warning(f"Tool {function_name} not found in tool map.")
             clarification_messages.append(

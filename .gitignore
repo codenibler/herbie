@@ -29,10 +29,9 @@ pip-wheel-metadata/
 *.tmp
 *.temp
 .lgd*
-
-*.wav
 *.json
 
+logs/
 songs/
 wav_temp/
 whisper.cpp/
