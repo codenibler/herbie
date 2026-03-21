@@ -40,7 +40,7 @@ TOOL_COMPLETION_AUDIO_MAP = {
         TOOL_COMPLETE_RESPONSES_DIR / "lights" / "station_lights_on.wav",
     ],
     "station_lights_off": [
-        TOOL_COMPLETE_RESPONSES_DIR / "lights" / "stations_off.wav",
+        TOOL_COMPLETE_RESPONSES_DIR / "lights" / "station_lights_off.wav",
     ],
     "station_light_brightness": [
         TOOL_COMPLETE_RESPONSES_DIR / "lights" / "station_lights_on.wav",
@@ -307,12 +307,8 @@ def determine_relevent_tool(user_text):
         return [lighting.station_lights_freaky], user_text 
     elif words_present_in_text(["station"], user_text.lower()):
         user_text += (
-            " If the user wants the station lights on, call station_lights_on."
-            " If the user wants the station lights off, call station_lights_off."
-            " If the user wants to change station brightness, call station_light_brightness"
-            " with brightness as an integer percent between 0 and 100."
-            f" If the user wants to change station color, call station_light_color."
-            f" Valid colors are: {sorted(list(lighting.COLORS.keys()))}."
+            "Choose the tool most fitting to the request from the following. In the case that the user wishes to change the station light colors," \
+            f"the valid colors are: {sorted(list(lighting.COLORS.keys()))}."
         )
         return [
             lighting.station_lights_on,
@@ -329,7 +325,7 @@ def determine_relevent_tool(user_text):
         return [gcalendar.make_calendar_event], user_text
 
     """ TO DO: ADD WHAT TIME DOES BUS 18 LEAVE? """
-
+    """ TO DO: SMALL WINDOW AFTER PROMPT ENDS, WHERE USER CAN FOLLOW UP WITH ANOTHER REQUEST. IF NO SPEECH< BACK TO WAKEWORD LOOP """
     # Perhaps, depending on the performance impact, add classification one-shot model to see whether or not tool is appplicable to user prompt
     # Or, whether an adequare prompt was skipped.  
 

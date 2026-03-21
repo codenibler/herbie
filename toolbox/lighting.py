@@ -32,6 +32,14 @@ async def wait_for_light_state_settle() -> None:
         return
     await asyncio.sleep(LIGHT_STATE_SETTLE_SECONDS)
 
+
+def light_is_on(state) -> bool:
+    return state is not None and state.get_state() is True
+
+
+def light_is_off(state) -> bool:
+    return state is not None and state.get_state() is False
+
 """ TO DO: IF LIGHT SWITCH IS OFF, GRACEFULLY RESPOND: COULDN"T TURN ON CASE """
 async def kitchen_light_on():
     # Turn on the kitchen light. Requires no parameters.
@@ -44,14 +52,13 @@ async def kitchen_light_on():
         await light.turn_on(PilotBuilder(brightness=DEFAULT_LIGHT_BRIGHTNESS))
         await wait_for_light_state_settle()
         state = await light.updateState()  # Update state to ensure command was sent
-        
-        brightness = state.get_brightness()
-        if brightness == DEFAULT_LIGHT_BRIGHTNESS:
-            logging.info(f"Kitchen light brightness set to {DEFAULT_LIGHT_BRIGHTNESS} successfully.")
+
+        if light_is_on(state):
+            logging.info("Kitchen light turned on successfully.")
             return True
 
         return await return_light_turn_on_failure(
-            f"Failed to set kitchen light brightness to {DEFAULT_LIGHT_BRIGHTNESS}."
+            "Failed to turn on kitchen light."
         )
     except Exception as error:
         return await return_light_turn_on_failure("Failed to turn on kitchen light.", error)
@@ -69,9 +76,8 @@ async def kitchen_light_off():
         await light.turn_off()
         await wait_for_light_state_settle()
         state = await light.updateState()  # Update state to ensure command was sent
-        
-        brightness = state.get_brightness()
-        if brightness == 0:
+
+        if light_is_off(state):
             logging.info("Kitchen light turned off successfully.")
             return True
         
@@ -101,11 +107,7 @@ async def station_lights_off():
         state2 = await light2.updateState()  
         state3 = await light3.updateState()
 
-
-        brightness1 = state1.get_brightness()
-        brightness2 = state2.get_brightness()
-        brightness3 = state3.get_brightness()
-        if brightness1 == 0 and brightness2 == 0 and brightness3 == 0:
+        if light_is_off(state1) and light_is_off(state2) and light_is_off(state3):
             logging.info("Living room lights turned off successfully.")
             return True
         
@@ -137,13 +139,10 @@ async def station_lights_on():
         state2 = await light2.updateState()  
         state3 = await light3.updateState()
 
-        brightness1 = state1.get_brightness()
-        brightness2 = state2.get_brightness()
-        brightness3 = state3.get_brightness()
         if (
-            brightness1 == DEFAULT_LIGHT_BRIGHTNESS
-            and brightness2 == DEFAULT_LIGHT_BRIGHTNESS
-            and brightness3 == DEFAULT_LIGHT_BRIGHTNESS
+            light_is_on(state1)
+            and light_is_on(state2)
+            and light_is_on(state3)
         ):
             logging.info("Living room lights turned on successfully.")
             return True
@@ -181,7 +180,14 @@ async def station_light_brightness(brightness: int):
         brightness1 = state1.get_brightness()
         brightness2 = state2.get_brightness()
         brightness3 = state3.get_brightness()
-        if brightness1 == brightness_value and brightness2 == brightness_value and brightness3 == brightness_value:
+        if (
+            light_is_on(state1)
+            and light_is_on(state2)
+            and light_is_on(state3)
+            and brightness1 == brightness_value
+            and brightness2 == brightness_value
+            and brightness3 == brightness_value
+        ):
             logging.info(f"Living room lights set to {brightness}% brightness.")
             return True
 
@@ -224,7 +230,14 @@ async def station_light_color(color_name: str):
         rgb2 = state2.get_rgb()
         rgb1 = state1.get_rgb()
         rgb3 = state3.get_rgb()
-        if rgb1 == color_rgb and rgb2 == color_rgb and rgb3 == color_rgb:
+        if (
+            light_is_on(state1)
+            and light_is_on(state2)
+            and light_is_on(state3)
+            and rgb1 == color_rgb
+            and rgb2 == color_rgb
+            and rgb3 == color_rgb
+        ):
             logging.info(f"Living room lights set to color {color_name}.")
             return True
 
@@ -267,7 +280,14 @@ async def station_lights_freaky():
         rgb2 = state2.get_rgb()
         rgb1 = state1.get_rgb()
         rgb3 = state3.get_rgb()
-        if rgb1 == color_rgb and rgb2 == color_rgb and rgb3 == color_rgb:
+        if (
+            light_is_on(state1)
+            and light_is_on(state2)
+            and light_is_on(state3)
+            and rgb1 == color_rgb
+            and rgb2 == color_rgb
+            and rgb3 == color_rgb
+        ):
             logging.info("Living room lights set to color Red.")
             return True
 
@@ -312,12 +332,12 @@ async def turn_everything_off():
             klight.updateState(),
         )
 
-        b1 = state1.get_brightness()
-        b2 = state2.get_brightness()
-        b3 = state3.get_brightness()
-        kb = kstate.get_brightness()
-
-        if b1 == 0 and b2 == 0 and b3 == 0 and kb == 0:
+        if (
+            light_is_off(state1)
+            and light_is_off(state2)
+            and light_is_off(state3)
+            and light_is_off(kstate)
+        ):
             logging.info("All bulbs turned off successfully.")
             return True
 
@@ -362,21 +382,16 @@ async def turn_everything_on():
             klight.updateState(),
         )
 
-        b1 = state1.get_brightness()
-        b2 = state2.get_brightness()
-        b3 = state3.get_brightness()
-        kb = kstate.get_brightness()
-
         if (
-            b1 == DEFAULT_LIGHT_BRIGHTNESS
-            and b2 == DEFAULT_LIGHT_BRIGHTNESS
-            and b3 == DEFAULT_LIGHT_BRIGHTNESS
-            and kb == DEFAULT_LIGHT_BRIGHTNESS
+            light_is_on(state1)
+            and light_is_on(state2)
+            and light_is_on(state3)
+            and light_is_on(kstate)
         ):
-            logging.info("All bulbs turned on to default brightness successfully.")
+            logging.info("All bulbs turned on successfully.")
             return True
 
-        return await return_light_turn_on_failure("Not all bulbs reached the target brightness.")
+        return await return_light_turn_on_failure("Not all bulbs reached the on state.")
     except Exception as error:
         return await return_light_turn_on_failure("Failed to turn everything on.", error)
     finally:
