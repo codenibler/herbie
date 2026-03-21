@@ -14,6 +14,38 @@ load_dotenv(override=True)
 voice_model_path = os.getenv("PIPER_VOICE_MODEL_PATH")
 voice = PiperVoice.load(voice_model_path) 
 
+
+def _get_optional_int_env(name: str) -> int | None:
+    value = os.getenv(name)
+    if value is None or value == "":
+        return None
+    return int(value)
+
+
+def _get_optional_float_env(name: str) -> float | None:
+    value = os.getenv(name)
+    if value is None or value == "":
+        return None
+    return float(value)
+
+
+def _get_bool_env(name: str, default: bool) -> bool:
+    value = os.getenv(name)
+    if value is None or value == "":
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def build_synthesis_config() -> SynthesisConfig:
+    return SynthesisConfig(
+        speaker_id=_get_optional_int_env("PIPER_SPEAKER_ID"),
+        length_scale=_get_optional_float_env("PIPER_LENGTH_SCALE"),
+        noise_scale=_get_optional_float_env("PIPER_NOISE_SCALE"),
+        noise_w_scale=_get_optional_float_env("PIPER_NOISE_W_SCALE"),
+        normalize_audio=_get_bool_env("PIPER_NORMALIZE_AUDIO", True),
+        volume=float(os.getenv("PIPER_VOLUME", "1.0")),
+    )
+
 def read_out_response(text: str):
 
     if text is None or len(text) == 0:
@@ -27,7 +59,7 @@ def read_out_response(text: str):
     logging.debug(f"Synthesizing response to {out_wav}...")
 
     with wave.open(str(out_wav), "wb") as wav_file:
-        voice.synthesize_wav(text, wav_file)
+        voice.synthesize_wav(text, wav_file, syn_config=build_synthesis_config())
 
     padded_wav = prepend_silence_to_wav(out_wav)
     try:
