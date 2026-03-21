@@ -60,4 +60,5 @@ def make_calendar_event(title, from_date, to_date):
         },
     }
     created = service.events().insert(calendarId="primary", body=event).execute()
-    logging.info(f"Created GCalendar Event: {created["htmlLink"]}")
+    logging.info('Created GCalendar Event: %s', created["htmlLink"])
+    return True

@@ -85,6 +85,26 @@ def _watch_process_exit(process: subprocess.Popen, temp_wav_path: Path | None = 
     cleanup_temp_wav(temp_wav_path)
 
 
+def _play_song_queue_worker(song_paths: list[Path]) -> None:
+    for song_path in song_paths:
+        if music_manager.stop_requested():
+            break
+
+        logging.info("Playing %s", song_path)
+        padded_song_path = prepend_silence_to_wav(song_path)
+        process = subprocess.Popen(build_wav_playback_command(padded_song_path))
+        music_manager.mark_playing(song_path, process)
+
+        try:
+            process.wait()
+        finally:
+            music_manager.clear_if_current(process)
+            cleanup_temp_wav(padded_song_path)
+
+        if music_manager.stop_requested():
+            break
+
+
 async def play_random_songs() -> bool:
     logging.info("Herbie requested for a general mix of songs to be played.")
 
@@ -96,24 +116,8 @@ async def play_random_songs() -> bool:
 
     music_manager.stop_playback()
     music_manager.reset_stop_request()
-    for song_path in random.sample(song_paths, k=len(song_paths)):
-        if music_manager.stop_requested():
-            break
-
-        logging.info(f"Playing {song_path}")
-        padded_song_path = prepend_silence_to_wav(song_path)
-        process = await asyncio.create_subprocess_exec(*build_wav_playback_command(padded_song_path))
-        music_manager.mark_playing(song_path, process)
-
-        try:
-            await process.wait()
-        finally:
-            music_manager.clear_if_current(process)
-            cleanup_temp_wav(padded_song_path)
-
-        if music_manager.stop_requested():
-            break
-
+    shuffled_song_paths = random.sample(song_paths, k=len(song_paths))
+    Thread(target=_play_song_queue_worker, args=(shuffled_song_paths,), daemon=True).start()
     return True
 
 
