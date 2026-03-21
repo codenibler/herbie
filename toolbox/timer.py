@@ -16,6 +16,27 @@ TIMER_COMPLETE_RESPONSES_DIR = Path(
 )
 
 
+def _format_duration(seconds: int) -> str:
+    hours, remainder = divmod(seconds, 3600)
+    minutes, remaining_seconds = divmod(remainder, 60)
+    parts: list[str] = []
+
+    if hours:
+        parts.append(f"{hours} hour{'s' if hours != 1 else ''}")
+    if minutes:
+        parts.append(f"{minutes} minute{'s' if minutes != 1 else ''}")
+    if remaining_seconds or not parts:
+        parts.append(
+            f"{remaining_seconds} second{'s' if remaining_seconds != 1 else ''}"
+        )
+
+    if len(parts) == 1:
+        return parts[0]
+    if len(parts) == 2:
+        return f"{parts[0]} and {parts[1]}"
+    return f"{parts[0]}, {parts[1]}, and {parts[2]}"
+
+
 class TimerManager:
     def __init__(self) -> None:
         self._lock = Lock()
@@ -104,6 +125,26 @@ class TimerManager:
             self._alert_pending = False
             return had_alert_pending
 
+    def get_timer_remaining(self) -> str:
+        with self._lock:
+            is_running = self._is_running
+            ends_at = self._ends_at
+            alert_pending = self._alert_pending
+
+        if not is_running or ends_at is None:
+            if alert_pending:
+                return "The timer has already finished."
+            return "There is no timer running right now."
+
+        remaining_seconds = max(0, int((ends_at - datetime.now()).total_seconds()))
+        if remaining_seconds == 0:
+            return "Less than 1 second remains on the timer."
+
+        formatted_duration = _format_duration(remaining_seconds)
+        if remaining_seconds == 1:
+            return f"There is {formatted_duration} remaining on the timer."
+        return f"There are {formatted_duration} remaining on the timer."
+
     def _play_timer_complete_sound(self) -> bool:
         if not TIMER_COMPLETE_RESPONSES_DIR.exists():
             logging.warning(
@@ -136,3 +177,8 @@ def start_timer(duration_seconds: int) -> bool:
 
 def stop_timer() -> bool:
     return timer_manager.stop_timer()
+
+
+def get_timer_remaining() -> str:
+    """Report the time remaining on the active timer."""
+    return timer_manager.get_timer_remaining()

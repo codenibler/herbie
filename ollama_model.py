@@ -1,4 +1,4 @@
-from piper_tts import read_out_response_from_file
+from piper_tts import read_out_response, read_out_response_from_file
 from toolbox import lighting
 from toolbox import gcalendar
 from toolbox import timer
@@ -38,6 +38,7 @@ TOOL_MAP = {
     "stop_music": music.stop_music,
     "start_timer": timer.start_timer,
     "stop_timer": timer.stop_timer,
+    "get_timer_remaining": timer.get_timer_remaining,
     "set_output_volume": volume.set_output_volume,
 
 }
@@ -51,6 +52,47 @@ TIME_QUERY_PATTERNS = (
     "what's the time",
     "tell me the time",
     "current time",
+)
+TIMER_STATUS_QUERY_PATTERNS = (
+    "time left on timer",
+    "time left on the timer",
+    "time left on my timer",
+    "time left on countdown",
+    "time left on the countdown",
+    "time remaining on the timer",
+    "time remaining on timer",
+    "time remaining on my timer",
+    "time remaining on countdown",
+    "time remaining on the countdown",
+    "remaining time on the timer",
+    "remaining time on timer",
+    "remaining time on my timer",
+    "remaining time on countdown",
+    "remaining time on the countdown",
+    "how much time is left on timer",
+    "how much time is left on the timer",
+    "how much time is left on my timer",
+    "how much time is left on countdown",
+    "how much time is left on the countdown",
+    "how much time remains on timer",
+    "how much time remains on the timer",
+    "how much time remains on my timer",
+    "how much time remains on countdown",
+    "how much time remains on the countdown",
+    "how long is left on timer",
+    "how long is left on the timer",
+    "how long is left on my timer",
+    "how long is left on countdown",
+    "how long is left on the countdown",
+    "how long left on timer",
+    "how long left on the timer",
+    "how long left on my timer",
+    "how long left on countdown",
+    "how long left on the countdown",
+    "when does the timer end",
+    "when will the timer end",
+    "when does the countdown end",
+    "when will the countdown end",
 )
 BACKGROUND_AUDIO_STOP_PATTERNS = (
     "stop it",
@@ -105,6 +147,10 @@ def build_time_query_response() -> str:
     formatted_time = current_time.strftime("%I:%M %p")
     return f"It is {formatted_time}."
 
+def is_timer_status_query(user_text: str) -> bool:
+    normalized_text = normalize_user_text(user_text)
+    return any(pattern in normalized_text for pattern in TIMER_STATUS_QUERY_PATTERNS)
+
 def is_background_audio_stop_request(user_text: str) -> bool:
     normalized_text = normalize_user_text(user_text)
     return any(pattern in normalized_text for pattern in BACKGROUND_AUDIO_STOP_PATTERNS)
@@ -136,11 +182,23 @@ def determine_relevent_tool(user_text):
         return [music.play_specific_song], user_text
 
     """ TIMER """
+    if is_timer_status_query(user_text):
+        user_text += (
+            " The user wants to know how much time is left on the active timer."
+            " Call get_timer_remaining."
+        )
+        return [timer.get_timer_remaining], user_text
     if words_present_in_text(["stop", "timer"], user_text.lower()) or words_present_in_text(["cancel", "timer"], user_text.lower()) or words_present_in_text(["end", "timer"], user_text.lower()):
         return [timer.stop_timer], user_text
     if one_word_present_in_text(["timer", "countdown"], user_text.lower()):
-        user_text += " If the user wants to start a timer, call start_timer with duration_seconds as a positive integer. Convert minutes or hours into total seconds before calling the tool. If the user wants to stop or cancel a timer, call stop_timer."
-        return [timer.start_timer, timer.stop_timer], user_text
+        user_text += (
+            " If the user wants to start a timer, call start_timer with duration_seconds"
+            " as a positive integer. Convert minutes or hours into total seconds before"
+            " calling the tool. If the user wants to stop or cancel a timer, call"
+            " stop_timer. If the user wants to know how much time is left on the active"
+            " timer, call get_timer_remaining."
+        )
+        return [timer.start_timer, timer.stop_timer, timer.get_timer_remaining], user_text
 
     """ SPEAKER VOLUME """
     if one_word_present_in_text(["volume"], user_text.lower()):
@@ -173,10 +231,6 @@ def determine_relevent_tool(user_text):
         user_text += f"Generate a short event title. to_date and from_dates should be in RFC3339 timestamps, \
                         like this example. YYYY-MM-DDTHH:MM:SS±HH:MM. Right now, it is: {now}. If to_date is not mentioned by user, assume 1 hour after from_date"
         return [gcalendar.make_calendar_event], user_text
-
-    """ TO DO: ADD TIMER TOOL """
-    """ TO DO: ADD: WHAT TIME IS IT? 
-    - Should add as special case right after speech-to-text parse/ """
 
     """ TO DO: ADD WHAT TIME DOES BUS 18 LEAVE? """
 
@@ -291,6 +345,9 @@ def execute_tool_calls(tool_calls):
                     "Skipping tool completion response because %s reported failure.",
                     function_name,
                 )
+                continue
+            if isinstance(tool_response, str):
+                read_out_response(tool_response)
                 continue
 
             read_out_response_from_file(
