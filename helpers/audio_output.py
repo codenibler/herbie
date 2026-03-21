@@ -24,6 +24,7 @@ DEFAULT_WAV_LEAD_IN_GAIN = 0.02
 DEFAULT_WAKEWORD_DUCKED_VOLUME_PERCENT = 20
 DEFAULT_WAKEWORD_DUCK_FADE_DURATION_MS = 350
 DEFAULT_WAKEWORD_DUCK_FADE_STEP_COUNT = 7
+DEFAULT_APLAY_STOP_WAIT_SECONDS = 0.5
 
 PCM_DTYPE_BY_SAMPLE_WIDTH = {
     1: np.uint8,
@@ -271,6 +272,11 @@ def stop_active_aplay_playback() -> bool:
         check=False,
     )
     if result.returncode == 0:
+        deadline = time.time() + float(
+            os.getenv("APLAY_STOP_WAIT_SECONDS", str(DEFAULT_APLAY_STOP_WAIT_SECONDS))
+        )
+        while time.time() < deadline and is_aplay_process_active():
+            time.sleep(0.05)
         logging.info("Stopped active aplay playback processes.")
         return True
     return False

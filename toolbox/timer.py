@@ -8,7 +8,9 @@ import logging
 import os
 import random
 
+from helpers.audio_output import stop_active_aplay_playback
 from piper_tts import read_out_response_from_file
+from toolbox.music import stop_music
 
 
 TIMER_COMPLETE_RESPONSES_DIR = Path(
@@ -175,8 +177,20 @@ def start_timer(duration_seconds: int) -> bool:
     return timer_manager.start_timer(duration_seconds)
 
 
-def stop_timer() -> bool:
-    return timer_manager.stop_timer()
+def stop_timer() -> str:
+    stopped_timer = timer_manager.stop_timer()
+    if stopped_timer:
+        return "Okay, stopping the timer."
+
+    stopped_music = stop_music()
+    stopped_aplay = stop_active_aplay_playback()
+    if stopped_music or stopped_aplay:
+        logging.info(
+            "No active timer found. Stopped background playback for timer stop request."
+        )
+        return "Okay, stopping it."
+
+    return "There is no timer running right now."
 
 
 def get_timer_remaining() -> str:
