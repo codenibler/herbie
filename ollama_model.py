@@ -158,7 +158,10 @@ def is_background_audio_stop_request(user_text: str) -> bool:
 def determine_relevent_tool(user_text):
     
     """ ALL LIGHTS """
-    if one_word_present_in_text(["everything", "every", "on"], user_text.lower()):
+    if (
+        one_word_present_in_text(["everything", "every", "all"], user_text.lower())
+        and one_word_present_in_text(["on", "off"], user_text.lower())
+    ):
         return [lighting.turn_everything_off, lighting.turn_everything_on], user_text
 
     """ KITCHEN LIGHTING """
