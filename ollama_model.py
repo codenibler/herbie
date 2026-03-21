@@ -49,7 +49,7 @@ TOOL_COMPLETION_AUDIO_MAP = {
         TOOL_COMPLETE_RESPONSES_DIR / "lights" / "station_lights_on.wav",
     ],
     "station_lights_freaky": [
-        TOOL_COMPLETE_RESPONSES_DIR / "lights" / "station_lights_on.wav",
+        SPECIAL_CASE_RESPONSES_DIR / "just_how_i_like_it.wav",
     ],
     "play_random_songs": [
         TOOL_COMPLETE_RESPONSES_DIR / "music" / "on_shuffle.wav",
@@ -243,15 +243,19 @@ def determine_relevent_tool(user_text):
         one_word_present_in_text(["everything", "every", "all"], user_text.lower())
         and one_word_present_in_text(["on", "off"], user_text.lower())
     ):
+        user_text += (
+            " If the user wants all lights on, call turn_everything_on."
+            " If the user wants all lights off, call turn_everything_off."
+        )
         return [lighting.turn_everything_off, lighting.turn_everything_on], user_text
 
     """ KITCHEN LIGHTING """
-    if words_present_in_text(["kitchen", "on"], user_text.lower()):
-        return [lighting.kitchen_light_on], user_text
-    elif words_present_in_text(["kitchen", "off"], user_text.lower()):
-        return [lighting.kitchen_light_off], user_text
-    elif one_word_present_in_text(["kitchen"], user_text.lower()):
-        return [lighting.kitchen_light_off], user_text 
+    if one_word_present_in_text(["kitchen"], user_text.lower()):
+        user_text += (
+            " If the user wants the kitchen light on, call kitchen_light_on."
+            " If the user wants the kitchen light off, call kitchen_light_off."
+        )
+        return [lighting.kitchen_light_on, lighting.kitchen_light_off], user_text
 
     """ GENERIC STOP """
     if is_generic_stop_query(user_text):
@@ -298,24 +302,24 @@ def determine_relevent_tool(user_text):
         return [volume.set_output_volume], user_text
 
     """ LIVING ROOM LIGHTING """
-    if words_present_in_text(["station", "on"], user_text.lower()):
-        user_text += "Use the station_lights_on tool"
-        return [lighting.station_lights_on], user_text
-    elif words_present_in_text(["station", "off"], user_text.lower()):
-        user_text += "Use the station_lights_off tool"
-        return [lighting.station_lights_off], user_text
-    elif words_present_in_text(["station", "brightness"], user_text.lower()):
-        user_text += "Brightness should be % value between 0 and 100." 
-        return [lighting.station_light_brightness], user_text
-    elif words_present_in_text(["station", "turn"], user_text.lower()):
-        user_text += f"Options for colors are: {sorted(list(lighting.COLORS.keys()))}"
-        return [lighting.station_light_color], user_text # Let herbie know specific color options. 
-    elif words_present_in_text(["freaky"], user_text.lower()):
+    if words_present_in_text(["freaky"], user_text.lower()):
         user_text += "Use the station_lights_freaky tool"
-        read_out_response_from_file(SPECIAL_CASE_RESPONSES_DIR / "just_how_i_like_it.wav")
         return [lighting.station_lights_freaky], user_text 
     elif words_present_in_text(["station"], user_text.lower()):
-        return [lighting.station_lights_on, lighting.station_lights_off, lighting.station_light_brightness, lighting.station_light_color], user_text
+        user_text += (
+            " If the user wants the station lights on, call station_lights_on."
+            " If the user wants the station lights off, call station_lights_off."
+            " If the user wants to change station brightness, call station_light_brightness"
+            " with brightness as an integer percent between 0 and 100."
+            f" If the user wants to change station color, call station_light_color."
+            f" Valid colors are: {sorted(list(lighting.COLORS.keys()))}."
+        )
+        return [
+            lighting.station_lights_on,
+            lighting.station_lights_off,
+            lighting.station_light_brightness,
+            lighting.station_light_color,
+        ], user_text
 
     """ GOOGLE CALENDAR """
     if one_word_present_in_text(["schedule", "event"], user_text):
