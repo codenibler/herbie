@@ -58,6 +58,9 @@ TOOL_COMPLETION_AUDIO_MAP = {
     "play_specific_song": [
         TOOL_COMPLETE_RESPONSES_DIR / "music" / "heres_your_song.wav",
     ],
+    "skip_song": [
+        TOOL_COMPLETE_RESPONSES_DIR / "music" / "playing_now.wav",
+    ],
     "stop_music": [
         TOOL_COMPLETE_RESPONSES_DIR / "music" / "stopped.wav",
     ],
@@ -97,6 +100,7 @@ TOOL_MAP = {
     "make_calendar_event": gcalendar.make_calendar_event,
     "play_random_songs": music.play_random_songs,
     "play_specific_song": music.play_specific_song,
+    "skip_song": music.skip_song,
     "stop_music": music.stop_music,
     "stop_background_playback": background_audio.stop_background_playback,
     "start_timer": timer.start_timer,
@@ -251,6 +255,7 @@ def is_background_audio_stop_request(user_text: str) -> bool:
     return any(pattern in normalized_text for pattern in BACKGROUND_AUDIO_STOP_PATTERNS)
 
 def determine_relevent_tool(user_text):
+    normalized_user_text = normalize_user_text(user_text)
     
     """ ALL LIGHTS """
     if (
@@ -280,6 +285,24 @@ def determine_relevent_tool(user_text):
         return [background_audio.stop_background_playback], user_text
 
     """ MUSIC """ 
+    if (
+        normalized_user_text in {
+            "skip",
+            "skip please",
+            "skip it",
+            "skip this",
+            "skip song",
+            "skip this song",
+            "skip track",
+            "skip this track",
+            "next",
+            "next song",
+            "next track",
+        }
+        or words_present_in_text(["skip", "song"], user_text.lower())
+        or words_present_in_text(["next", "song"], user_text.lower())
+    ):
+        return [music.skip_song], user_text
     if words_present_in_text(["stop", "music"], user_text.lower()) or words_present_in_text(["stop", "song"], user_text.lower()) or words_present_in_text(["stop", "playing"], user_text.lower()):
         return [music.stop_music], user_text
     if one_word_present_in_text(["bangers", "song", "music"], user_text.lower()):
@@ -425,6 +448,12 @@ def _should_read_dynamic_tool_response(function_name: str, tool_response) -> boo
 
     if function_name == "stop_background_playback":
         return "nothing is playing" in normalized_response
+
+    if function_name == "skip_song":
+        return (
+            "nothing is playing" in normalized_response
+            or "no other song available" in normalized_response
+        )
 
     return function_name not in TOOL_COMPLETION_AUDIO_MAP
 
