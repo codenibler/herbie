@@ -36,3 +36,7 @@ Run:
 source venv/bin/activate
 python3 main.py
 ```
+
+Local note for WS281x LED testing on Raspberry Pi 5:
+- This repo includes a local `rpi_ws281x` patch for Raspberry Pi 5 Model B Rev 1.1 boards reporting revision `d04171`, which otherwise fail with `ws2811_init failed with code -3 (Hardware revision is not supported)`.
+- Upstream reference: issue `#555` and PR `#556` in `jgarff/rpi_ws281x`.
