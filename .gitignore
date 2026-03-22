@@ -38,4 +38,6 @@ whisper.cpp/
 
 herbie_wakewords/*.ppn
 herbie_wakewords/*.bin
-
+herbie_responses/thinking_noise/source.wav
+herbie_responses/thinking_noise/clip_*.wav
+herbie_responses/thinking_noise/clip_index.txt

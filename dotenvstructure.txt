@@ -61,6 +61,11 @@ CALENDAR_TIMEZONE=Europe/Amsterdam
 # Response assets
 GREETING_RESPONSES_DIR=herbie_responses/greetings
 ACK_TOOL_RESPONSES_DIR=herbie_responses/ack_tool
+THINKING_NOISE_DIR=herbie_responses/thinking_noise
+THINKING_NOISE_CLIP_SECONDS=30
+THINKING_NOISE_FADE_MS=250
+THINKING_NOISE_GAIN=0.20
+THINKING_NOISE_STOP_MAX_WAIT_SECONDS=2.5
 TOOL_COMPLETE_RESPONSES_DIR=herbie_responses/tool_complete
 SPECIAL_CASE_RESPONSES_DIR=herbie_responses/special_cases
 TIMER_COMPLETE_RESPONSES_DIR=herbie_responses/timer_complete

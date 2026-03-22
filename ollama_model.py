@@ -5,6 +5,7 @@ from toolbox import timer
 from toolbox import music
 from toolbox import volume
 from toolbox import background_audio
+from toolbox import thinking_audio
 
 from pathlib import Path
 from datetime import datetime
@@ -189,23 +190,36 @@ def ollama_query(user_text):
     MODEL = os.getenv("OLLAMA_MODEL_NAME")
     assert MODEL is not None, "OLLAMA_MODEL_NAME environment variable not set."
 
-    tool, user_text = determine_relevent_tool(user_text)  
-    if tool is not None:
-        logging.info(tool)
-        if lighting.station_lights_freaky not in tool: # Special case, own response
-            herbie_random_ack_response = random.choice(os.listdir(ACK_TOOL_RESPONSES_DIR))
-            read_out_response_from_file(ACK_TOOL_RESPONSES_DIR / herbie_random_ack_response)
-            logging.info(f"Tool ack response {herbie_random_ack_response}")
-        response = ollama.chat(model=MODEL, messages=[{'role': 'user', 'content':user_text}], tools=tool)  
-        logging.info(f"Selected tool for this query: {tool}")
-        logging.info(f"Ollama response: {response['message']['content']}")
-        if 'tool_calls' in response["message"]:
-            clarification_message = execute_tool_calls(response['message']['tool_calls'])
-            if clarification_message is not None:
-                logging.info(f"Tool clarification requested: {clarification_message}")
-                return clarification_message
-    else:
-        response = ollama.chat(model=MODEL, messages=[{'role': 'user', 'content':user_text}])  
+    tool, user_text = determine_relevent_tool(user_text)
+    started_thinking_audio = False
+
+    try:
+        if tool is not None:
+            logging.info(tool)
+            if lighting.station_lights_freaky not in tool: # Special case, own response
+                herbie_random_ack_response = random.choice(os.listdir(ACK_TOOL_RESPONSES_DIR))
+                read_out_response_from_file(ACK_TOOL_RESPONSES_DIR / herbie_random_ack_response)
+                logging.info(f"Tool ack response {herbie_random_ack_response}")
+
+            started_thinking_audio = thinking_audio.start_thinking_audio()
+            response = ollama.chat(
+                model=MODEL,
+                messages=[{'role': 'user', 'content': user_text}],
+                tools=tool,
+            )
+            logging.info(f"Selected tool for this query: {tool}")
+            logging.info(f"Ollama response: {response['message']['content']}")
+            if 'tool_calls' in response["message"]:
+                clarification_message = execute_tool_calls(response['message']['tool_calls'])
+                if clarification_message is not None:
+                    logging.info(f"Tool clarification requested: {clarification_message}")
+                    return clarification_message
+        else:
+            started_thinking_audio = thinking_audio.start_thinking_audio()
+            response = ollama.chat(model=MODEL, messages=[{'role': 'user', 'content': user_text}])
+    finally:
+        if started_thinking_audio:
+            thinking_audio.stop_thinking_audio()
     
     logging.info(f"Ollama response: {response['message']['content']}")
     return response['message']['content']
@@ -416,6 +430,7 @@ def _should_read_dynamic_tool_response(function_name: str, tool_response) -> boo
 
 
 def _play_tool_completion_audio(function_name: str) -> bool:
+    thinking_audio.stop_thinking_audio()
     candidate_paths = TOOL_COMPLETION_AUDIO_MAP.get(function_name)
     if not candidate_paths:
         return False
@@ -474,6 +489,7 @@ def execute_tool_calls(tool_calls):
                 continue
 
             if _should_read_dynamic_tool_response(function_name, tool_response):
+                thinking_audio.stop_thinking_audio()
                 read_out_response(tool_response)
                 continue
 
@@ -481,6 +497,7 @@ def execute_tool_calls(tool_calls):
                 continue
 
             if isinstance(tool_response, str):
+                thinking_audio.stop_thinking_audio()
                 read_out_response(tool_response)
         else:
             logging.warning(f"Tool {function_name} not found in tool map.")
