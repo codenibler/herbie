@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from helpers.audio_output import build_wav_playback_command, cleanup_temp_wav
+from helpers.audio_output import (
+    build_wav_playback_command,
+    cleanup_temp_wavs,
+    prepare_wav_for_output_channel_mode,
+)
 from pathlib import Path
 from threading import Event, Lock, Thread
 
@@ -224,11 +228,12 @@ class ThinkingAudioManager:
             return
 
         process: subprocess.Popen | None = None
+        playback_clip_path = prepare_wav_for_output_channel_mode(temp_clip_path)
         try:
             if self._stop_requested.is_set():
                 return
 
-            process = subprocess.Popen(build_wav_playback_command(temp_clip_path))
+            process = subprocess.Popen(build_wav_playback_command(playback_clip_path))
             with self._lock:
                 self._current_process = process
             process.wait()
@@ -236,7 +241,7 @@ class ThinkingAudioManager:
             with self._lock:
                 if self._current_process is process:
                     self._current_process = None
-            cleanup_temp_wav(temp_clip_path)
+            cleanup_temp_wavs(temp_clip_path, playback_clip_path)
         with self._lock:
             self._worker = None
             self._current_process = None

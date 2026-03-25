@@ -4,7 +4,12 @@ import wave
 import sys
 import os
 
-from helpers.audio_output import build_wav_playback_command, cleanup_temp_wav, prepend_silence_to_wav
+from helpers.audio_output import (
+    build_wav_playback_command,
+    cleanup_temp_wavs,
+    prepend_silence_to_wav,
+    prepare_wav_for_output_channel_mode,
+)
 from pathlib import Path
 from dotenv import load_dotenv
 from piper import PiperVoice, SynthesisConfig
@@ -63,27 +68,29 @@ def read_out_response(text: str):
         voice.synthesize_wav(text, wav_file, syn_config=build_synthesis_config())
 
     padded_wav = prepend_silence_to_wav(out_wav)
-    led_session_id = led_strip.begin_audio_led_visualizer(padded_wav)
+    playback_wav = prepare_wav_for_output_channel_mode(padded_wav)
+    led_session_id = led_strip.begin_audio_led_visualizer(playback_wav)
     try:
-        playback_command = build_wav_playback_command(padded_wav)
+        playback_command = build_wav_playback_command(playback_wav)
         logging.info(f"Playing audio via preferred USB Audio output: {' '.join(playback_command)}")
         subprocess.run(playback_command, check=False)
     finally:
         led_strip.stop_audio_led_visualizer(led_session_id)
-        cleanup_temp_wav(padded_wav)
+        cleanup_temp_wavs(padded_wav, playback_wav)
 
 
 
 def read_out_response_from_file(file_path: str):
     padded_wav = prepend_silence_to_wav(file_path)
-    led_session_id = led_strip.begin_audio_led_visualizer(padded_wav)
+    playback_wav = prepare_wav_for_output_channel_mode(padded_wav)
+    led_session_id = led_strip.begin_audio_led_visualizer(playback_wav)
     try:
-        playback_command = build_wav_playback_command(padded_wav)
+        playback_command = build_wav_playback_command(playback_wav)
         logging.info(f"Playing audio file via preferred USB Audio output: {' '.join(playback_command)}")
         subprocess.run(playback_command, check=False)
     finally:
         led_strip.stop_audio_led_visualizer(led_session_id)
-        cleanup_temp_wav(padded_wav)
+        cleanup_temp_wavs(padded_wav, playback_wav)
 
 
 if __name__ == "__main__":

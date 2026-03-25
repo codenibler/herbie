@@ -21,6 +21,7 @@ PREFERRED_USB_AUDIO_DEVICE = "plughw:CARD=Audio,DEV=0"
 USB_AUDIO_NAME = "USB Audio"
 DEFAULT_WAV_SILENCE_PREFIX_MS = 100
 DEFAULT_WAV_LEAD_IN_GAIN = 0.02
+DEFAULT_WAV_OUTPUT_CHANNEL_MODE = "original"
 DEFAULT_WAKEWORD_DUCKED_VOLUME_PERCENT = 20
 DEFAULT_WAKEWORD_DUCK_FADE_DURATION_MS = 350
 DEFAULT_WAKEWORD_DUCK_FADE_STEP_COUNT = 7
@@ -330,6 +331,21 @@ def get_wav_lead_in_gain() -> float:
     return lead_in_gain
 
 
+@lru_cache(maxsize=1)
+def get_wav_output_channel_mode() -> str:
+    raw_value = os.getenv("WAV_OUTPUT_CHANNEL_MODE", DEFAULT_WAV_OUTPUT_CHANNEL_MODE)
+    normalized_value = raw_value.strip().lower()
+    if normalized_value in {"original", "mono_left"}:
+        return normalized_value
+
+    logging.warning(
+        "Invalid WAV_OUTPUT_CHANNEL_MODE value %r. Falling back to %s.",
+        raw_value,
+        DEFAULT_WAV_OUTPUT_CHANNEL_MODE,
+    )
+    return DEFAULT_WAV_OUTPUT_CHANNEL_MODE
+
+
 def scale_pcm_frames(frames: bytes, sample_width: int, gain: float) -> bytes:
     if not frames:
         return frames
@@ -392,6 +408,62 @@ def prepend_silence_to_wav(file_path: str | Path, silence_ms: int | None = None)
     return padded_path
 
 
+def prepare_wav_for_output_channel_mode(file_path: str | Path) -> Path:
+    channel_mode = get_wav_output_channel_mode()
+    source_path = Path(file_path)
+    if channel_mode == "original":
+        return source_path
+
+    try:
+        with wave.open(str(source_path), "rb") as source_wav:
+            channels = source_wav.getnchannels()
+            sample_width = source_wav.getsampwidth()
+            sample_rate = source_wav.getframerate()
+            frame_count = source_wav.getnframes()
+            frames = source_wav.readframes(frame_count)
+    except (wave.Error, OSError) as exc:
+        logging.warning("Failed to prepare WAV channel mode for %s: %s", source_path, exc)
+        return source_path
+
+    if channels <= 0 or not frames:
+        return source_path
+
+    dtype = PCM_DTYPE_BY_SAMPLE_WIDTH.get(sample_width)
+    if dtype is None:
+        logging.warning(
+            "Unsupported WAV sample width %d for output channel remap. Leaving %s unchanged.",
+            sample_width,
+            source_path,
+        )
+        return source_path
+
+    samples = np.frombuffer(frames, dtype=dtype)
+    try:
+        frame_samples = samples.reshape(-1, channels)
+    except ValueError:
+        logging.warning("Could not reshape WAV samples for %s. Leaving file unchanged.", source_path)
+        return source_path
+
+    silence_sample = 128 if sample_width == 1 else 0
+    output_samples = np.full((frame_samples.shape[0], 2), silence_sample, dtype=dtype)
+    output_samples[:, 0] = frame_samples[:, 0]
+
+    with tempfile.NamedTemporaryFile(
+        prefix=f"{source_path.stem}_{channel_mode}_",
+        suffix=".wav",
+        delete=False,
+    ) as temp_file:
+        prepared_path = Path(temp_file.name)
+
+    with wave.open(str(prepared_path), "wb") as prepared_wav:
+        prepared_wav.setnchannels(2)
+        prepared_wav.setsampwidth(sample_width)
+        prepared_wav.setframerate(sample_rate)
+        prepared_wav.writeframes(output_samples.tobytes())
+
+    return prepared_path
+
+
 def cleanup_temp_wav(file_path: str | Path | None) -> None:
     if file_path is None:
         return
@@ -401,3 +473,15 @@ def cleanup_temp_wav(file_path: str | Path | None) -> None:
         path.unlink(missing_ok=True)
     except OSError as exc:
         logging.warning(f"Failed to delete temporary WAV {path}: {exc}")
+
+
+def cleanup_temp_wavs(*file_paths: str | Path | None) -> None:
+    seen_paths: set[Path] = set()
+    for file_path in file_paths:
+        if file_path is None:
+            continue
+        path = Path(file_path)
+        if path in seen_paths:
+            continue
+        seen_paths.add(path)
+        cleanup_temp_wav(path)
