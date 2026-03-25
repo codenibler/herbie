@@ -1,7 +1,12 @@
 from __future__ import annotations
 
 from difflib import get_close_matches
-from helpers.audio_output import build_wav_playback_command, cleanup_temp_wav, prepend_silence_to_wav
+from helpers.audio_output import (
+    build_wav_playback_command,
+    cleanup_temp_wavs,
+    prepend_silence_to_wav,
+    prepare_wav_for_output_channel_mode,
+)
 from pathlib import Path
 from threading import Event, Lock
 from threading import Thread
@@ -211,10 +216,13 @@ def _resolve_song_path(song_reference: str) -> Path | None:
     return None
 
 
-def _watch_process_exit(process: subprocess.Popen, temp_wav_path: Path | None = None) -> None:
+def _watch_process_exit(
+    process: subprocess.Popen,
+    *temp_wav_paths: Path | None,
+) -> None:
     process.wait()
     music_manager.clear_if_current(process)
-    cleanup_temp_wav(temp_wav_path)
+    cleanup_temp_wavs(*temp_wav_paths)
 
 
 def _play_song_queue_worker(song_paths: list[Path]) -> None:
@@ -225,12 +233,13 @@ def _play_song_queue_worker(song_paths: list[Path]) -> None:
 
             logging.info("Playing %s", song_path)
             padded_song_path = prepend_silence_to_wav(song_path)
-            led_session_id = led_strip.begin_audio_led_visualizer(padded_song_path)
+            playback_song_path = prepare_wav_for_output_channel_mode(padded_song_path)
+            led_session_id = led_strip.begin_audio_led_visualizer(playback_song_path)
             try:
-                process = subprocess.Popen(build_wav_playback_command(padded_song_path))
+                process = subprocess.Popen(build_wav_playback_command(playback_song_path))
             except Exception:
                 led_strip.stop_audio_led_visualizer(led_session_id)
-                cleanup_temp_wav(padded_song_path)
+                cleanup_temp_wavs(padded_song_path, playback_song_path)
                 raise
             music_manager.mark_playing(song_path, process, led_session_id=led_session_id)
 
@@ -238,7 +247,7 @@ def _play_song_queue_worker(song_paths: list[Path]) -> None:
                 process.wait()
             finally:
                 music_manager.clear_if_current(process)
-                cleanup_temp_wav(padded_song_path)
+                cleanup_temp_wavs(padded_song_path, playback_song_path)
 
             if music_manager.stop_requested():
                 break
@@ -249,15 +258,20 @@ def _play_song_queue_worker(song_paths: list[Path]) -> None:
 def _start_single_song_playback(song_path: Path) -> bool:
     logging.info("Playing %s", song_path)
     padded_song_path = prepend_silence_to_wav(song_path)
-    led_session_id = led_strip.begin_audio_led_visualizer(padded_song_path)
+    playback_song_path = prepare_wav_for_output_channel_mode(padded_song_path)
+    led_session_id = led_strip.begin_audio_led_visualizer(playback_song_path)
     try:
-        process = subprocess.Popen(build_wav_playback_command(padded_song_path))
+        process = subprocess.Popen(build_wav_playback_command(playback_song_path))
     except Exception:
         led_strip.stop_audio_led_visualizer(led_session_id)
-        cleanup_temp_wav(padded_song_path)
+        cleanup_temp_wavs(padded_song_path, playback_song_path)
         raise
     music_manager.mark_playing(song_path, process, led_session_id=led_session_id)
-    Thread(target=_watch_process_exit, args=(process, padded_song_path), daemon=True).start()
+    Thread(
+        target=_watch_process_exit,
+        args=(process, padded_song_path, playback_song_path),
+        daemon=True,
+    ).start()
     return True
 
 
