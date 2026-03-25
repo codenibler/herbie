@@ -14,6 +14,7 @@ from helpers.audio_output import (
     set_preferred_output_volume_percent,
 )
 from toolbox.background_audio import stop_background_playback
+from toolbox import led_strip
 from wakeword_loop import initialize_wakeword_loop
 from parse_user_input import parse_user_input
 from setup.microphone_setup import setup_default_microphone
@@ -69,6 +70,8 @@ def main():
     load_dotenv(override=True) # Override environemnt vars with those in .env
     setup_logging() 
     setup_default_microphone()
+    led_strip.start_led_strip_controller()
+    led_strip.set_idle_led_mode(True)
     if USE_BLUETOOTH_SPEAKER:
         from helpers.set_bluetooth_out import bluetooth_ctl_connect
         bluetooth_ctl_connect()  
@@ -76,6 +79,8 @@ def main():
     AMBIENT_NOISE_VALUE, LAST_RECALIBRATION_TIME = asyncio.run(initialize_startup_tasks())
 
     while True:
+        led_strip.set_idle_led_mode(True)
+
         if (time.time() - LAST_RECALIBRATION_TIME) >= RECALIBRATION_INTERVAL:
             logging.info("Recalibrating ambient noise level...")
             AMBIENT_NOISE_VALUE = calibrate_ambient_noise()
@@ -85,7 +90,7 @@ def main():
         background_audio_ducked = False
 
         if wakeword_detected:
-            """ TO DO: SET UP LED ANIMATIONS AND SOUND FOR HERBIE ACTIVATION """
+            led_strip.set_idle_led_mode(False)
             background_audio_ducked = duck_preferred_output_volume_if_playing(
                 ducked_volume_percent=WAKEWORD_DUCKED_VOLUME_PERCENT
             )

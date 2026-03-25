@@ -1,15 +1,11 @@
-from toolbox.music import play_specific_song
-from piper_tts import read_out_response
+from __future__ import annotations
 
 from pywizlight import wizlight, PilotBuilder
-from datetime import datetime, timezone
 from pathlib import Path
 
-import subprocess
 import asyncio
 import logging
 import os
-
 DEFAULT_LIGHT_BRIGHTNESS = int(os.getenv("DEFAULT_LIGHT_BRIGHTNESS", 128))
 LIGHT_STATE_SETTLE_SECONDS = float(os.getenv("LIGHT_STATE_SETTLE_SECONDS", 1.5))
 FREAK_MODE_SONG_PATH = os.getenv("FREAK_MODE_SONG_PATH", "songs/careless_whisper.wav")
@@ -19,6 +15,8 @@ LIGHT_TURN_ON_FAILURE_MESSAGE = (
 
 
 async def return_light_turn_on_failure(log_message: str, error: Exception | None = None) -> bool:
+    from piper_tts import read_out_response
+
     if error is None:
         logging.warning(log_message)
     else:
@@ -253,6 +251,7 @@ async def station_light_color(color_name: str):
         await light3.async_close()
     
 async def station_lights_freaky():
+    from toolbox.music import play_specific_song
 
     await play_specific_song(Path(FREAK_MODE_SONG_PATH))
 

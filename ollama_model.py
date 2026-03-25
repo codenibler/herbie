@@ -1,5 +1,6 @@
 from piper_tts import read_out_response, read_out_response_from_file
 from toolbox import lighting
+from toolbox import led_strip
 from toolbox import gcalendar
 from toolbox import timer
 from toolbox import music
@@ -196,6 +197,7 @@ def ollama_query(user_text):
 
     tool, user_text = determine_relevent_tool(user_text)
     started_thinking_audio = False
+    started_loading_animation = False
 
     try:
         if tool is not None:
@@ -205,6 +207,7 @@ def ollama_query(user_text):
                 read_out_response_from_file(ACK_TOOL_RESPONSES_DIR / herbie_random_ack_response)
                 logging.info(f"Tool ack response {herbie_random_ack_response}")
 
+            started_loading_animation = led_strip.start_loading_led_animation()
             started_thinking_audio = thinking_audio.start_thinking_audio()
             response = ollama.chat(
                 model=MODEL,
@@ -219,11 +222,14 @@ def ollama_query(user_text):
                     logging.info(f"Tool clarification requested: {clarification_message}")
                     return clarification_message
         else:
+            started_loading_animation = led_strip.start_loading_led_animation()
             started_thinking_audio = thinking_audio.start_thinking_audio()
             response = ollama.chat(model=MODEL, messages=[{'role': 'user', 'content': user_text}])
     finally:
         if started_thinking_audio:
             thinking_audio.stop_thinking_audio()
+        if started_loading_animation:
+            led_strip.stop_loading_led_animation()
     
     logging.info(f"Ollama response: {response['message']['content']}")
     return response['message']['content']
@@ -253,6 +259,16 @@ def is_background_audio_stop_request(user_text: str) -> bool:
     if normalized_text in GENERIC_STOP_QUERY_PATTERNS:
         return True
     return any(pattern in normalized_text for pattern in BACKGROUND_AUDIO_STOP_PATTERNS)
+
+
+def _build_song_tool_instruction() -> str:
+    song_paths = [f"songs/{song}" for song in os.listdir("songs")]
+    return (
+        " If the user wants a specific song, call play_specific_song using exactly one"
+        f" of these relative paths as song_path: {song_paths}."
+        " Do not invent absolute placeholder paths like /path/to/...."
+        " If the user does not specify a particular track, call play_random_songs."
+    )
 
 def determine_relevent_tool(user_text):
     normalized_user_text = normalize_user_text(user_text)
@@ -306,12 +322,10 @@ def determine_relevent_tool(user_text):
     if words_present_in_text(["stop", "music"], user_text.lower()) or words_present_in_text(["stop", "song"], user_text.lower()) or words_present_in_text(["stop", "playing"], user_text.lower()):
         return [music.stop_music], user_text
     if one_word_present_in_text(["bangers", "song", "music"], user_text.lower()):
-        song_paths = [f"songs/{song}" for song in os.listdir("songs")]
-        user_text += f"If user wants specific song choice, select from the following options: {song_paths}, and send the full path as the parameter. Otherwise, call play_random_songs with no parameters"
+        user_text += _build_song_tool_instruction()
         return [music.play_random_songs, music.play_specific_song], user_text
     if words_present_in_text(["play"], user_text.lower()):
-        song_paths = [f"songs/{song}" for song in os.listdir("songs")]
-        user_text += f"If user wants specific song choice, select from the following options: {song_paths}, and send the full path as the parameter. Otherwise, call play_random_songs with no parameters"
+        user_text += _build_song_tool_instruction()
         return [music.play_specific_song], user_text
 
     """ TIMER """
