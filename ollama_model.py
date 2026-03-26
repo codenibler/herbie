@@ -189,7 +189,6 @@ BACKGROUND_AUDIO_STOP_PATTERNS = (
     "stop the alarm",
 )
 
-""" TO DO: ADD SOME SORT OF CONFIRMATION TTS WHEN TOOL CALLED. """
 def ollama_query(user_text):
     # Determine through string matching if tool is usable.
     MODEL = os.getenv("OLLAMA_MODEL_NAME")
@@ -273,7 +272,6 @@ def _build_song_tool_instruction() -> str:
 def determine_relevent_tool(user_text):
     normalized_user_text = normalize_user_text(user_text)
     
-    """ ALL LIGHTS """
     if (
         one_word_present_in_text(["everything", "every", "all"], user_text.lower())
         and one_word_present_in_text(["on", "off"], user_text.lower())
@@ -284,7 +282,6 @@ def determine_relevent_tool(user_text):
         )
         return [lighting.turn_everything_off, lighting.turn_everything_on], user_text
 
-    """ KITCHEN LIGHTING """
     if one_word_present_in_text(["kitchen"], user_text.lower()):
         user_text += (
             " If the user wants the kitchen light on, call kitchen_light_on."
@@ -292,7 +289,6 @@ def determine_relevent_tool(user_text):
         )
         return [lighting.kitchen_light_on, lighting.kitchen_light_off], user_text
 
-    """ GENERIC STOP """
     if is_generic_stop_query(user_text):
         user_text += (
             " The user wants to stop any background music, timer countdown, or timer"
@@ -300,7 +296,6 @@ def determine_relevent_tool(user_text):
         )
         return [background_audio.stop_background_playback], user_text
 
-    """ MUSIC """ 
     if (
         normalized_user_text in {
             "skip",
@@ -328,7 +323,6 @@ def determine_relevent_tool(user_text):
         user_text += _build_song_tool_instruction()
         return [music.play_specific_song], user_text
 
-    """ TIMER """
     if is_timer_status_query(user_text):
         user_text += (
             " The user wants to know how much time is left on the active timer."
@@ -347,12 +341,10 @@ def determine_relevent_tool(user_text):
         )
         return [timer.start_timer, timer.stop_timer, timer.get_timer_remaining], user_text
 
-    """ SPEAKER VOLUME """
     if one_word_present_in_text(["volume"], user_text.lower()):
         user_text += " If the user wants to change the speaker volume, call set_output_volume with volume_percent as an integer from 0 to 100."
         return [volume.set_output_volume], user_text
 
-    """ LIVING ROOM LIGHTING """
     if words_present_in_text(["freaky"], user_text.lower()):
         user_text += "Use the station_lights_freaky tool"
         return [lighting.station_lights_freaky], user_text 
@@ -368,15 +360,12 @@ def determine_relevent_tool(user_text):
             lighting.station_light_color,
         ], user_text
 
-    """ GOOGLE CALENDAR """
     if one_word_present_in_text(["schedule", "event"], user_text):
         now = datetime.now(ZoneInfo(APP_TIMEZONE)).isoformat(timespec="seconds")
         user_text += f"Generate a short event title. to_date and from_dates should be in RFC3339 timestamps, \
                         like this example. YYYY-MM-DDTHH:MM:SS±HH:MM. Right now, it is: {now}. If to_date is not mentioned by user, assume 1 hour after from_date"
         return [gcalendar.make_calendar_event], user_text
 
-    """ TO DO: ADD WHAT TIME DOES BUS 18 LEAVE? """
-    """ TO DO: SMALL WINDOW AFTER PROMPT ENDS, WHERE USER CAN FOLLOW UP WITH ANOTHER REQUEST. IF NO SPEECH< BACK TO WAKEWORD LOOP """
     # Perhaps, depending on the performance impact, add classification one-shot model to see whether or not tool is appplicable to user prompt
     # Or, whether an adequare prompt was skipped.  
 
@@ -569,7 +558,6 @@ def one_word_present_in_text(words, text):
             return True
     return False
 
-""" TO DO: MAKE ASYNC, AS WELL AS MAIN LOOP """
 def warm_up_ollama_model():
     
     model=os.getenv("OLLAMA_MODEL_NAME")

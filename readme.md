@@ -78,5 +78,45 @@ python3 main.py
 ```
 
 Local note for WS281x LED testing on Raspberry Pi 5:
-- This repo includes a local `rpi_ws281x` patch for Raspberry Pi 5 Model B Rev 1.1 boards reporting revision `d04171`, which otherwise fail with `ws2811_init failed with code -3 (Hardware revision is not supported)`.
-- Upstream reference: issue `#555` and PR `#556` in `jgarff/rpi_ws281x`.
+- The old `d04171` note is not enough by itself. Herbie imports the `rpi_ws281x` Python package from the active virtualenv, not directly from the vendored `rpi_ws281x/` source tree in this repo.
+- On Raspberry Pi 5, the stock `rpi_ws281x==5.0.0` wheel still fails with `ws2811_init failed with code -3 (Hardware revision is not supported)`. Pi 5 support currently depends on the Pi 5-capable Python build plus the RP1 kernel module / device-tree-overlay path described upstream.
+- Upstream references:
+  - Python release: `pi5-beta2` in `rpi-ws281x/rpi-ws281x-python`
+  - Pi 5 setup guide: `jgarff/rpi_ws281x` wiki page `Raspberry-Pi-5-Support`
+
+For this project, the working Pi 5 setup was:
+
+```bash
+# 1) install a Pi 5-capable Python binding into the venv
+#    (the normal 5.0.0 wheel is not enough on Pi 5, and the prebuilt
+#    pi5-beta wheel may not match your local Python version)
+git clone --depth 1 --branch pi5-beta2 https://github.com/rpi-ws281x/rpi-ws281x-python.git /tmp/rpi-ws281x-python
+mkdir -p /tmp/rpi-ws281x-python/library/lib
+cp -a rpi_ws281x/. /tmp/rpi-ws281x-python/library/lib/
+venv/bin/pip install --force-reinstall /tmp/rpi-ws281x-python/library
+
+# 2) build the RP1 kernel module + overlay from the vendored C sources
+cd rpi_ws281x/rp1_ws281x_pwm
+make
+./dts.sh
+
+# 3) load them for the current boot/session
+sudo insmod ./rp1_ws281x_pwm.ko pwm_channel=2
+sudo dtoverlay -d . rp1_ws281x_pwm
+sudo pinctrl set 18 a3 pn
+
+# 4) allow the normal Herbie user to access the device node
+sudo chgrp gpio /dev/ws281x_pwm
+sudo chmod 660 /dev/ws281x_pwm
+```
+
+Pi 5-specific notes:
+- `GPIO18` maps to `PWM0_CHAN2` on Pi 5, which is why the upstream guide uses `pwm_channel=2` with `pinctrl set 18 a3 pn`.
+- The `/dev/ws281x_pwm` permission change above is not persistent across reboot or overlay reload unless you add a udev rule or equivalent boot-time setup.
+- If you still see LED init failures, check four things in this order: imported `rpi_ws281x` package version, `/dev/ws281x_pwm` existence, `/dev/ws281x_pwm` permissions, and whether `pinctrl get 18` reports `GPIO18 = PWM0_CHAN2`.
+
+Quick reboot protocol:
+1. Run `setup/enable_pi5_led_runtime.sh`
+2. Make sure it prints `start_result=True`
+3. If you want to double-check manually, run `ls -l /dev/ws281x_pwm` and `pinctrl get 18`
+4. Start Herbie normally with `source venv/bin/activate` and `python3 main.py`

@@ -7,8 +7,6 @@ import numpy as np
 
 
 class PreRollAudioBuffer:
-    """Keeps a bounded rolling window of mono chunks captured before speech starts."""
-
     def __init__(self, max_chunks: int):
         self._chunks: deque[np.ndarray] = deque(maxlen=max(1, max_chunks))
 

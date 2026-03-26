@@ -292,12 +292,6 @@ async def play_random_songs() -> bool:
 
 
 async def play_specific_song(song_path: str) -> bool:
-    """Play a song from the local songs directory.
-
-    The argument may be an exact relative path, a filename, or a human-readable
-    title. Placeholder absolute paths like /path/to/songs/... are resolved by
-    basename against the local songs directory.
-    """
     requested_song_path = Path(song_path)
     resolved_song_path = _resolve_song_path(song_path)
     logging.info(

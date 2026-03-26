@@ -38,7 +38,6 @@ def light_is_on(state) -> bool:
 def light_is_off(state) -> bool:
     return state is not None and state.get_state() is False
 
-""" TO DO: IF LIGHT SWITCH IS OFF, GRACEFULLY RESPOND: COULDN"T TURN ON CASE """
 async def kitchen_light_on():
     # Turn on the kitchen light. Requires no parameters.
     KBULB_IP = os.getenv("KITCHEN_BULB_IP")
@@ -216,7 +215,6 @@ async def station_light_color(color_name: str):
     light3 = wizlight(BULB3_IP)
     try:
         color_rgb = COLORS.get(color_name.upper(), (255, 255, 255))  # Default to white if not found
-        """ TO DO: IF COLOR NOT FOUND, HAVE HERBIE MENTION THIS AND ASK AGAIN """
         await light1.turn_on(PilotBuilder(rgb=color_rgb))
         await light2.turn_on(PilotBuilder(rgb=color_rgb))
         await light3.turn_on(PilotBuilder(rgb=color_rgb))

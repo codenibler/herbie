@@ -8,7 +8,6 @@ from toolbox.timer import TIMER_MANAGER
 
 
 def stop_background_playback() -> str:
-    """Stop any active timer, music playback, or lingering timer alarm audio."""
     stopped_timer = TIMER_MANAGER.stop_timer()
     stopped_music = stop_music()
     stopped_aplay = stop_active_aplay_playback()

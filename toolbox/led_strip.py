@@ -9,19 +9,27 @@ import atexit
 import logging
 import math
 import os
+import stat
 import sys
 import time
 import wave
 
 try:
+    import rpi_ws281x as rpi_ws281x_module
     from rpi_ws281x import PixelStrip, Color, ws
 except Exception as error:
+    rpi_ws281x_module = None
     PixelStrip = None
     Color = None
     ws = None
     LED_IMPORT_ERROR = error
 else:
     LED_IMPORT_ERROR = None
+
+
+LED_RUNTIME_MODULE_PATH = getattr(rpi_ws281x_module, "__file__", None)
+LED_RUNTIME_VERSION = getattr(rpi_ws281x_module, "__version__", None)
+LED_DEVICE_PATH = Path("/dev/ws281x_pwm")
 
 
 def _get_bool_env(name: str, default: bool) -> bool:
@@ -57,11 +65,11 @@ LED_STRIP_TYPE_NAME = os.getenv("LED_STRIP_TYPE", "WS2811_STRIP_GRB")
 LED_FRAME_SECONDS = float(os.getenv("LED_FRAME_SECONDS", 0.04))
 LED_IDLE_CYCLE_SECONDS = float(os.getenv("LED_IDLE_CYCLE_SECONDS", 2.8))
 LED_IDLE_MIN_BRIGHTNESS = float(os.getenv("LED_IDLE_MIN_BRIGHTNESS", 0.08))
-LED_IDLE_COLOR = _get_rgb_env("LED_IDLE_COLOR", (20, 120, 255))
-LED_LOADING_COLOR = _get_rgb_env("LED_LOADING_COLOR", (255, 160, 32))
+LED_IDLE_COLOR = _get_rgb_env("LED_IDLE_COLOR", (255, 0, 0))
+LED_LOADING_COLOR = _get_rgb_env("LED_LOADING_COLOR", (255, 0, 0))
 LED_LOADING_BACKGROUND_COLOR = _get_rgb_env("LED_LOADING_BACKGROUND_COLOR", (8, 4, 0))
-LED_AUDIO_LOW_COLOR = _get_rgb_env("LED_AUDIO_LOW_COLOR", (24, 180, 255))
-LED_AUDIO_HIGH_COLOR = _get_rgb_env("LED_AUDIO_HIGH_COLOR", (255, 48, 48))
+LED_AUDIO_LOW_COLOR = _get_rgb_env("LED_AUDIO_LOW_COLOR", (200, 0, 0))
+LED_AUDIO_HIGH_COLOR = _get_rgb_env("LED_AUDIO_HIGH_COLOR", (255, 0, 0))
 LED_AUDIO_CHUNK_MS = int(os.getenv("LED_AUDIO_CHUNK_MS", 40))
 LED_AUDIO_GAIN = float(os.getenv("LED_AUDIO_GAIN", 2.6))
 LED_AUDIO_FALLOFF = float(os.getenv("LED_AUDIO_FALLOFF", 0.82))
@@ -76,6 +84,71 @@ def _resolve_led_strip_type():
     if ws is None:
         return None
     return getattr(ws, LED_STRIP_TYPE_NAME, ws.WS2811_STRIP_GRB)
+
+
+def _read_pi_revision() -> str | None:
+    try:
+        with open("/proc/cpuinfo", "r", encoding="utf-8") as cpuinfo_file:
+            for line in cpuinfo_file:
+                if line.startswith("Revision"):
+                    return line.split(":", 1)[1].strip().lower()
+    except OSError:
+        return None
+    return None
+
+
+def _is_pi5_revision(revision: str | None) -> bool:
+    if revision is None:
+        return False
+
+    try:
+        revision_value = int(revision, 16)
+    except ValueError:
+        return False
+
+    # Raspberry Pi revision scheme: model field lives in bits 4..11.
+    model = (revision_value >> 4) & 0xFF
+    return model == 0x17
+
+
+def _build_led_init_hint(error: Exception) -> str | None:
+    error_text = str(error)
+    if "Hardware revision is not supported" not in error_text and "Permission denied" not in error_text:
+        return None
+
+    details: list[str] = []
+    revision = _read_pi_revision()
+    if revision is not None:
+        details.append(f"Detected Pi revision {revision}.")
+
+    if LED_RUNTIME_VERSION is not None:
+        details.append(f"rpi_ws281x Python package version: {LED_RUNTIME_VERSION}.")
+    if LED_RUNTIME_MODULE_PATH is not None:
+        details.append(f"Imported from: {LED_RUNTIME_MODULE_PATH}.")
+
+    if LED_DEVICE_PATH.exists():
+        device_stat = LED_DEVICE_PATH.stat()
+        mode = stat.S_IMODE(device_stat.st_mode)
+        details.append(
+            f"{LED_DEVICE_PATH} exists with mode {oct(mode)} and uid:gid "
+            f"{device_stat.st_uid}:{device_stat.st_gid}."
+        )
+    else:
+        details.append(f"{LED_DEVICE_PATH} is missing.")
+
+    if _is_pi5_revision(revision):
+        details.append(
+            "Pi 5 support requires the Pi 5-capable rpi_ws281x Python build plus the "
+            "rp1_ws281x_pwm kernel module and dtoverlay. The vendored rpi_ws281x/ C "
+            "sources in this repo are not used unless the Python package in the venv "
+            "is rebuilt from Pi 5-capable sources."
+        )
+        details.append(
+            "If the device node exists but is root-only, grant the gpio group access "
+            "or run Herbie with sudo."
+        )
+
+    return " ".join(details)
 
 
 def _scale_color(color: tuple[int, int, int], brightness: float) -> tuple[int, int, int]:
@@ -151,10 +224,13 @@ class LedStripController:
                 self._strip.begin()
             except Exception as error:
                 self._strip = None
+                led_hint = _build_led_init_hint(error)
                 logging.warning(
                     "Failed to initialize LED strip. Runtime animations disabled. Error: %s",
                     error,
                 )
+                if led_hint:
+                    logging.warning("LED init hint: %s", led_hint)
                 return False
 
             self._enabled = True
