@@ -3,7 +3,6 @@ import logging
 import os 
 
 def setup_default_microphone():
-    """Sets the default microphone to the one specified in the .env file."""   
     mic_name = os.getenv("MICROPHONE_NAME")
     if not mic_name:
         raise ValueError("MICROPHONE_NAME not set in .env file.")

@@ -35,6 +35,4 @@ def parse_user_input(wav_bytes):
         return transcription
     except subprocess.CalledProcessError as e:
         logging.error(f"Error during transcription: {e.stderr}")
-        """ TO DO: ADD HERBIE ASKING FOR USER TO REPEAT WHAT THEY SAID """
         return None
-

@@ -44,9 +44,6 @@ def get_service():
     return build("calendar", "v3", credentials=creds)
 
 def make_calendar_event(title, from_date, to_date):
-
-    """ ADD CHECK: IF ANY FIELD IS MISSING, RETURN A MESSAGE TO HERBIE TO RE-REQUEST PARAMETERS """
-
     service = get_service()
     event = {
         "summary": title,

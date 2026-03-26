@@ -28,7 +28,6 @@ SPEECH_END_MARGIN_RMS = float(os.getenv("SPEECH_END_MARGIN_RMS", 90.0))
 STRONG_SPEECH_RATIO = float(os.getenv("STRONG_SPEECH_RATIO", 0.65))
 STRONG_PEAK_RATIO = float(os.getenv("STRONG_PEAK_RATIO", 0.35))
 
-""" Recalibrates ambient noise to set silence threshold to finish user input recording """
 def calibrate_ambient_noise(
     duration: float = CALIBRATION_DURATION_SECONDS,
     samplerate: int = LISTENING_SAMPLE_RATE,
@@ -72,14 +71,12 @@ async def calibrate_ambient_noise_async(
         blocksize,
     )
 
-"""Compute RMS energy for a chunk of Mono audio"""
 def mono_to_rms16(mono_chunk: np.ndarray) -> float:
     x = mono_chunk.astype(np.float32)
     return float(np.sqrt(np.mean(x**2))) 
 # Square to make all amplitudes + -> mean to get avg energy of both channels -> √ to return to original scale. 
 
 def stereo_to_mono(chunk: np.ndarray) -> np.ndarray:
-    """chunk shape: (frames, channels) -> mono int16 shape: (frames,)"""
     # If we have 2 dimensions, and the second dimension has 2 channels (columns of 2d array)
     if chunk.ndim == 2 and chunk.shape[1] == 2: 
         # Average of two channels, then convert to int16
@@ -129,10 +126,6 @@ def record_until_silence(
     max_duration: float = MAX_RECORDING_DURATION_SECONDS,
     preroll_ms: float = SPEECH_PREROLL_MS,
 ):
-    """
-    Record from mic until adaptive silence detection decides speech is over.
-    Returns WAV bytes (mono, 16kHz, int16).
-    """
     frames_mono = []
     t0 = time.time()
     frame_duration_seconds = blocksize / samplerate

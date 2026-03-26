@@ -194,5 +194,4 @@ def stop_timer() -> str:
 
 
 def get_timer_remaining() -> str:
-    """Report the time remaining on the active timer."""
     return timer_manager.get_timer_remaining()

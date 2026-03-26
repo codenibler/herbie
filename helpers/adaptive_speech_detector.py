@@ -42,8 +42,6 @@ class SpeechFrameDecision:
 
 
 class AdaptiveSpeechDetector:
-    """Adaptive, hysteresis-based speech detector for chunked microphone audio."""
-
     def __init__(self, config: AdaptiveSpeechDetectorConfig):
         self.config = config
         self.speech_started = False
