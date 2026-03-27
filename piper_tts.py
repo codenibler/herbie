@@ -44,7 +44,6 @@ def _get_bool_env(name: str, default: bool) -> bool:
 
 def build_synthesis_config() -> SynthesisConfig:
     return SynthesisConfig(
-        speaker_id=_get_optional_int_env("PIPER_SPEAKER_ID"),
         length_scale=_get_optional_float_env("PIPER_LENGTH_SCALE"),
         noise_scale=_get_optional_float_env("PIPER_NOISE_SCALE"),
         noise_w_scale=_get_optional_float_env("PIPER_NOISE_W_SCALE"),

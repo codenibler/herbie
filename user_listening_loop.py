@@ -39,7 +39,7 @@ def calibrate_ambient_noise(
     try:
         stream.start()
         energy_values = []
-        logging.info("Listening... remain quiet during ambient calibration")
+        logging.info("Try to be quiet...")
         start_time = time.time()
         while (time.time() - start_time) < duration:
             chunk, overflowed = stream.read(blocksize)
@@ -224,7 +224,6 @@ def record_until_silence(
         return wav_bytes
 
     finally:
-        # Explicit cleanup (good for learning)
         try:
             stream.stop()
         except Exception:
@@ -245,7 +244,7 @@ def listen_for_user_input(initial_noise_floor: float | None = None):
             if initial_noise_floor is not None
             else float(os.getenv("AMBIENT_NOISE_THRESHOLD", 700.0))
         ),
-        pause_threshold=float(os.getenv("SPEECH_PAUSE_THRESHOLD", 1.0)),     # seconds of silence to stop
+        pause_threshold=float(os.getenv("SPEECH_PAUSE_THRESHOLD", 1.0)),
         max_duration=MAX_RECORDING_DURATION_SECONDS,
     )
     if wav_bytes:

@@ -10,6 +10,7 @@ import logging
 import math
 import os
 import stat
+import subprocess
 import sys
 import time
 import wave
@@ -30,6 +31,7 @@ else:
 LED_RUNTIME_MODULE_PATH = getattr(rpi_ws281x_module, "__file__", None)
 LED_RUNTIME_VERSION = getattr(rpi_ws281x_module, "__version__", None)
 LED_DEVICE_PATH = Path("/dev/ws281x_pwm")
+PI5_LED_RUNTIME_SCRIPT = Path(__file__).resolve().parent.parent / "setup" / "enable_pi5_led_runtime.sh"
 
 
 def _get_bool_env(name: str, default: bool) -> bool:
@@ -83,6 +85,7 @@ PCM_ARRAY_TYPE_BY_SAMPLE_WIDTH = {
 def _resolve_led_strip_type():
     if ws is None:
         return None
+    logging.info(f"Led strip name: {LED_STRIP_TYPE_NAME}")
     return getattr(ws, LED_STRIP_TYPE_NAME, ws.WS2811_STRIP_GRB)
 
 
@@ -109,6 +112,58 @@ def _is_pi5_revision(revision: str | None) -> bool:
     # Raspberry Pi revision scheme: model field lives in bits 4..11.
     model = (revision_value >> 4) & 0xFF
     return model == 0x17
+
+
+def _log_process_output(output: str, level: int) -> None:
+    for line in output.splitlines():
+        logging.log(level, "[pi5-led-runtime] %s", line)
+
+
+def enable_pi5_led_runtime() -> None:
+    pi_revision = _read_pi_revision()
+    if not _is_pi5_revision(pi_revision):
+        if pi_revision is None:
+            logging.info("Skipping Pi 5 LED runtime setup because Pi hardware was not detected.")
+        else:
+            logging.info(
+                "Skipping Pi 5 LED runtime setup because Pi revision %s is not a Pi 5.",
+                pi_revision,
+            )
+        return
+
+    if not _get_bool_env("LED_STRIP_ENABLED", LED_STRIP_ENABLED):
+        logging.info("Skipping Pi 5 LED runtime setup because LED strip support is disabled.")
+        return
+
+    if not PI5_LED_RUNTIME_SCRIPT.is_file():
+        logging.warning("Pi 5 LED runtime setup script is missing: %s", PI5_LED_RUNTIME_SCRIPT)
+        return
+
+    logging.info("Running Pi 5 LED runtime setup script: %s", PI5_LED_RUNTIME_SCRIPT)
+    try:
+        result = subprocess.run(
+            ["bash", str(PI5_LED_RUNTIME_SCRIPT)],
+            cwd=PI5_LED_RUNTIME_SCRIPT.parent.parent,
+            check=True,
+            capture_output=True,
+            text=True,
+            env=os.environ.copy(),
+        )
+    except OSError as error:
+        logging.warning("Failed to launch Pi 5 LED runtime setup script: %s", error)
+        return
+    except subprocess.CalledProcessError as error:
+        _log_process_output(error.stdout, logging.INFO)
+        _log_process_output(error.stderr, logging.ERROR)
+        logging.warning(
+            "Pi 5 LED runtime setup script failed with exit code %s. Continuing startup.",
+            error.returncode,
+        )
+        return
+
+    _log_process_output(result.stdout, logging.INFO)
+    _log_process_output(result.stderr, logging.WARNING)
+    logging.info("Pi 5 LED runtime setup complete.")
 
 
 def _build_led_init_hint(error: Exception) -> str | None:
