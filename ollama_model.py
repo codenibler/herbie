@@ -472,6 +472,14 @@ def _should_read_dynamic_tool_response(function_name: str, tool_response) -> boo
 
 def _play_tool_completion_audio(function_name: str) -> bool:
     thinking_audio.stop_thinking_audio()
+
+    if music.MUSIC_MANAGER.status()["is_playing"]:
+        logging.info(
+            "Skipping completion audio for %s because background music is active.",
+            function_name,
+        )
+        return False
+
     candidate_paths = TOOL_COMPLETION_AUDIO_MAP.get(function_name)
     if not candidate_paths:
         return False
@@ -488,6 +496,10 @@ def _play_tool_completion_audio(function_name: str) -> bool:
 
 def execute_tool_calls(tool_calls):
     clarification_messages = []
+
+    # Stop thinking audio before running any tool so audio-producing tools
+    # do not contend for the same ALSA output device.
+    thinking_audio.stop_thinking_audio()
 
     for tool_call in tool_calls:
         function_name = tool_call['function']['name']
