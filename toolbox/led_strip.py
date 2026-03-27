@@ -56,7 +56,7 @@ def _get_rgb_env(name: str, default: tuple[int, int, int]) -> tuple[int, int, in
 
 
 LED_STRIP_ENABLED = _get_bool_env("LED_STRIP_ENABLED", True)
-LED_COUNT = int(os.getenv("LED_COUNT", 80))
+PIXEL_COUNT = int(os.getenv("PIXEL_COUNT", 80))
 LED_PIN = int(os.getenv("LED_PIN", 18))
 LED_FREQ_HZ = int(os.getenv("LED_FREQ_HZ", 800000))
 LED_DMA = int(os.getenv("LED_DMA", 10))
@@ -267,7 +267,7 @@ class LedStripController:
 
             try:
                 self._strip = PixelStrip(
-                    LED_COUNT,
+                    PIXEL_COUNT,
                     LED_PIN,
                     LED_FREQ_HZ,
                     LED_DMA,
@@ -296,7 +296,7 @@ class LedStripController:
             )
             self._render_thread.start()
             atexit.register(self.shutdown)
-            logging.info("Initialized LED strip controller with %s pixels.", LED_COUNT)
+            logging.info("Initialized LED strip controller with %s pixels.", PIXEL_COUNT)
             return True
 
     def shutdown(self) -> None:
@@ -381,7 +381,7 @@ class LedStripController:
     def _clear_strip(self) -> None:
         if not self._enabled or self._strip is None:
             return
-        self._show_pixels([(0, 0, 0)] * LED_COUNT)
+        self._show_pixels([(0, 0, 0)] * PIXEL_COUNT)
 
     def _show_pixels(self, pixels: list[tuple[int, int, int]]) -> None:
         if not self._enabled or self._strip is None or Color is None:
@@ -426,15 +426,15 @@ class LedStripController:
             1.0 - LED_IDLE_MIN_BRIGHTNESS
         ) * _cosine_brightness(phase)
         color = _scale_color(LED_IDLE_COLOR, brightness)
-        return [color] * LED_COUNT
+        return [color] * PIXEL_COUNT
 
     def _build_loading_frame(self, now: float) -> list[tuple[int, int, int]]:
-        pixels = [_scale_color(LED_LOADING_BACKGROUND_COLOR, 1.0)] * LED_COUNT
-        tail_length = max(4, LED_COUNT // 8)
-        position = int((now / max(LED_FRAME_SECONDS, 0.01)) * 1.5) % max(1, LED_COUNT)
+        pixels = [_scale_color(LED_LOADING_BACKGROUND_COLOR, 1.0)] * PIXEL_COUNT
+        tail_length = max(4, PIXEL_COUNT // 8)
+        position = int((now / max(LED_FRAME_SECONDS, 0.01)) * 1.5) % max(1, PIXEL_COUNT)
 
         for offset in range(tail_length):
-            index = (position - offset) % LED_COUNT
+            index = (position - offset) % PIXEL_COUNT
             brightness = 1.0 - (offset / tail_length)
             pixels[index] = _scale_color(LED_LOADING_COLOR, brightness)
 
@@ -442,16 +442,16 @@ class LedStripController:
 
     def _build_audio_frame(self, level: float) -> list[tuple[int, int, int]]:
         normalized_level = max(0.0, min(1.0, level))
-        exact_height = normalized_level * LED_COUNT
+        exact_height = normalized_level * PIXEL_COUNT
         pixels: list[tuple[int, int, int]] = []
 
-        for index in range(LED_COUNT):
+        for index in range(PIXEL_COUNT):
             pixel_fill = max(0.0, min(1.0, exact_height - index))
             if pixel_fill <= 0.0:
                 pixels.append((0, 0, 0))
                 continue
 
-            color_position = index / max(1, LED_COUNT - 1)
+            color_position = index / max(1, PIXEL_COUNT - 1)
             base_color = _blend_colors(LED_AUDIO_LOW_COLOR, LED_AUDIO_HIGH_COLOR, color_position)
             pixels.append(_scale_color(base_color, pixel_fill))
 

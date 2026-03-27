@@ -38,6 +38,9 @@ TOOL_COMPLETION_AUDIO_MAP = {
     "kitchen_light_off": [
         TOOL_COMPLETE_RESPONSES_DIR / "lights" / "kitchens_off.wav",
     ],
+    "kitchen_light_color": [
+        TOOL_COMPLETE_RESPONSES_DIR / "lights" / "done_kitchens_on.wav",
+    ],
     "station_lights_on": [
         TOOL_COMPLETE_RESPONSES_DIR / "lights" / "station_lights_on.wav",
     ],
@@ -93,6 +96,7 @@ TOOL_MAP = {
     "turn_everything_on": lighting.turn_everything_on,
     "kitchen_light_on": lighting.kitchen_light_on,
     "kitchen_light_off": lighting.kitchen_light_off,
+    "kitchen_light_color": lighting.kitchen_light_color,
     "station_lights_off": lighting.station_lights_off,
     "station_lights_on": lighting.station_lights_on, 
     "station_light_brightness": lighting.station_light_brightness,
@@ -286,8 +290,14 @@ def determine_relevent_tool(user_text):
         user_text += (
             " If the user wants the kitchen light on, call kitchen_light_on."
             " If the user wants the kitchen light off, call kitchen_light_off."
+            f" If the user wants to change the kitchen light color, call kitchen_light_color."
+            f" The valid colors are: {sorted(list(lighting.COLORS.keys()))}."
         )
-        return [lighting.kitchen_light_on, lighting.kitchen_light_off], user_text
+        return [
+            lighting.kitchen_light_on,
+            lighting.kitchen_light_off,
+            lighting.kitchen_light_color,
+        ], user_text
 
     if is_generic_stop_query(user_text):
         user_text += (
