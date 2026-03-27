@@ -82,6 +82,15 @@ PCM_ARRAY_TYPE_BY_SAMPLE_WIDTH = {
 }
 
 
+@dataclass(frozen=True)
+class _LedPalette:
+    idle_color: tuple[int, int, int]
+    loading_color: tuple[int, int, int]
+    loading_background_color: tuple[int, int, int]
+    audio_low_color: tuple[int, int, int]
+    audio_high_color: tuple[int, int, int]
+
+
 def _resolve_led_strip_type():
     if ws is None:
         return None
@@ -227,6 +236,37 @@ def _cosine_brightness(phase: float) -> float:
     return 0.5 - 0.5 * math.cos(2.0 * math.pi * phase)
 
 
+def _build_default_palette() -> _LedPalette:
+    return _LedPalette(
+        idle_color=LED_IDLE_COLOR,
+        loading_color=LED_LOADING_COLOR,
+        loading_background_color=LED_LOADING_BACKGROUND_COLOR,
+        audio_low_color=LED_AUDIO_LOW_COLOR,
+        audio_high_color=LED_AUDIO_HIGH_COLOR,
+    )
+
+
+def _tint_color(color: tuple[int, int, int], amount: float) -> tuple[int, int, int]:
+    return _blend_colors(color, (255, 255, 255), amount)
+
+
+def _build_runtime_palette(base_color: tuple[int, int, int]) -> _LedPalette:
+    # Keep Herbie in the same hue family as the station color, while preserving
+    # enough contrast for background and audio animation states.
+    idle_color = _tint_color(base_color, 0.18)
+    loading_color = _tint_color(base_color, 0.10)
+    loading_background_color = _scale_color(_tint_color(base_color, 0.32), 0.18)
+    audio_low_color = _tint_color(base_color, 0.24)
+
+    return _LedPalette(
+        idle_color=idle_color,
+        loading_color=loading_color,
+        loading_background_color=loading_background_color,
+        audio_low_color=audio_low_color,
+        audio_high_color=base_color,
+    )
+
+
 @dataclass
 class _AudioSession:
     stop_event: Event
@@ -246,6 +286,7 @@ class LedStripController:
         self._loading_ref_count = 0
         self._audio_sessions: dict[int, _AudioSession] = {}
         self._next_audio_session_id = 1
+        self._palette = _build_default_palette()
         self._render_thread: Thread | None = None
 
     def start(self) -> bool:
@@ -321,6 +362,12 @@ class LedStripController:
 
         self._wake_event.set()
 
+    def set_runtime_color_scheme(self, base_color: tuple[int, int, int]) -> None:
+        with self._state_lock:
+            self._palette = _build_runtime_palette(base_color)
+
+        self._wake_event.set()
+
     def start_loading(self) -> bool:
         if not self.start():
             return False
@@ -391,7 +438,7 @@ class LedStripController:
             self._strip.setPixelColor(index, Color(red, green, blue))
         self._strip.show()
 
-    def _get_render_state(self) -> tuple[bool, bool, bool, float]:
+    def _get_render_state(self) -> tuple[bool, bool, bool, float, _LedPalette]:
         with self._state_lock:
             idle_enabled = self._idle_enabled
             loading_active = self._loading_ref_count > 0
@@ -400,47 +447,60 @@ class LedStripController:
                 (session.level for session in self._audio_sessions.values()),
                 default=0.0,
             )
+            palette = self._palette
 
-        return idle_enabled, loading_active, audio_active, audio_level
+        return idle_enabled, loading_active, audio_active, audio_level, palette
 
     def _render_loop(self) -> None:
         while not self._shutdown_event.is_set():
             now = time.monotonic()
-            idle_enabled, loading_active, audio_active, audio_level = self._get_render_state()
+            idle_enabled, loading_active, audio_active, audio_level, palette = self._get_render_state()
 
             if audio_active:
-                self._show_pixels(self._build_audio_frame(audio_level))
+                self._show_pixels(self._build_audio_frame(audio_level, palette))
             elif loading_active:
-                self._show_pixels(self._build_loading_frame(now))
+                self._show_pixels(self._build_loading_frame(now, palette))
             elif idle_enabled:
-                self._show_pixels(self._build_idle_frame(now))
+                self._show_pixels(self._build_idle_frame(now, palette))
             else:
                 self._clear_strip()
 
             self._wake_event.wait(timeout=LED_FRAME_SECONDS)
             self._wake_event.clear()
 
-    def _build_idle_frame(self, now: float) -> list[tuple[int, int, int]]:
+    def _build_idle_frame(
+        self,
+        now: float,
+        palette: _LedPalette,
+    ) -> list[tuple[int, int, int]]:
         phase = (now % max(LED_IDLE_CYCLE_SECONDS, 0.1)) / max(LED_IDLE_CYCLE_SECONDS, 0.1)
         brightness = LED_IDLE_MIN_BRIGHTNESS + (
             1.0 - LED_IDLE_MIN_BRIGHTNESS
         ) * _cosine_brightness(phase)
-        color = _scale_color(LED_IDLE_COLOR, brightness)
+        color = _scale_color(palette.idle_color, brightness)
         return [color] * PIXEL_COUNT
 
-    def _build_loading_frame(self, now: float) -> list[tuple[int, int, int]]:
-        pixels = [_scale_color(LED_LOADING_BACKGROUND_COLOR, 1.0)] * PIXEL_COUNT
+    def _build_loading_frame(
+        self,
+        now: float,
+        palette: _LedPalette,
+    ) -> list[tuple[int, int, int]]:
+        pixels = [_scale_color(palette.loading_background_color, 1.0)] * PIXEL_COUNT
         tail_length = max(4, PIXEL_COUNT // 8)
         position = int((now / max(LED_FRAME_SECONDS, 0.01)) * 1.5) % max(1, PIXEL_COUNT)
 
         for offset in range(tail_length):
             index = (position - offset) % PIXEL_COUNT
             brightness = 1.0 - (offset / tail_length)
-            pixels[index] = _scale_color(LED_LOADING_COLOR, brightness)
+            pixels[index] = _scale_color(palette.loading_color, brightness)
 
         return pixels
 
-    def _build_audio_frame(self, level: float) -> list[tuple[int, int, int]]:
+    def _build_audio_frame(
+        self,
+        level: float,
+        palette: _LedPalette,
+    ) -> list[tuple[int, int, int]]:
         normalized_level = max(0.0, min(1.0, level))
         exact_height = normalized_level * PIXEL_COUNT
         pixels: list[tuple[int, int, int]] = []
@@ -452,7 +512,11 @@ class LedStripController:
                 continue
 
             color_position = index / max(1, PIXEL_COUNT - 1)
-            base_color = _blend_colors(LED_AUDIO_LOW_COLOR, LED_AUDIO_HIGH_COLOR, color_position)
+            base_color = _blend_colors(
+                palette.audio_low_color,
+                palette.audio_high_color,
+                color_position,
+            )
             pixels.append(_scale_color(base_color, pixel_fill))
 
         return pixels
@@ -586,6 +650,10 @@ def start_led_strip_controller() -> bool:
 
 def set_idle_led_mode(enabled: bool) -> None:
     LED_STRIP_CONTROLLER.set_idle_enabled(enabled)
+
+
+def set_runtime_color_scheme(base_color: tuple[int, int, int]) -> None:
+    LED_STRIP_CONTROLLER.set_runtime_color_scheme(base_color)
 
 
 def start_loading_led_animation() -> bool:
