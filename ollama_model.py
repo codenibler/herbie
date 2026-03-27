@@ -366,9 +366,8 @@ def determine_relevent_tool(user_text):
                         like this example. YYYY-MM-DDTHH:MM:SS±HH:MM. Right now, it is: {now}. If to_date is not mentioned by user, assume 1 hour after from_date"
         return [gcalendar.make_calendar_event], user_text
 
-    # Perhaps, depending on the performance impact, add classification one-shot model to see whether or not tool is appplicable to user prompt
-    # Or, whether an adequare prompt was skipped.  
-
+    # TO DO: Benchmark with functiongemma as a tool classifier. 
+    # TO DO: Fix broken Calendar tool 
 
     logging.info("No relevant tool found for this query.")
     return None, user_text
