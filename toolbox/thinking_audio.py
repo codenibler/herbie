@@ -3,7 +3,10 @@ from __future__ import annotations
 from helpers.audio_output import (
     build_wav_playback_command,
     cleanup_temp_wavs,
+    fade_preferred_output_volume_percent,
+    get_preferred_output_volume_percent,
     prepare_wav_for_output_channel_mode,
+    set_preferred_output_volume_percent,
 )
 from pathlib import Path
 from threading import Event, Lock, Thread
@@ -11,7 +14,6 @@ from threading import Event, Lock, Thread
 import logging
 import numpy as np
 import os
-import random
 import subprocess
 import tempfile
 import wave
@@ -32,35 +34,44 @@ THINKING_NOISE_GAIN = min(
 THINKING_NOISE_STOP_MAX_WAIT_SECONDS = float(
     os.getenv("THINKING_NOISE_STOP_MAX_WAIT_SECONDS", 2.5)
 )
+THINKING_NOISE_FILE_PREFERENCES = (
+    "thinking_noise.wav",
+    "thinking.wav",
+    "source.wav",
+)
 
 PCM_DTYPE_BY_SAMPLE_WIDTH = {
     1: np.uint8,
     2: np.int16,
     4: np.int32,
 }
-PREGENERATED_CLIP_GLOB = "clip_*.wav"
-SOURCE_WAV_NAME = "source.wav"
 
 
-def _get_thinking_noise_paths() -> list[Path]:
+def _get_thinking_noise_path() -> Path | None:
     if not THINKING_NOISE_DIR.exists():
         logging.warning("Thinking noise directory does not exist: %s", THINKING_NOISE_DIR)
-        return []
+        return None
 
-    thinking_paths = sorted(THINKING_NOISE_DIR.glob(PREGENERATED_CLIP_GLOB))
-    if thinking_paths:
-        return thinking_paths
+    for file_name in THINKING_NOISE_FILE_PREFERENCES:
+        candidate_path = THINKING_NOISE_DIR / file_name
+        if candidate_path.is_file():
+            return candidate_path
 
-    thinking_paths = [
+    thinking_paths = sorted(
         path
         for path in THINKING_NOISE_DIR.iterdir()
-        if path.is_file()
-        and path.suffix.lower() == ".wav"
-        and path.name != SOURCE_WAV_NAME
-    ]
+        if path.is_file() and path.suffix.lower() == ".wav"
+    )
     if not thinking_paths:
         logging.warning("No WAV thinking noise files found in %s", THINKING_NOISE_DIR)
-    return thinking_paths
+        return None
+
+    if len(thinking_paths) > 1:
+        logging.info(
+            "Multiple thinking noise files found. Using %s.",
+            thinking_paths[0].name,
+        )
+    return thinking_paths[0]
 
 
 def _validate_clip_duration(source_path: Path, frame_count: int, sample_rate: int) -> None:
@@ -74,17 +85,37 @@ def _validate_clip_duration(source_path: Path, frame_count: int, sample_rate: in
         )
 
 
-def _build_gain_envelope(frame_count: int, channels: int, fade_frame_count: int) -> np.ndarray:
+def _build_gain_envelope(
+    frame_count: int,
+    channels: int,
+    fade_frame_count: int,
+    *,
+    include_fade_in: bool,
+    include_fade_out: bool,
+) -> np.ndarray:
     if frame_count <= 1:
         return np.full(frame_count * max(1, channels), THINKING_NOISE_GAIN, dtype=np.float32)
 
     fade_frame_count = min(max(1, fade_frame_count), max(1, frame_count // 2))
-
     envelope = np.full(frame_count, THINKING_NOISE_GAIN, dtype=np.float32)
-    fade_in = np.linspace(0.0, THINKING_NOISE_GAIN, num=fade_frame_count, endpoint=True)
-    fade_out = np.linspace(THINKING_NOISE_GAIN, 0.0, num=fade_frame_count, endpoint=True)
-    envelope[:fade_frame_count] = fade_in
-    envelope[-fade_frame_count:] = np.minimum(envelope[-fade_frame_count:], fade_out)
+
+    if include_fade_in:
+        envelope[:fade_frame_count] = np.linspace(
+            0.0,
+            THINKING_NOISE_GAIN,
+            num=fade_frame_count,
+            endpoint=True,
+        )
+
+    if include_fade_out:
+        fade_out = np.linspace(
+            THINKING_NOISE_GAIN,
+            0.0,
+            num=fade_frame_count,
+            endpoint=True,
+        )
+        envelope[-fade_frame_count:] = np.minimum(envelope[-fade_frame_count:], fade_out)
+
     return np.repeat(envelope, max(1, channels))
 
 
@@ -93,6 +124,9 @@ def _apply_gain_envelope(
     sample_width: int,
     channels: int,
     fade_frame_count: int,
+    *,
+    include_fade_in: bool,
+    include_fade_out: bool,
 ) -> bytes:
     if not frames:
         return frames
@@ -107,7 +141,13 @@ def _apply_gain_envelope(
         return frames
 
     frame_count = max(1, samples.size // max(1, channels))
-    envelope = _build_gain_envelope(frame_count, channels, fade_frame_count)[: samples.size]
+    envelope = _build_gain_envelope(
+        frame_count,
+        channels,
+        fade_frame_count,
+        include_fade_in=include_fade_in,
+        include_fade_out=include_fade_out,
+    )[: samples.size]
 
     if sample_width == 1:
         centered_samples = samples.astype(np.float32) - 128.0
@@ -127,7 +167,13 @@ def _apply_gain_envelope(
     return scaled_samples.tobytes()
 
 
-def _build_prepared_thinking_clip(source_path: Path) -> Path | None:
+def _build_prepared_thinking_clip(
+    source_path: Path,
+    *,
+    include_fade_in: bool,
+    include_fade_out: bool,
+    clip_label: str,
+) -> Path | None:
     try:
         with wave.open(str(source_path), "rb") as source_wav:
             channels = source_wav.getnchannels()
@@ -149,10 +195,12 @@ def _build_prepared_thinking_clip(source_path: Path) -> Path | None:
         sample_width,
         channels,
         fade_frame_count,
+        include_fade_in=include_fade_in,
+        include_fade_out=include_fade_out,
     )
 
     with tempfile.NamedTemporaryFile(
-        prefix=f"{source_path.stem}_thinking_",
+        prefix=f"{source_path.stem}_{clip_label}_",
         suffix=".wav",
         delete=False,
     ) as temp_file:
@@ -175,10 +223,9 @@ class ThinkingAudioManager:
         self._current_process: subprocess.Popen | None = None
 
     def start_playback(self) -> bool:
-        thinking_paths = _get_thinking_noise_paths()
-        if not thinking_paths:
+        thinking_path = _get_thinking_noise_path()
+        if thinking_path is None:
             return False
-        selected_path = random.choice(thinking_paths)
 
         with self._lock:
             if self._worker is not None and self._worker.is_alive():
@@ -187,12 +234,13 @@ class ThinkingAudioManager:
             self._stop_requested.clear()
             self._worker = Thread(
                 target=self._playback_worker,
-                args=(selected_path,),
+                args=(thinking_path,),
+                name="herbie-thinking-audio",
                 daemon=True,
             )
             self._worker.start()
 
-        logging.info("Started thinking audio playback from %s.", selected_path.name)
+        logging.info("Started thinking audio playback from %s.", thinking_path.name)
         return True
 
     def stop_playback(self) -> bool:
@@ -205,7 +253,19 @@ class ThinkingAudioManager:
         if not is_active or worker is None:
             return False
 
+        restore_volume_percent: int | None = None
         if current_process is not None and current_process.poll() is None:
+            current_volume_percent = get_preferred_output_volume_percent()
+            if current_volume_percent is not None:
+                restore_volume_percent = current_volume_percent
+                if current_volume_percent > 0:
+                    fade_step_count = max(2, THINKING_NOISE_FADE_MS // 50)
+                    fade_preferred_output_volume_percent(
+                        start_volume_percent=current_volume_percent,
+                        end_volume_percent=0,
+                        duration_ms=THINKING_NOISE_FADE_MS,
+                        step_count=fade_step_count,
+                    )
             current_process.terminate()
 
         worker.join(timeout=THINKING_NOISE_STOP_MAX_WAIT_SECONDS)
@@ -217,34 +277,92 @@ class ThinkingAudioManager:
                 current_process.terminate()
             worker.join(timeout=0.5)
 
+        if restore_volume_percent is not None and set_preferred_output_volume_percent(
+            restore_volume_percent,
+            log_change=False,
+        ):
+            logging.info(
+                "Restored preferred output volume to %s%% after thinking audio fade-out.",
+                restore_volume_percent,
+            )
+
         logging.info("Stopped thinking audio playback.")
         return True
 
-    def _playback_worker(self, selected_path: Path) -> None:
-        temp_clip_path = _build_prepared_thinking_clip(selected_path)
-        if temp_clip_path is None:
+    def _playback_worker(self, thinking_path: Path) -> None:
+        intro_clip_path = _build_prepared_thinking_clip(
+            thinking_path,
+            include_fade_in=True,
+            include_fade_out=False,
+            clip_label="thinking_intro",
+        )
+        loop_clip_path = _build_prepared_thinking_clip(
+            thinking_path,
+            include_fade_in=False,
+            include_fade_out=False,
+            clip_label="thinking_loop",
+        )
+        if intro_clip_path is None or loop_clip_path is None:
+            cleanup_temp_wavs(intro_clip_path, loop_clip_path)
             with self._lock:
                 self._worker = None
+                self._current_process = None
             return
 
-        process: subprocess.Popen | None = None
-        playback_clip_path = prepare_wav_for_output_channel_mode(temp_clip_path)
+        intro_playback_path = prepare_wav_for_output_channel_mode(intro_clip_path)
+        loop_playback_path = prepare_wav_for_output_channel_mode(loop_clip_path)
         try:
             if self._stop_requested.is_set():
                 return
 
-            process = subprocess.Popen(build_wav_playback_command(playback_clip_path))
-            with self._lock:
-                self._current_process = process
-            process.wait()
+            if not self._play_clip(intro_playback_path):
+                return
+
+            while not self._stop_requested.is_set():
+                if not self._play_clip(loop_playback_path):
+                    break
         finally:
+            cleanup_temp_wavs(
+                intro_clip_path,
+                loop_clip_path,
+                intro_playback_path,
+                loop_playback_path,
+            )
             with self._lock:
-                if self._current_process is process:
-                    self._current_process = None
-            cleanup_temp_wavs(temp_clip_path, playback_clip_path)
+                self._worker = None
+                self._current_process = None
+
+    def _play_clip(self, clip_path: Path) -> bool:
+        if self._stop_requested.is_set():
+            return False
+
+        try:
+            process = subprocess.Popen(build_wav_playback_command(clip_path))
+        except OSError as exc:
+            logging.warning("Failed to start thinking audio playback for %s: %s", clip_path, exc)
+            return False
+
         with self._lock:
-            self._worker = None
-            self._current_process = None
+            self._current_process = process
+
+        return_code = process.wait()
+
+        with self._lock:
+            if self._current_process is process:
+                self._current_process = None
+
+        if self._stop_requested.is_set():
+            return False
+
+        if return_code != 0:
+            logging.warning(
+                "Thinking audio playback exited with code %s for %s.",
+                return_code,
+                clip_path,
+            )
+            return False
+
+        return True
 
 
 thinking_audio_manager = ThinkingAudioManager()

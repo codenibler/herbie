@@ -8,7 +8,7 @@ import logging
 import os
 DEFAULT_LIGHT_BRIGHTNESS = int(os.getenv("DEFAULT_LIGHT_BRIGHTNESS", 128))
 LIGHT_STATE_SETTLE_SECONDS = float(os.getenv("LIGHT_STATE_SETTLE_SECONDS", 1.5))
-FREAK_MODE_SONG_PATH = os.getenv("FREAK_MODE_SONG_PATH", "songs/careless_whisper.wav")
+FREAK_MODE_SONG_PATH = Path("songs/careless_whisper.wav")
 LIGHT_TURN_ON_FAILURE_MESSAGE = (
     "Turning on the light failed. Check if the light switch is off, and I'll try again"
 )

@@ -3,24 +3,38 @@
 # Sensitive or personal values (tokens, IPs, device names) are intentionally left blank.
 # Use this as a reference; do NOT paste secrets here if you share the file publicly.
 
-# General / timing
+# Runtime cadence
 RECALIBRATION_INTERVAL=600
 
-# Piper TTS
+# Audio output
+PREFERRED_WAV_OUTPUT_DEVICE=plughw:CARD=Audio,DEV=0
+STARTUP_OUTPUT_VOLUME_PERCENT=100
+
+# Wakeword ducking
+WAKEWORD_DUCKED_VOLUME_PERCENT=20
+WAKEWORD_DUCK_FADE_DURATION_MS=350
+WAKEWORD_DUCK_FADE_STEP_COUNT=7
+
+# Piper voice model
 PIPER_VOICE_MODEL_PATH=./piper_voice_model/en_US-hfc_male-medium.onnx
 PIPER_SPEAKER_ID=
+
+# Piper voice shaping
 PIPER_LENGTH_SCALE=1.0
 PIPER_NOISE_SCALE=0.667
 PIPER_NOISE_W_SCALE=0.8
 PIPER_NORMALIZE_AUDIO=true
 PIPER_VOLUME=1.0
-RESPONSE_AUDIO_DIR=response_audio
-PREFERRED_WAV_OUTPUT_DEVICE=plughw:CARD=Audio,DEV=0
-STARTUP_OUTPUT_VOLUME_PERCENT=100
 
-# Audio / listening
+# Generated response audio
+RESPONSE_AUDIO_DIR=response_audio
+
+# Listening baseline
 AMBIENT_NOISE_THRESHOLD=700.0
 SPEECH_PAUSE_THRESHOLD=1.0
+CALIBRATION_DURATION_SECONDS=5.0
+
+# Speech start / end detection
 SPEECH_START_TRIGGER_MS=150
 SPEECH_PREROLL_MS=250
 SPEECH_START_RATIO=2.4
@@ -29,47 +43,82 @@ SPEECH_START_MARGIN_RMS=180.0
 SPEECH_END_MARGIN_RMS=90.0
 STRONG_SPEECH_RATIO=0.65
 STRONG_PEAK_RATIO=0.35
-WAKEWORD_DUCKED_VOLUME_PERCENT=20
-WAKEWORD_DUCK_FADE_DURATION_MS=350
-WAKEWORD_DUCK_FADE_STEP_COUNT=7
+
+# Recorded WAV shaping
 WAV_SILENCE_PREFIX_MS=100
 WAV_LEAD_IN_GAIN=0.02
 WAV_OUTPUT_CHANNEL_MODE=original
-CALIBRATION_DURATION_SECONDS=5.0
+
+# Listening stream format
 LISTENING_SAMPLE_RATE=16000
 LISTENING_CHANNELS=2
 LISTENING_BLOCK_SIZE=1024
 MAX_RECORDING_DURATION_SECONDS=100.0
 
-# Wakeword / Porcupine
+# Wakeword engine
 WAKEWORD_PATH=herbie_wakewords/Hey-Herbie_en_raspberry-pi_v4_0_0.ppn
 WAKEWORD_LOG_INTERVAL_SECONDS=5.0
 
-# Microphone (sensitive: put the device name that matches `sd.query_devices()`)
+# Microphone
+# Sensitive: put the device name that matches `sd.query_devices()`
 MICROPHONE_NAME=
 
-# Whisper (transcription)
+# Whisper transcription
 WHISPER_PATH=whisper.cpp/build/bin/whisper-cli
 WHISPER_MODEL=whisper.cpp/models/ggml-base.en.bin
 USER_INPUT_DIR=recorded_wavs
 
-# Ollama model
+# Local model
 OLLAMA_MODEL_NAME=
 OLLAMA_KEEP_ALIVE=false
+
+# Timezones
 APP_TIMEZONE=Europe/Amsterdam
 CALENDAR_TIMEZONE=Europe/Amsterdam
 
-# Response assets
+# Spoken greetings
 GREETING_RESPONSES_DIR=herbie_responses/greetings
 ACK_TOOL_RESPONSES_DIR=herbie_responses/ack_tool
+
+# Thinking audio
 THINKING_NOISE_DIR=herbie_responses/thinking_noise
-THINKING_NOISE_CLIP_SECONDS=30
+THINKING_NOISE_CLIP_SECONDS=60
 THINKING_NOISE_FADE_MS=250
 THINKING_NOISE_GAIN=0.20
 THINKING_NOISE_STOP_MAX_WAIT_SECONDS=2.5
+
+# Other response packs
 TOOL_COMPLETE_RESPONSES_DIR=herbie_responses/tool_complete
 SPECIAL_CASE_RESPONSES_DIR=herbie_responses/special_cases
 TIMER_COMPLETE_RESPONSES_DIR=herbie_responses/timer_complete
+
+# LED strip: hardware
+LED_STRIP_ENABLED=true
+LED_COUNT=80
+LED_PIN=18
+LED_FREQ_HZ=800000
+LED_DMA=10
+LED_BRIGHTNESS=80
+LED_INVERT=false
+LED_CHANNEL=0
+LED_STRIP_TYPE=WS2811_STRIP_GRB
+
+# LED strip: timing
+LED_FRAME_SECONDS=0.04
+LED_IDLE_CYCLE_SECONDS=2.8
+LED_IDLE_MIN_BRIGHTNESS=0.08
+
+# LED strip: colors
+LED_IDLE_COLOR=255,0,0
+LED_LOADING_COLOR=255,0,0
+LED_LOADING_BACKGROUND_COLOR=8,4,0
+LED_AUDIO_LOW_COLOR=200,0,0
+LED_AUDIO_HIGH_COLOR=255,0,0
+
+# LED strip: audio visualizer
+LED_AUDIO_CHUNK_MS=40
+LED_AUDIO_GAIN=2.6
+LED_AUDIO_FALLOFF=0.82
 
 # Buzzer
 BUZZER_PIN=2
@@ -77,14 +126,15 @@ BUZZER_BEEP_COUNT=2
 BUZZER_BEEP_ON_SECONDS=0.1
 BUZZER_BEEP_OFF_SECONDS=0.1
 
-# Smart lights (IP addresses - sensitive)
+# Smart lights: devices
 KITCHEN_BULB_IP=
 BULB1_IP=
 BULB2_IP=
 BULB3_IP=
+
+# Smart lights: defaults
 DEFAULT_LIGHT_BRIGHTNESS=128
 LIGHT_STATE_SETTLE_SECONDS=1.5
-FREAK_MODE_SONG_PATH=songs/careless_whisper.wav
 
 # Logging
 LOG_LEVEL=INFO

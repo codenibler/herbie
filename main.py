@@ -15,6 +15,7 @@ from helpers.audio_output import (
 )
 from toolbox.background_audio import stop_background_playback
 from toolbox import led_strip
+from toolbox.led_strip import enable_pi5_led_runtime
 from wakeword_loop import initialize_wakeword_loop
 from parse_user_input import parse_user_input
 from setup.microphone_setup import setup_default_microphone
@@ -43,6 +44,7 @@ GREETING_RESPONSES_DIR = Path(os.getenv("GREETING_RESPONSES_DIR", "herbie_respon
 STARTUP_OUTPUT_VOLUME_PERCENT = int(os.getenv("STARTUP_OUTPUT_VOLUME_PERCENT", 100))
 WAKEWORD_DUCKED_VOLUME_PERCENT = int(os.getenv("WAKEWORD_DUCKED_VOLUME_PERCENT", 20))
 
+
 def activate_buzzer():
     buzzer = Buzzer(BUZZER_PIN)
     for _ in range(BUZZER_BEEP_COUNT):
@@ -69,6 +71,7 @@ def main():
 
     load_dotenv(override=True) # Override environemnt vars with those in .env
     setup_logging() 
+    enable_pi5_led_runtime()
     setup_default_microphone()
     led_strip.start_led_strip_controller()
     led_strip.set_idle_led_mode(True)
