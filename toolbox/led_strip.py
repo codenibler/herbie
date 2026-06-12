@@ -502,24 +502,13 @@ class LedStripController:
         palette: _LedPalette,
     ) -> list[tuple[int, int, int]]:
         normalized_level = max(0.0, min(1.0, level))
-        exact_height = normalized_level * PIXEL_COUNT
-        pixels: list[tuple[int, int, int]] = []
-
-        for index in range(PIXEL_COUNT):
-            pixel_fill = max(0.0, min(1.0, exact_height - index))
-            if pixel_fill <= 0.0:
-                pixels.append((0, 0, 0))
-                continue
-
-            color_position = index / max(1, PIXEL_COUNT - 1)
-            base_color = _blend_colors(
-                palette.audio_low_color,
-                palette.audio_high_color,
-                color_position,
-            )
-            pixels.append(_scale_color(base_color, pixel_fill))
-
-        return pixels
+        base_color = _blend_colors(
+            palette.audio_low_color,
+            palette.audio_high_color,
+            normalized_level,
+        )
+        color = _scale_color(base_color, normalized_level)
+        return [color] * PIXEL_COUNT
 
     def _monitor_audio_levels(
         self,
