@@ -16,14 +16,29 @@ import random
 import logging
 import asyncio
 import inspect
-import ollama
+import json
 import os
 import re
+
+from dotenv import load_dotenv
+from groq import Groq
+
+load_dotenv(override=True)
 
 ACK_TOOL_RESPONSES_DIR = Path(os.getenv("ACK_TOOL_RESPONSES_DIR", "herbie_responses/ack_tool"))
 TOOL_COMPLETE_RESPONSES_DIR = Path(os.getenv("TOOL_COMPLETE_RESPONSES_DIR", "herbie_responses/tool_complete"))
 SPECIAL_CASE_RESPONSES_DIR = Path(os.getenv("SPECIAL_CASE_RESPONSES_DIR", "herbie_responses/special_cases"))
 APP_TIMEZONE = os.getenv("APP_TIMEZONE", "Europe/Amsterdam")
+DEFAULT_GROQ_MODEL_NAME = "meta-llama/llama-4-scout-17b-16e-instruct"
+SYSTEM_PROMPT = (
+    "You are an unapologetically nerdy, playful and wise AI mentor to a human. "
+    "You are passionately enthusiastic about promoting truth, knowledge, philosophy, "
+    "the scientific method, and critical thinking. You must undercut pretension "
+    "through playful use of language. The world is complex and strange, and its "
+    "strangeness must be acknowledged, analyzed, and enjoyed. You tackle weighty "
+    "subjects without falling into the trap of self-seriousness."
+)
+_GROQ_CLIENT = None
 
 TOOL_COMPLETION_AUDIO_MAP = {
     "turn_everything_off": [
@@ -193,14 +208,192 @@ BACKGROUND_AUDIO_STOP_PATTERNS = (
     "stop the alarm",
 )
 
-def ollama_query(user_text):
-    # Determine through string matching if tool is usable.
-    MODEL = os.getenv("OLLAMA_MODEL_NAME")
-    assert MODEL is not None, "OLLAMA_MODEL_NAME environment variable not set."
+TOOL_DESCRIPTIONS = {
+    "turn_everything_off": "Turn off all configured smart lights.",
+    "turn_everything_on": "Turn on all configured smart lights.",
+    "kitchen_light_on": "Turn on the kitchen light.",
+    "kitchen_light_off": "Turn off the kitchen light.",
+    "kitchen_light_color": "Set the kitchen light to a named color.",
+    "station_lights_off": "Turn off the station lights.",
+    "station_lights_on": "Turn on the station lights.",
+    "station_light_brightness": "Set the station lights brightness as a percentage.",
+    "station_light_color": "Set the station lights to a named color.",
+    "station_lights_freaky": "Activate freak mode for the station lights and music.",
+    "make_calendar_event": "Create a Google Calendar event.",
+    "play_random_songs": "Play a shuffled queue of songs from the local songs directory.",
+    "play_specific_song": "Play one specific song from the local songs directory.",
+    "skip_song": "Skip the current song or move to a different available track.",
+    "stop_music": "Stop the current music playback.",
+    "stop_background_playback": "Stop music, timer sounds, or other active background audio.",
+    "start_timer": "Start a timer for a specific duration in seconds.",
+    "stop_timer": "Stop the active timer if one is running.",
+    "get_timer_remaining": "Report how much time is left on the active timer.",
+    "set_output_volume": "Set the preferred speaker output volume as a percentage.",
+}
+
+TOOL_PARAMETER_METADATA = {
+    ("kitchen_light_color", "color_name"): {
+        "description": "The color name to set on the kitchen light.",
+        "enum": sorted(lighting.COLORS.keys()),
+    },
+    ("station_light_color", "color_name"): {
+        "description": "The color name to set on the station lights.",
+        "enum": sorted(lighting.COLORS.keys()),
+    },
+    ("station_light_brightness", "brightness"): {
+        "description": "Brightness percentage from 0 to 100.",
+        "minimum": 0,
+        "maximum": 100,
+    },
+    ("set_output_volume", "volume_percent"): {
+        "description": "Speaker output volume percentage from 0 to 100.",
+        "minimum": 0,
+        "maximum": 100,
+    },
+    ("start_timer", "duration_seconds"): {
+        "description": "How long the timer should run, in whole seconds.",
+        "minimum": 1,
+    },
+    ("play_specific_song", "song_path"): {
+        "description": "Relative path to a song file in the songs directory.",
+    },
+    ("make_calendar_event", "title"): {
+        "description": "A short event title.",
+    },
+    ("make_calendar_event", "from_date"): {
+        "description": "The event start time as an RFC3339 timestamp, for example 2026-06-12T15:00:00+02:00.",
+    },
+    ("make_calendar_event", "to_date"): {
+        "description": "The event end time as an RFC3339 timestamp, for example 2026-06-12T16:00:00+02:00.",
+    },
+}
+
+
+def get_groq_model_name() -> str:
+    return os.getenv("GROQ_MODEL_NAME", DEFAULT_GROQ_MODEL_NAME)
+
+
+def get_groq_client() -> Groq:
+    global _GROQ_CLIENT
+
+    api_key = os.getenv("GROQ_API_KEY")
+    assert api_key, "GROQ_API_KEY environment variable not set."
+
+    if _GROQ_CLIENT is None:
+        _GROQ_CLIENT = Groq(api_key=api_key)
+
+    return _GROQ_CLIENT
+
+
+def build_chat_messages(user_text: str) -> list[dict[str, str]]:
+    return [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": user_text},
+    ]
+
+
+def _build_json_schema_type(parameter: inspect.Parameter) -> dict[str, object]:
+    annotation = parameter.annotation
+    json_type = "string"
+
+    if annotation is int:
+        json_type = "integer"
+    elif annotation is float:
+        json_type = "number"
+    elif annotation is bool:
+        json_type = "boolean"
+
+    return {"type": json_type}
+
+
+def build_groq_tool_schema(function) -> dict[str, object]:
+    signature = inspect.signature(function)
+    properties = {}
+    required = []
+
+    for parameter in signature.parameters.values():
+        if parameter.kind not in (
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            inspect.Parameter.KEYWORD_ONLY,
+        ):
+            continue
+
+        schema = _build_json_schema_type(parameter)
+        schema.update(
+            TOOL_PARAMETER_METADATA.get((function.__name__, parameter.name), {})
+        )
+        properties[parameter.name] = schema
+
+        if parameter.default is inspect.Parameter.empty:
+            required.append(parameter.name)
+
+    parameters_schema = {
+        "type": "object",
+        "properties": properties,
+        "additionalProperties": False,
+    }
+    if required:
+        parameters_schema["required"] = required
+
+    return {
+        "type": "function",
+        "function": {
+            "name": function.__name__,
+            "description": TOOL_DESCRIPTIONS.get(
+                function.__name__,
+                function.__name__.replace("_", " "),
+            ),
+            "parameters": parameters_schema,
+        },
+    }
+
+
+def build_groq_tools(tools) -> list[dict[str, object]]:
+    return [build_groq_tool_schema(tool) for tool in tools]
+
+
+def _extract_tool_call_data(tool_call) -> tuple[str | None, dict[str, object]]:
+    if isinstance(tool_call, dict):
+        function = tool_call.get("function", {})
+        function_name = function.get("name")
+        raw_arguments = function.get("arguments", {})
+    else:
+        function = getattr(tool_call, "function", None)
+        function_name = getattr(function, "name", None)
+        raw_arguments = getattr(function, "arguments", {})
+
+    if isinstance(raw_arguments, str):
+        stripped_arguments = raw_arguments.strip()
+        if not stripped_arguments:
+            function_args = {}
+        else:
+            try:
+                function_args = json.loads(stripped_arguments)
+            except json.JSONDecodeError:
+                logging.warning(
+                    "Failed to parse tool arguments for %s: %s",
+                    function_name,
+                    raw_arguments,
+                )
+                function_args = {}
+    elif isinstance(raw_arguments, dict):
+        function_args = raw_arguments
+    else:
+        function_args = {}
+
+    if "object" in function_args and isinstance(function_args["object"], dict):
+        function_args = function_args["object"]
+
+    return function_name, function_args
+
+
+def groq_query(user_text):
+    model_name = get_groq_model_name()
 
     tool, user_text = determine_relevent_tool(user_text)
     started_thinking_audio = False
     started_loading_animation = False
+    response_message = None
 
     try:
         if tool is not None:
@@ -212,30 +405,41 @@ def ollama_query(user_text):
 
             started_loading_animation = led_strip.start_loading_led_animation()
             started_thinking_audio = thinking_audio.start_thinking_audio()
-            response = ollama.chat(
-                model=MODEL,
-                messages=[{'role': 'user', 'content': user_text}],
-                tools=tool,
+            response = get_groq_client().chat.completions.create(
+                model=model_name,
+                messages=build_chat_messages(user_text),
+                tools=build_groq_tools(tool),
+                tool_choice="auto",
+                parallel_tool_calls=False,
             )
+            response_message = response.choices[0].message
             logging.info(f"Selected tool for this query: {tool}")
-            logging.info(f"Ollama response: {response['message']['content']}")
-            if 'tool_calls' in response["message"]:
-                clarification_message = execute_tool_calls(response['message']['tool_calls'])
+            logging.info("Groq response: %s", response_message.content)
+            if response_message.tool_calls:
+                clarification_message = execute_tool_calls(response_message.tool_calls)
                 if clarification_message is not None:
                     logging.info(f"Tool clarification requested: {clarification_message}")
                     return clarification_message
         else:
             started_loading_animation = led_strip.start_loading_led_animation()
             started_thinking_audio = thinking_audio.start_thinking_audio()
-            response = ollama.chat(model=MODEL, messages=[{'role': 'user', 'content': user_text}])
+            response = get_groq_client().chat.completions.create(
+                model=model_name,
+                messages=build_chat_messages(user_text),
+            )
+            response_message = response.choices[0].message
     finally:
         if started_thinking_audio:
             thinking_audio.stop_thinking_audio()
         if started_loading_animation:
             led_strip.stop_loading_led_animation()
-    
-    logging.info(f"Ollama response: {response['message']['content']}")
-    return response['message']['content']
+
+    response_content = ""
+    if response_message is not None and response_message.content is not None:
+        response_content = response_message.content
+
+    logging.info("Groq response: %s", response_content)
+    return response_content
 
 def normalize_user_text(text: str) -> str:
     return " ".join(re.findall(r"\b[\w']+\b", text.lower()))
@@ -502,11 +706,7 @@ def execute_tool_calls(tool_calls):
     thinking_audio.stop_thinking_audio()
 
     for tool_call in tool_calls:
-        function_name = tool_call['function']['name']
-        function_args = tool_call['function']['arguments']
-        # In the case the model nested the arguments inside of an object, we unwrap.
-        if "object" in function_args and isinstance(function_args["object"], dict):
-            function_args = function_args["object"]
+        function_name, function_args = _extract_tool_call_data(tool_call)
         if function_name in TOOL_MAP:
             sanitized_args, missing_required_args, stripped_args = validate_tool_call_arguments(
                 TOOL_MAP[function_name], function_args
@@ -579,17 +779,18 @@ def one_word_present_in_text(words, text):
             return True
     return False
 
-def warm_up_ollama_model():
-    
-    model=os.getenv("OLLAMA_MODEL_NAME")
-    keep_alive=os.getenv("OLLAMA_KEEP_ALIVE")
-    assert model is not None, "OLLAMA_MODEL_NAME environment variable not set."
-    assert keep_alive is not None, "OLLAMA_KEEP_ALIVE environment variable not set."
+def warm_up_groq_client():
+    model_name = get_groq_model_name()
+    logging.info("Validating Groq client configuration for model %s...", model_name)
+    available_model_ids = {
+        model.id for model in get_groq_client().models.list().data
+    }
+    if model_name not in available_model_ids:
+        raise ValueError(
+            f"Configured Groq model {model_name!r} is not available to this API key."
+        )
+    logging.info("Groq client is ready.")
 
-    logging.info("Warming up Ollama model...")
-    ollama.generate(model=model, keep_alive=keep_alive)
-    logging.info("Herbie officially warmed up")
 
-
-async def warm_up_ollama_model_async():
-    await asyncio.to_thread(warm_up_ollama_model)
+async def warm_up_groq_client_async():
+    await asyncio.to_thread(warm_up_groq_client)

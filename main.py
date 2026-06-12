@@ -1,12 +1,12 @@
 # Entry point for the application
 from user_listening_loop import listen_for_user_input, calibrate_ambient_noise, calibrate_ambient_noise_async
 from piper_tts import read_out_response, read_out_response_from_file
-from ollama_model import (
+from groq_model import (
     build_time_query_response,
     is_background_audio_stop_request,
     is_time_query,
-    ollama_query,
-    warm_up_ollama_model_async,
+    groq_query,
+    warm_up_groq_client_async,
 )
 from helpers.audio_output import (
     duck_preferred_output_volume_if_playing,
@@ -55,8 +55,8 @@ def activate_buzzer():
 
 
 async def initialize_startup_tasks():
-    logging.info("Starting Ollama warm-up and ambient noise calibration concurrently.")
-    warm_up_task = asyncio.create_task(warm_up_ollama_model_async())
+    logging.info("Starting Groq client validation and ambient noise calibration concurrently.")
+    warm_up_task = asyncio.create_task(warm_up_groq_client_async())
     calibrate_task = asyncio.create_task(calibrate_ambient_noise_async())
 
     ambient_noise_value = await calibrate_task
@@ -144,8 +144,8 @@ def main():
         if background_audio_ducked:
             restore_preferred_output_volume()
         
-        ollama_response = ollama_query(user_text)
-        read_out_response(ollama_response)  
+        groq_response = groq_query(user_text)
+        read_out_response(groq_response)
         activate_buzzer()
 
 

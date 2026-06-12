@@ -28,8 +28,13 @@ cmake --build build -j --config Release
 ```bash
 cp dotenvstructure.txt .env
 # edit .env and fill sensitive values: WAKEWORD_ACCESS_TOKEN, MICROPHONE_NAME,
-# OLLAMA_MODEL_NAME, bulb IPs, etc.
+# GROQ_API_KEY, optional GROQ_MODEL_NAME, bulb IPs, etc.
 ```
+
+Groq inference:
+- Herbie uses the Groq API for language-model responses.
+- `GROQ_API_KEY` is required in `.env`.
+- `GROQ_MODEL_NAME` is optional and defaults to `meta-llama/llama-4-scout-17b-16e-instruct`.
 
 ## Hardware setup
 
