@@ -1,0 +1,360 @@
+from __future__ import annotations
+
+import ast
+import logging
+import os
+import re
+from datetime import datetime
+from typing import Dict, List, Optional, Tuple
+
+import pandas as pd
+
+from . import analytics
+from . import charts
+from config.config import StrategyConfig
+from config.classes import AnalyzedStock
+from data_fetching import market_data
+from stock_universe.constituents import extract_trading212_base_symbol
+
+logger = logging.getLogger(__name__)
+
+
+def _lookback_to_offset(lookback: str) -> Optional[pd.DateOffset]:
+    lookback = lookback.strip().lower()
+    if lookback.endswith("mo"):
+        return pd.DateOffset(months=int(lookback[:-2]))
+    if lookback.endswith("y"):
+        return pd.DateOffset(years=int(lookback[:-1]))
+    if lookback.endswith("d"):
+        return pd.DateOffset(days=int(lookback[:-1]))
+    return None
+
+
+def _slice_lookback(df: pd.DataFrame, lookback: str) -> pd.DataFrame:
+    offset = _lookback_to_offset(lookback)
+    if offset is None:
+        return df
+    cutoff = datetime.utcnow() - offset
+    if not isinstance(df.index, pd.DatetimeIndex):
+        df = df.copy()
+        df.index = pd.to_datetime(df.index, errors="coerce")
+    if df.index.tz is not None:
+        df = df.tz_convert(None)
+    return df[df.index >= cutoff]
+
+
+def analyze_universe(
+    instruments: List[dict],
+    *,
+    config: StrategyConfig,
+    log_dir: str,
+) -> Tuple[List[AnalyzedStock], List[str], Dict[str, object], Dict[str, str]]:
+    logger.info("Analyzing %s instruments for momentum", len(instruments))
+    results: List[AnalyzedStock] = []
+    drop_counts: Dict[str, int] = {}
+    drop_reasons: Dict[str, str] = {}
+    symbol_entries: List[tuple[dict, str]] = []
+
+    eurusd_rate = market_data.get_eur_usd_rate(
+        retries=config.retries,
+        retry_sleep_seconds=config.retry_sleep_seconds,
+        force=True,
+    )
+    usd_to_eur: Optional[float] = None
+    if eurusd_rate is not None and eurusd_rate > 0:
+        usd_to_eur = 1.0 / eurusd_rate
+        logger.info(
+            "Using EUR/USD rate %.6f (USD per EUR). USD->EUR factor %.6f for momentum pricing",
+            eurusd_rate,
+            usd_to_eur,
+        )
+    else:
+        logger.warning("EUR/USD rate unavailable; momentum will remain in USD")
+
+    for inst in instruments:
+        ticker = inst.get("ticker")
+        if not ticker:
+            drop_counts["missing_ticker"] = drop_counts.get("missing_ticker", 0) + 1
+            continue
+        base_symbol = extract_trading212_base_symbol(ticker)
+        if not base_symbol:
+            drop_counts["missing_base_symbol"] = drop_counts.get("missing_base_symbol", 0) + 1
+            drop_reasons[ticker] = "missing_base_symbol"
+            continue
+        symbol_entries.append((inst, base_symbol))
+
+    resolved_histories = market_data.resolve_history_for_symbols(
+        {base_symbol for _, base_symbol in symbol_entries},
+        period=config.history_lookback,
+        interval=config.price_interval,
+        retries=config.retries,
+        retry_sleep_seconds=config.retry_sleep_seconds,
+        batch_size=config.batch_size,
+    )
+
+    for inst, base_symbol in symbol_entries:
+        ticker = inst.get("ticker", "")
+        resolved = resolved_histories.get(base_symbol)
+        if not resolved:
+            logger.info("Dropping %s: no yfinance data", base_symbol)
+            drop_counts["no_data"] = drop_counts.get("no_data", 0) + 1
+            drop_reasons[ticker] = "no_data"
+            continue
+        yfinance_symbol, df_full = resolved
+        if df_full is None or df_full.empty:
+            logger.info("Dropping %s: no yfinance data", base_symbol)
+            drop_counts["no_data"] = drop_counts.get("no_data", 0) + 1
+            drop_reasons[ticker] = "no_data"
+            continue
+        df_full = market_data.normalize_price_frame(df_full.sort_index())
+
+        momentum_df = _slice_lookback(df_full, config.momentum_lookback)
+        if momentum_df is None or momentum_df.empty:
+            logger.info("Dropping %s: no momentum data", base_symbol)
+            drop_counts["no_momentum_data"] = drop_counts.get("no_momentum_data", 0) + 1
+            drop_reasons[ticker] = "no_momentum_data"
+            continue
+
+        price_series = market_data.select_price_series(momentum_df)
+        if price_series is None or price_series.dropna().empty:
+            logger.info("Dropping %s: NaN price series", base_symbol)
+            drop_counts["nan_close"] = drop_counts.get("nan_close", 0) + 1
+            drop_reasons[ticker] = "nan_close"
+            continue
+        if usd_to_eur is not None:
+            sample_price_usd = float(price_series.dropna().iloc[-1])
+            price_series = price_series * usd_to_eur
+            sample_price_eur = float(sample_price_usd * usd_to_eur)
+            logger.debug(
+                "Converted %s price series to EUR for momentum calculation (sample %.4f USD -> %.4f EUR)",
+                base_symbol,
+                sample_price_usd,
+                sample_price_eur,
+            )
+
+        momentum = analytics.calculate_momentum_score(
+            price_series,
+            annualization_factor=config.annualization_factor,
+        )
+        if not momentum:
+            logger.info("Dropping %s: momentum regression failed", base_symbol)
+            drop_counts["momentum_failed"] = drop_counts.get("momentum_failed", 0) + 1
+            drop_reasons[ticker] = "momentum_failed"
+            continue
+        score, slope, r_squared = momentum
+
+        atr20 = analytics.calculate_atr(df_full, config.atr_period)
+        if atr20 is None or atr20 <= 0:
+            logger.info("Dropping %s: ATR unavailable", base_symbol)
+            drop_counts["atr_missing"] = drop_counts.get("atr_missing", 0) + 1
+            drop_reasons[ticker] = "atr_missing"
+            continue
+
+        full_price = market_data.select_price_series(df_full)
+        if full_price is None or full_price.dropna().empty:
+            logger.info("Dropping %s: missing price data", base_symbol)
+            drop_counts["missing_close"] = drop_counts.get("missing_close", 0) + 1
+            drop_reasons[ticker] = "missing_close"
+            continue
+
+        current_price = float(full_price.dropna().iloc[-1])
+        sma100 = analytics.calculate_sma(full_price, config.sma_short)
+        if sma100 is None:
+            logger.info("Dropping %s: SMA%s unavailable", base_symbol, config.sma_short)
+            drop_counts["sma_missing"] = drop_counts.get("sma_missing", 0) + 1
+            drop_reasons[ticker] = "sma_missing"
+            continue
+        if current_price < sma100:
+            logger.info("Dropping %s: price %.2f below SMA%s %.2f", base_symbol, current_price, config.sma_short, sma100)
+            drop_counts["below_sma"] = drop_counts.get("below_sma", 0) + 1
+            drop_reasons[ticker] = "below_sma"
+            continue
+
+        gap_pct = analytics.find_max_gap_percent(
+            df_full,
+            lookback_days=config.gap_lookback_days,
+        )
+        if gap_pct is not None and gap_pct >= (config.gap_threshold * 100.0):
+            logger.info(
+                "Dropping %s: max gap %.2f%% >= %.2f%% in last %s days",
+                base_symbol,
+                gap_pct,
+                config.gap_threshold * 100.0,
+                config.gap_lookback_days,
+            )
+            drop_counts["gap"] = drop_counts.get("gap", 0) + 1
+            drop_reasons[ticker] = "gap_exceeded"
+            continue
+
+        results.append(
+            AnalyzedStock(
+                ticker=ticker,
+                base_symbol=base_symbol,
+                yfinance_symbol=yfinance_symbol or base_symbol,
+                name=inst.get("name", ""),
+                score=score,
+                atr20=atr20,
+                current_price=current_price,
+                sma100=sma100,
+                max_gap_percent=gap_pct,
+                slope=slope,
+                r_squared=r_squared,
+            )
+        )
+
+    ticker_counts: Dict[str, int] = {}
+    for stock in results:
+        ticker_counts[stock.ticker] = ticker_counts.get(stock.ticker, 0) + 1
+
+    duplicates = sorted(ticker for ticker, count in ticker_counts.items() if count > 1)
+    duplicate_count = sum(count - 1 for count in ticker_counts.values() if count > 1)
+
+    unique_by_ticker: Dict[str, AnalyzedStock] = {}
+    for stock in results:
+        existing = unique_by_ticker.get(stock.ticker)
+        if existing is None or stock.score > existing.score:
+            unique_by_ticker[stock.ticker] = stock
+
+    ranked = sorted(unique_by_ticker.values(), key=lambda stock: stock.score, reverse=True)
+    ranked = _apply_share_class_exclusions(ranked, drop_reasons)
+    logger.info("Momentum ranking complete. Kept %s stocks", len(ranked))
+    if duplicate_count:
+        logger.info("Removed %s duplicate tickers from rankings", duplicate_count)
+        logger.info("Duplicate tickers detected: %s", len(duplicates))
+        for ticker in duplicates:
+            logger.info("Duplicate ticker: %s", ticker)
+    if drop_counts:
+        logger.info("Drop summary: %s", drop_counts)
+
+    charts.plot_momentum_buckets(
+        ranked,
+        output_dir=log_dir,
+        bucket_size=config.chart_bucket,
+    )
+    charts.plot_momentum_extremes_summary(
+        ranked,
+        output_dir=log_dir,
+        count=5,
+    )
+    def _describe(values: List[float]) -> Optional[Dict[str, float]]:
+        if not values:
+            return None
+        series = pd.Series(values)
+        return {
+            "min": float(series.min()),
+            "max": float(series.max()),
+            "mean": float(series.mean()),
+            "median": float(series.median()),
+        }
+
+    summary = {
+        "instrument_count": len(instruments),
+        "symbol_entries": len(symbol_entries),
+        "resolved_histories": len(resolved_histories),
+        "drop_counts": drop_counts,
+        "duplicate_count": duplicate_count,
+        "duplicates": duplicates,
+        "ranked_count": len(ranked),
+        "momentum_stats": {
+            "score": _describe([stock.score for stock in ranked]),
+            "slope": _describe([stock.slope for stock in ranked]),
+            "r_squared": _describe([stock.r_squared for stock in ranked]),
+        },
+    }
+    return ranked, duplicates, summary, drop_reasons
+
+
+def _parse_share_class_exclusions(raw: str) -> List[tuple[str, ...]]:
+    text = (raw or "").strip()
+    if not text:
+        return []
+    tuples: List[tuple[str, ...]] = []
+
+    try:
+        parsed = ast.literal_eval(text)
+    except (SyntaxError, ValueError):
+        parsed = None
+
+    def _normalize_parts(parts: List[str]) -> List[str]:
+        cleaned: List[str] = []
+        for part in parts:
+            value = part.strip().strip("'\"").strip()
+            if value:
+                cleaned.append(value.upper())
+        return cleaned
+
+    if parsed is not None:
+        if isinstance(parsed, (list, tuple)):
+            items = parsed
+        else:
+            items = [parsed]
+        for item in items:
+            if isinstance(item, (list, tuple)):
+                parts = _normalize_parts([str(p) for p in item])
+            elif isinstance(item, str):
+                parts = _normalize_parts(item.split(","))
+            else:
+                parts = []
+            if parts:
+                tuples.append(tuple(parts))
+
+    if tuples:
+        return tuples
+
+    groups = re.findall(r"\(([^)]*)\)", text)
+    if not groups:
+        groups = [text]
+    for group in groups:
+        parts = _normalize_parts(group.split(","))
+        if parts:
+            tuples.append(tuple(parts))
+    return tuples
+
+
+def _load_share_class_exclusions() -> List[tuple[str, ...]]:
+    raw = os.getenv("SHARE_CLASS_EXCLUSIONS", "")
+    exclusions = _parse_share_class_exclusions(raw)
+    if exclusions:
+        logger.info("Share class exclusions configured: %s", exclusions)
+    return exclusions
+
+
+def _apply_share_class_exclusions(ranked: List[AnalyzedStock], drop_reasons: Dict[str, str]) -> List[AnalyzedStock]:
+    exclusions = _load_share_class_exclusions()
+    if not exclusions:
+        return ranked
+
+    by_base: Dict[str, List[AnalyzedStock]] = {}
+    for stock in ranked:
+        by_base.setdefault(stock.base_symbol, []).append(stock)
+
+    drop_symbols: set[str] = set()
+    for group in exclusions:
+        preferred = None
+        for symbol in group:
+            if symbol in by_base and by_base[symbol]:
+                preferred = symbol
+                break
+        if not preferred:
+            continue
+        for symbol in group:
+            if symbol != preferred and symbol in by_base:
+                drop_symbols.add(symbol)
+
+    if not drop_symbols:
+        return ranked
+
+    filtered = [stock for stock in ranked if stock.base_symbol not in drop_symbols]
+    # Track stocks excluded due to share class exclusions
+    for stock in ranked:
+        if stock.base_symbol in drop_symbols and stock.ticker not in drop_reasons:
+            drop_reasons[stock.ticker] = "share_class_excluded"
+    
+    removed = len(ranked) - len(filtered)
+    if removed:
+        logger.info(
+            "Dropped %s share-class entries due to exclusions: %s",
+            removed,
+            sorted(drop_symbols),
+        )
+    return filtered
