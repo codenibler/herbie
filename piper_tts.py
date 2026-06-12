@@ -63,11 +63,16 @@ def read_out_response(text: str):
 
     logging.debug(f"Synthesizing response to {out_wav}...")
 
+    started_loading_animation = led_strip.start_loading_led_animation()
     with wave.open(str(out_wav), "wb") as wav_file:
-        voice.synthesize_wav(text, wav_file, syn_config=build_synthesis_config())
+        try:
+            voice.synthesize_wav(text, wav_file, syn_config=build_synthesis_config())
+            padded_wav = prepend_silence_to_wav(out_wav)
+            playback_wav = prepare_wav_for_output_channel_mode(padded_wav)
+        finally:
+            if started_loading_animation:
+                led_strip.stop_loading_led_animation()
 
-    padded_wav = prepend_silence_to_wav(out_wav)
-    playback_wav = prepare_wav_for_output_channel_mode(padded_wav)
     led_session_id = led_strip.begin_audio_led_visualizer(playback_wav)
     try:
         playback_command = build_wav_playback_command(playback_wav)
