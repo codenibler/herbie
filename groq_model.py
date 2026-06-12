@@ -7,6 +7,7 @@ from toolbox import music
 from toolbox import volume
 from toolbox import background_audio
 from toolbox import thinking_audio
+from toolbox import weather
 
 from pathlib import Path
 from datetime import datetime
@@ -25,7 +26,6 @@ from groq import Groq
 
 load_dotenv(override=True)
 
-ACK_TOOL_RESPONSES_DIR = Path(os.getenv("ACK_TOOL_RESPONSES_DIR", "herbie_responses/ack_tool"))
 TOOL_COMPLETE_RESPONSES_DIR = Path(os.getenv("TOOL_COMPLETE_RESPONSES_DIR", "herbie_responses/tool_complete"))
 SPECIAL_CASE_RESPONSES_DIR = Path(os.getenv("SPECIAL_CASE_RESPONSES_DIR", "herbie_responses/special_cases"))
 APP_TIMEZONE = os.getenv("APP_TIMEZONE", "Europe/Amsterdam")
@@ -34,9 +34,8 @@ SYSTEM_PROMPT = (
     "You are an unapologetically nerdy, playful and wise AI mentor to a human. "
     "You are passionately enthusiastic about promoting truth, knowledge, philosophy, "
     "the scientific method, and critical thinking. You must undercut pretension "
-    "through playful use of language. The world is complex and strange, and its "
-    "strangeness must be acknowledged, analyzed, and enjoyed. You tackle weighty "
-    "subjects without falling into the trap of self-seriousness."
+    "through playful use of language, through you prefer short answers. The world is complex and strange, and its "
+    "strangeness must be acknowledged, analyzed, and enjoyed."
 )
 _GROQ_CLIENT = None
 
@@ -127,6 +126,7 @@ TOOL_MAP = {
     "stop_timer": timer.stop_timer,
     "get_timer_remaining": timer.get_timer_remaining,
     "set_output_volume": volume.set_output_volume,
+    "get_weather_analysis": weather.get_weather_analysis,
 
 }
 CANON = {
@@ -229,6 +229,7 @@ TOOL_DESCRIPTIONS = {
     "stop_timer": "Stop the active timer if one is running.",
     "get_timer_remaining": "Report how much time is left on the active timer.",
     "set_output_volume": "Set the preferred speaker output volume as a percentage.",
+    "get_weather_analysis": "Get a succinct weather analysis for the configured location and recommend what clothing to wear.",
 }
 
 TOOL_PARAMETER_METADATA = {
@@ -398,11 +399,6 @@ def groq_query(user_text):
     try:
         if tool is not None:
             logging.info(tool)
-            if lighting.station_lights_freaky not in tool: # Special case, own response
-                herbie_random_ack_response = random.choice(os.listdir(ACK_TOOL_RESPONSES_DIR))
-                read_out_response_from_file(ACK_TOOL_RESPONSES_DIR / herbie_random_ack_response)
-                logging.info(f"Tool ack response {herbie_random_ack_response}")
-
             started_loading_animation = led_strip.start_loading_led_animation()
             started_thinking_audio = thinking_audio.start_thinking_audio()
             response = get_groq_client().chat.completions.create(
@@ -558,6 +554,13 @@ def determine_relevent_tool(user_text):
     if one_word_present_in_text(["volume"], user_text.lower()):
         user_text += " If the user wants to change the speaker volume, call set_output_volume with volume_percent as an integer from 0 to 100."
         return [volume.set_output_volume], user_text
+
+    if one_word_present_in_text(["weather"], user_text.lower()):
+        user_text += (
+            " The user wants the current weather for the configured location."
+            " Call get_weather_analysis."
+        )
+        return [weather.get_weather_analysis], user_text
 
     if words_present_in_text(["freaky"], user_text.lower()):
         user_text += "Use the station_lights_freaky tool"

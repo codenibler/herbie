@@ -72,6 +72,9 @@ USER_INPUT_DIR=recorded_wavs
 GROQ_API_KEY=
 GROQ_MODEL_NAME=meta-llama/llama-4-scout-17b-16e-instruct
 
+# Weather
+WEATHER_LOCATION=Amsterdam
+
 # Timezones
 APP_TIMEZONE=Europe/Amsterdam
 CALENDAR_TIMEZONE=Europe/Amsterdam
