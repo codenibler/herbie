@@ -91,6 +91,7 @@ def main():
 
         wakeword_detected = initialize_wakeword_loop() # Returns when heard
         background_audio_ducked = False
+        interaction_loading_started = False
 
         if wakeword_detected:
             led_strip.set_idle_led_mode(False)
@@ -104,9 +105,12 @@ def main():
                 logging.info(f"Selected Herbie response: {random_herbie_response}, reading it out.")
                 read_out_response_from_file(GREETING_RESPONSES_DIR / random_herbie_response)
 
+            interaction_loading_started = led_strip.start_loading_led_animation()
             wav_bytes = listen_for_user_input(initial_noise_floor=AMBIENT_NOISE_VALUE)
             if not wav_bytes:
                 logging.info("No speech detected after wake word.")
+                if interaction_loading_started:
+                    led_strip.stop_loading_led_animation()
                 if background_audio_ducked:
                     restore_preferred_output_volume()
                 continue
@@ -116,11 +120,15 @@ def main():
             logging.error("Failed to parse user input. Retrying...")
             wav_bytes = listen_for_user_input(initial_noise_floor=AMBIENT_NOISE_VALUE)
             if not wav_bytes:
+                if interaction_loading_started:
+                    led_strip.stop_loading_led_animation()
                 if background_audio_ducked:
                     restore_preferred_output_volume()
                 continue
             user_text = parse_user_input(wav_bytes)
             if user_text is None:
+                if interaction_loading_started:
+                    led_strip.stop_loading_led_animation()
                 if background_audio_ducked:
                     restore_preferred_output_volume()
                 continue
@@ -128,6 +136,8 @@ def main():
         if background_audio_ducked and is_background_audio_stop_request(user_text):
             stop_response = stop_background_playback()
             restore_preferred_output_volume()
+            if interaction_loading_started:
+                led_strip.stop_loading_led_animation()
             read_out_response(stop_response)
             activate_buzzer()
             continue
@@ -137,6 +147,8 @@ def main():
                 restore_preferred_output_volume()
             time_response = build_time_query_response()
             logging.info(f"Responding locally to time query: {time_response}")
+            if interaction_loading_started:
+                led_strip.stop_loading_led_animation()
             read_out_response(time_response)
             activate_buzzer()
             continue
@@ -145,6 +157,8 @@ def main():
             restore_preferred_output_volume()
         
         groq_response = groq_query(user_text)
+        if interaction_loading_started:
+            led_strip.stop_loading_led_animation()
         read_out_response(groq_response)
         activate_buzzer()
 
