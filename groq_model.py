@@ -8,6 +8,7 @@ from toolbox import volume
 from toolbox import background_audio
 from toolbox import thinking_audio
 from toolbox import weather
+from toolbox import portfolio_rebalance
 
 from pathlib import Path
 from datetime import datetime
@@ -128,7 +129,7 @@ TOOL_MAP = {
     "get_timer_remaining": timer.get_timer_remaining,
     "set_output_volume": volume.set_output_volume,
     "get_weather_analysis": weather.get_weather_analysis,
-
+    "rebalance_portfolio": portfolio_rebalance.rebalance_portfolio,
 }
 CANON = {
     "lights": "light",
@@ -231,6 +232,7 @@ TOOL_DESCRIPTIONS = {
     "get_timer_remaining": "Report how much time is left on the active timer.",
     "set_output_volume": "Set the preferred speaker output volume as a percentage.",
     "get_weather_analysis": "Get a succinct weather analysis for the configured location and recommend what clothing to wear.",
+    "rebalance_portfolio": "Run the portfolio rebalance workflow in the standalone portfolio_rebalance virtual environment.",
 }
 
 TOOL_PARAMETER_METADATA = {
@@ -562,6 +564,16 @@ def determine_relevent_tool(user_text):
             " Call get_weather_analysis."
         )
         return [weather.get_weather_analysis], user_text
+
+    if one_word_present_in_text(["portfolio"], user_text.lower()) or one_word_present_in_text(
+        ["rebalance", "rebelance"],
+        user_text.lower(),
+    ):
+        user_text += (
+            " The user wants to run the portfolio rebalance workflow."
+            " Call rebalance_portfolio."
+        )
+        return [portfolio_rebalance.rebalance_portfolio], user_text
 
     if words_present_in_text(["freaky"], user_text.lower()):
         user_text += "Use the station_lights_freaky tool"
