@@ -1,6 +1,10 @@
 # Entry point for the application
 from user_listening_loop import listen_for_user_input, calibrate_ambient_noise, calibrate_ambient_noise_async
-from piper_tts import read_out_response, read_out_response_from_file
+from piper_tts import (
+    PlaybackInterruptedByWakeword,
+    read_out_response,
+    read_out_response_from_file,
+)
 from groq_model import (
     build_time_query_response,
     is_background_audio_stop_request,
@@ -65,6 +69,68 @@ async def initialize_startup_tasks():
     return ambient_noise_value, time.time()
 
 
+def capture_user_text(initial_noise_floor: float) -> str | None:
+    interaction_loading_started = led_strip.start_loading_led_animation()
+    wav_bytes = listen_for_user_input(initial_noise_floor=initial_noise_floor)
+    if not wav_bytes:
+        logging.info("No speech detected after wake word.")
+        if interaction_loading_started:
+            led_strip.stop_loading_led_animation()
+        return None
+
+    user_text = parse_user_input(wav_bytes)
+    if user_text is not None:
+        return user_text
+
+    logging.error("Failed to parse user input. Retrying...")
+    wav_bytes = listen_for_user_input(initial_noise_floor=initial_noise_floor)
+    if not wav_bytes:
+        if interaction_loading_started:
+            led_strip.stop_loading_led_animation()
+        return None
+
+    user_text = parse_user_input(wav_bytes)
+    if user_text is None and interaction_loading_started:
+        led_strip.stop_loading_led_animation()
+    return user_text
+
+
+def capture_user_text_after_playback_interrupt(initial_noise_floor: float) -> str | None:
+    logging.info(
+        "Wakeword detected during playback. Interrupting current message and listening again."
+    )
+    led_strip.set_idle_led_mode(False)
+    return capture_user_text(initial_noise_floor)
+
+
+def process_user_text(user_text: str, *, background_audio_ducked: bool) -> None:
+    if background_audio_ducked and is_background_audio_stop_request(user_text):
+        stop_response = stop_background_playback()
+        restore_preferred_output_volume()
+        led_strip.stop_loading_led_animation()
+        read_out_response(stop_response)
+        activate_buzzer()
+        return
+
+    if is_time_query(user_text):
+        if background_audio_ducked:
+            restore_preferred_output_volume()
+        time_response = build_time_query_response()
+        logging.info(f"Responding locally to time query: {time_response}")
+        led_strip.stop_loading_led_animation()
+        read_out_response(time_response)
+        activate_buzzer()
+        return
+
+    if background_audio_ducked:
+        restore_preferred_output_volume()
+
+    groq_response = groq_query(user_text)
+    led_strip.stop_loading_led_animation()
+    read_out_response(groq_response)
+    activate_buzzer()
+
+
 def main():
     # Initial setup
     global AMBIENT_NOISE_VALUE, LAST_RECALIBRATION_TIME
@@ -91,76 +157,53 @@ def main():
 
         wakeword_detected = initialize_wakeword_loop() # Returns when heard
         background_audio_ducked = False
-        interaction_loading_started = False
 
         if wakeword_detected:
             led_strip.set_idle_led_mode(False)
             background_audio_ducked = duck_preferred_output_volume_if_playing(
                 ducked_volume_percent=WAKEWORD_DUCKED_VOLUME_PERCENT
             )
-            if background_audio_ducked:
-                logging.info("Background playback detected. Skipping greeting while output is ducked.")
-            else:
-                random_herbie_response = random.choice(os.listdir(GREETING_RESPONSES_DIR))
-                logging.info(f"Selected Herbie response: {random_herbie_response}, reading it out.")
-                read_out_response_from_file(GREETING_RESPONSES_DIR / random_herbie_response)
+            user_text: str | None = None
+            should_play_greeting = not background_audio_ducked
 
-            interaction_loading_started = led_strip.start_loading_led_animation()
-            wav_bytes = listen_for_user_input(initial_noise_floor=AMBIENT_NOISE_VALUE)
-            if not wav_bytes:
-                logging.info("No speech detected after wake word.")
-                if interaction_loading_started:
+            while True:
+                try:
+                    if should_play_greeting:
+                        random_herbie_response = random.choice(os.listdir(GREETING_RESPONSES_DIR))
+                        logging.info(
+                            f"Selected Herbie response: {random_herbie_response}, reading it out."
+                        )
+                        read_out_response_from_file(GREETING_RESPONSES_DIR / random_herbie_response)
+                        should_play_greeting = False
+                    elif background_audio_ducked:
+                        logging.info(
+                            "Background playback detected. Skipping greeting while output is ducked."
+                        )
+                        should_play_greeting = False
+
+                    if user_text is None:
+                        user_text = capture_user_text(AMBIENT_NOISE_VALUE)
+                        if user_text is None:
+                            if background_audio_ducked:
+                                restore_preferred_output_volume()
+                            break
+
+                    process_user_text(
+                        user_text,
+                        background_audio_ducked=background_audio_ducked,
+                    )
+                    break
+                except PlaybackInterruptedByWakeword:
                     led_strip.stop_loading_led_animation()
-                if background_audio_ducked:
-                    restore_preferred_output_volume()
-                continue
-        
-        user_text = parse_user_input(wav_bytes)
-        if user_text is None:
-            logging.error("Failed to parse user input. Retrying...")
-            wav_bytes = listen_for_user_input(initial_noise_floor=AMBIENT_NOISE_VALUE)
-            if not wav_bytes:
-                if interaction_loading_started:
-                    led_strip.stop_loading_led_animation()
-                if background_audio_ducked:
-                    restore_preferred_output_volume()
-                continue
-            user_text = parse_user_input(wav_bytes)
-            if user_text is None:
-                if interaction_loading_started:
-                    led_strip.stop_loading_led_animation()
-                if background_audio_ducked:
-                    restore_preferred_output_volume()
-                continue
-
-        if background_audio_ducked and is_background_audio_stop_request(user_text):
-            stop_response = stop_background_playback()
-            restore_preferred_output_volume()
-            if interaction_loading_started:
-                led_strip.stop_loading_led_animation()
-            read_out_response(stop_response)
-            activate_buzzer()
-            continue
-
-        if is_time_query(user_text):
-            if background_audio_ducked:
-                restore_preferred_output_volume()
-            time_response = build_time_query_response()
-            logging.info(f"Responding locally to time query: {time_response}")
-            if interaction_loading_started:
-                led_strip.stop_loading_led_animation()
-            read_out_response(time_response)
-            activate_buzzer()
-            continue
-
-        if background_audio_ducked:
-            restore_preferred_output_volume()
-        
-        groq_response = groq_query(user_text)
-        if interaction_loading_started:
-            led_strip.stop_loading_led_animation()
-        read_out_response(groq_response)
-        activate_buzzer()
+                    if background_audio_ducked:
+                        restore_preferred_output_volume()
+                        background_audio_ducked = False
+                    should_play_greeting = False
+                    user_text = capture_user_text_after_playback_interrupt(
+                        AMBIENT_NOISE_VALUE
+                    )
+                    if user_text is None:
+                        break
 
 
 if __name__ == "__main__":

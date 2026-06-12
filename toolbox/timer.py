@@ -9,7 +9,7 @@ import os
 import random
 
 from helpers.audio_output import stop_active_aplay_playback
-from piper_tts import read_out_response_from_file
+from piper_tts import PlaybackInterruptedByWakeword, read_out_response_from_file
 from toolbox.music import stop_music
 
 
@@ -165,7 +165,11 @@ class TimerManager:
 
         selected_sound = random.choice(sound_files)
         logging.info("Playing timer completion sound: %s", selected_sound)
-        read_out_response_from_file(selected_sound)
+        try:
+            read_out_response_from_file(selected_sound)
+        except PlaybackInterruptedByWakeword:
+            logging.info("Timer completion sound interrupted by wakeword.")
+            return False
         return True
 
 
