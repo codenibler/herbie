@@ -35,6 +35,7 @@ Groq inference:
 - Herbie uses the Groq API for language-model responses.
 - `GROQ_API_KEY` is required in `.env`.
 - `GROQ_MODEL_NAME` is optional and defaults to `meta-llama/llama-4-scout-17b-16e-instruct`.
+- `WEATHER_LOCATION` controls which place Herbie uses for weather analysis and defaults to `Amsterdam`.
 
 ## Hardware setup
 
