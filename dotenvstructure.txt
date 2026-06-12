@@ -68,9 +68,9 @@ WHISPER_PATH=whisper.cpp/build/bin/whisper-cli
 WHISPER_MODEL=whisper.cpp/models/ggml-base.en.bin
 USER_INPUT_DIR=recorded_wavs
 
-# Local model
-OLLAMA_MODEL_NAME=
-OLLAMA_KEEP_ALIVE=false
+# Groq API
+GROQ_API_KEY=
+GROQ_MODEL_NAME=meta-llama/llama-4-scout-17b-16e-instruct
 
 # Timezones
 APP_TIMEZONE=Europe/Amsterdam
