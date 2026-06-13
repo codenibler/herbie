@@ -13,6 +13,7 @@ Piper TTS voice model:
 python3 -m piper.download_voices en_US-lessac-medium
 ```
 - Place ONNX file in `piper_voice_model/` and set `PIPER_VOICE_MODEL_PATH` in `.env`.
+- `PIPER_SPEECH_SPEED` controls speech-rate as a multiplier, so `1.35` means roughly 1.35x normal speaking speed.
 
 Whisper (whisper.cpp):
 ```bash
@@ -28,7 +29,8 @@ cmake --build build -j --config Release
 ```bash
 cp dotenvstructure.txt .env
 # edit .env and fill sensitive values: WAKEWORD_ACCESS_TOKEN, MICROPHONE_NAME,
-# GROQ_API_KEY, optional GROQ_MODEL_NAME, bulb IPs, etc.
+# GROQ_API_KEY, optional GROQ_MODEL_NAME, bulb IPs, and optional
+# CALENDAR_CLIENT_ID / CALENDAR_CLIENT_SECRET for Google Calendar access.
 ```
 
 Groq inference:
@@ -36,6 +38,43 @@ Groq inference:
 - `GROQ_API_KEY` is required in `.env`.
 - `GROQ_MODEL_NAME` is optional and defaults to `meta-llama/llama-4-scout-17b-16e-instruct`.
 - `WEATHER_LOCATION` controls which place Herbie uses for weather analysis and defaults to `Amsterdam`.
+- Google Calendar support is read-only. To enable calendar event lookups and schedule analysis, set `CALENDAR_CLIENT_ID` and `CALENDAR_CLIENT_SECRET` in `.env` and let Herbie complete the one-time OAuth flow the first time a calendar tool runs.
+- On a headless Raspberry Pi, Google Calendar auth is configured for SSH tunneling by default: `CALENDAR_AUTH_HOST=localhost`, `CALENDAR_AUTH_PORT=8080`, `CALENDAR_AUTH_OPEN_BROWSER=false`.
+
+Headless Google Calendar auth:
+```bash
+ssh -L 8080:localhost:8080 <pi-host>
+source venv/bin/activate
+python3 main.py
+```
+- When Herbie prints the Google auth URL, open it in a browser on your local machine. The callback to `localhost:8080` will traverse the SSH tunnel back to the Pi and create `toolbox/gcalendar_tokens.json`.
+
+## Tool triggers
+
+These are the current keyword heuristics in `groq_model.py`. They are terse on purpose and order-sensitive.
+
+| Tool call(s) | Trigger words / phrases |
+| --- | --- |
+| `turn_everything_on`, `turn_everything_off` | One of `everything`, `every`, `all` plus one of `on`, `off`. |
+| `kitchen_light_on`, `kitchen_light_off`, `kitchen_light_color` | Contains `kitchen`. |
+| `stop_background_playback` | Exact normalized query `stop`. |
+| `skip_song` | Exact phrases like `skip`, `skip please`, `skip song`, `next`, `next song`, `next track`, or words `skip` + `song`, `next` + `song`. |
+| `stop_music` | Words `stop` + `music`, `song`, or `playing`. |
+| `play_random_songs`, `play_specific_song` | Contains `bangers`, `song`, or `music`. |
+| `play_specific_song` | Contains `play`. |
+| `get_timer_remaining` | Phrases like `time left on timer`, `time remaining on timer`, `how much time is left`, `how long left`, `when does the timer end`, or the same with `countdown`. |
+| `stop_timer` | Words `stop`, `cancel`, or `end` with `timer`. |
+| `start_timer`, `stop_timer`, `get_timer_remaining` | Contains `timer` or `countdown`. |
+| `set_output_volume` | Contains `volume`. |
+| `get_weather_analysis` | Contains `weather`. |
+| `rebalance_portfolio` | Contains `portfolio`, `rebalance`, or `rebelance`. |
+| `station_lights_freaky` | Contains `freaky`. |
+| `station_lights_on`, `station_lights_off`, `station_light_brightness`, `station_light_color` | Contains `station`. |
+| `get_calendar_events`, `get_calendar_schedule_analysis` | Calendar/schedule/agenda queries, including phrases like `what do i have today`, `what's on my calendar`, `what's left this week`, `rest of the week`, `remainder of the week`, `what's planned for today`, `what's planned for the rest of the week`. |
+| `get_calendar_schedule_analysis` preference | Analysis phrases like `calendar analysis`, `schedule analysis`, `analyze my calendar`, `analyse my calendar`, `summarize my calendar`, `summarise my calendar`, `calendar overview`, `schedule overview`, `how busy am i today`, `how busy is today`, `how busy is the rest of my week`, `what's planned`. |
+
+Local non-tool shortcuts:
+- Time responses are handled locally for `what time is it`, `what's the time`, `tell me the time`, and `current time`.
 
 ## Hardware setup
 

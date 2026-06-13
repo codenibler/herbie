@@ -50,9 +50,28 @@ def _get_bool_env(name: str, default: bool) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _get_effective_length_scale() -> float | None:
+    base_length_scale = _get_optional_float_env("PIPER_LENGTH_SCALE")
+    speech_speed = _get_optional_float_env("PIPER_SPEECH_SPEED")
+
+    if speech_speed is not None and speech_speed <= 0:
+        raise ValueError("PIPER_SPEECH_SPEED must be greater than zero.")
+
+    if base_length_scale is not None and base_length_scale <= 0:
+        raise ValueError("PIPER_LENGTH_SCALE must be greater than zero.")
+
+    if speech_speed is None:
+        return base_length_scale
+
+    effective_base = 1.0 if base_length_scale is None else base_length_scale
+    return effective_base / speech_speed
+
+
 def build_synthesis_config() -> SynthesisConfig:
     return SynthesisConfig(
-        length_scale=_get_optional_float_env("PIPER_LENGTH_SCALE"),
+        # Piper speaks faster with a smaller length_scale, so convert the
+        # user-facing speed multiplier into the inverse scale internally.
+        length_scale=_get_effective_length_scale(),
         noise_scale=_get_optional_float_env("PIPER_NOISE_SCALE"),
         noise_w_scale=_get_optional_float_env("PIPER_NOISE_W_SCALE"),
         normalize_audio=_get_bool_env("PIPER_NORMALIZE_AUDIO", True),

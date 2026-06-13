@@ -28,6 +28,7 @@ from groq import Groq
 load_dotenv(override=True)
 
 TOOL_COMPLETE_RESPONSES_DIR = Path(os.getenv("TOOL_COMPLETE_RESPONSES_DIR", "herbie_responses/tool_complete"))
+ACK_TOOL_RESPONSES_DIR = Path(os.getenv("ACK_TOOL_RESPONSES_DIR", "herbie_responses/ack_tool"))
 SPECIAL_CASE_RESPONSES_DIR = Path(os.getenv("SPECIAL_CASE_RESPONSES_DIR", "herbie_responses/special_cases"))
 APP_TIMEZONE = os.getenv("APP_TIMEZONE", "Europe/Amsterdam")
 DEFAULT_GROQ_MODEL_NAME = "meta-llama/llama-4-scout-17b-16e-instruct"
@@ -40,6 +41,12 @@ SYSTEM_PROMPT = (
     "Do not use markdown, bullet points, numbered lists, asterisks, backticks, emojis, or decorative formatting."
 )
 _GROQ_CLIENT = None
+
+TOOL_ACKNOWLEDGEMENT_AUDIO_MAP = {
+    "rebalance_portfolio": [
+        ACK_TOOL_RESPONSES_DIR / "portfolio" / "on_it_from_herbie.wav",
+    ],
+}
 
 TOOL_COMPLETION_AUDIO_MAP = {
     "turn_everything_off": [
@@ -100,11 +107,6 @@ TOOL_COMPLETION_AUDIO_MAP = {
         TOOL_COMPLETE_RESPONSES_DIR / "volume" / "volume_set.wav",
         TOOL_COMPLETE_RESPONSES_DIR / "volume" / "done.wav",
     ],
-    "make_calendar_event": [
-        TOOL_COMPLETE_RESPONSES_DIR / "calendar" / "events_in.wav",
-        TOOL_COMPLETE_RESPONSES_DIR / "calendar" / "added_to_your_calendar.wav",
-        TOOL_COMPLETE_RESPONSES_DIR / "calendar" / "done_its_on_the_schedule.wav",
-    ],
 }
 
 TOOL_MAP = {
@@ -118,7 +120,8 @@ TOOL_MAP = {
     "station_light_brightness": lighting.station_light_brightness,
     "station_light_color": lighting.station_light_color,
     "station_lights_freaky": lighting.station_lights_freaky,
-    "make_calendar_event": gcalendar.make_calendar_event,
+    "get_calendar_events": gcalendar.get_calendar_events,
+    "get_calendar_schedule_analysis": gcalendar.get_calendar_schedule_analysis,
     "play_random_songs": music.play_random_songs,
     "play_specific_song": music.play_specific_song,
     "skip_song": music.skip_song,
@@ -209,6 +212,46 @@ BACKGROUND_AUDIO_STOP_PATTERNS = (
     "stop the timer sound",
     "stop the alarm",
 )
+CALENDAR_QUERY_PATTERNS = (
+    "what do i have today",
+    "what do i have this week",
+    "whats on my calendar",
+    "what's on my calendar",
+    "whats on my schedule",
+    "what's on my schedule",
+    "whats on today",
+    "what's on today",
+    "whats left this week",
+    "what's left this week",
+    "whats left of the week",
+    "what's left of the week",
+    "rest of the week",
+    "remainder of the week",
+    "whats planned for the day",
+    "what's planned for the day",
+    "whats planned for today",
+    "what's planned for today",
+    "whats planned for the rest of the week",
+    "what's planned for the rest of the week",
+    "whats planned for the remainder of the week",
+    "what's planned for the remainder of the week",
+)
+CALENDAR_ANALYSIS_PATTERNS = (
+    "calendar analysis",
+    "schedule analysis",
+    "analyze my calendar",
+    "analyse my calendar",
+    "summarize my calendar",
+    "summarise my calendar",
+    "calendar overview",
+    "schedule overview",
+    "how busy am i today",
+    "how busy is today",
+    "how busy is the rest of my week",
+    "how busy is the remainder of the week",
+    "whats planned",
+    "what's planned",
+)
 
 TOOL_DESCRIPTIONS = {
     "turn_everything_off": "Turn off all configured smart lights.",
@@ -221,7 +264,8 @@ TOOL_DESCRIPTIONS = {
     "station_light_brightness": "Set the station lights brightness as a percentage.",
     "station_light_color": "Set the station lights to a named color.",
     "station_lights_freaky": "Activate freak mode for the station lights and music.",
-    "make_calendar_event": "Create a Google Calendar event.",
+    "get_calendar_events": "Fetch Google Calendar events for today or the remainder of the week.",
+    "get_calendar_schedule_analysis": "Analyze how busy today or the remainder of the week looks based on Google Calendar events.",
     "play_random_songs": "Play a shuffled queue of songs from the local songs directory.",
     "play_specific_song": "Play one specific song from the local songs directory.",
     "skip_song": "Skip the current song or move to a different available track.",
@@ -261,14 +305,13 @@ TOOL_PARAMETER_METADATA = {
     ("play_specific_song", "song_path"): {
         "description": "Relative path to a song file in the songs directory.",
     },
-    ("make_calendar_event", "title"): {
-        "description": "A short event title.",
+    ("get_calendar_events", "period"): {
+        "description": "The calendar window to fetch. Use today, remainder_of_week, or today_and_remainder_of_week.",
+        "enum": ["today", "remainder_of_week", "today_and_remainder_of_week"],
     },
-    ("make_calendar_event", "from_date"): {
-        "description": "The event start time as an RFC3339 timestamp, for example 2026-06-12T15:00:00+02:00.",
-    },
-    ("make_calendar_event", "to_date"): {
-        "description": "The event end time as an RFC3339 timestamp, for example 2026-06-12T16:00:00+02:00.",
+    ("get_calendar_schedule_analysis", "period"): {
+        "description": "The calendar window to analyze. Use today, remainder_of_week, or today_and_remainder_of_week.",
+        "enum": ["today", "remainder_of_week", "today_and_remainder_of_week"],
     },
 }
 
@@ -398,6 +441,7 @@ def groq_query(user_text):
     started_thinking_audio = False
     started_loading_animation = False
     response_message = None
+    handled_tool_response = False
 
     try:
         if tool is not None:
@@ -419,6 +463,7 @@ def groq_query(user_text):
                 if clarification_message is not None:
                     logging.info(f"Tool clarification requested: {clarification_message}")
                     return clarification_message
+                handled_tool_response = True
         else:
             started_loading_animation = led_strip.start_loading_led_animation()
             started_thinking_audio = thinking_audio.start_thinking_audio()
@@ -432,6 +477,12 @@ def groq_query(user_text):
             thinking_audio.stop_thinking_audio()
         if started_loading_animation:
             led_strip.stop_loading_led_animation()
+
+    if handled_tool_response:
+        logging.info(
+            "Tool response was already handled directly; suppressing assistant follow-up text."
+        )
+        return ""
 
     response_content = ""
     if response_message is not None and response_message.content is not None:
@@ -465,6 +516,55 @@ def is_background_audio_stop_request(user_text: str) -> bool:
     if normalized_text in GENERIC_STOP_QUERY_PATTERNS:
         return True
     return any(pattern in normalized_text for pattern in BACKGROUND_AUDIO_STOP_PATTERNS)
+
+
+def is_calendar_query(user_text: str) -> bool:
+    normalized_text = normalize_user_text(user_text)
+
+    if any(pattern in normalized_text for pattern in CALENDAR_QUERY_PATTERNS):
+        return True
+
+    return any(
+        word in normalized_text.split()
+        for word in ("calendar", "schedule", "agenda")
+    )
+
+
+def is_calendar_analysis_request(user_text: str) -> bool:
+    normalized_text = normalize_user_text(user_text)
+    return any(pattern in normalized_text for pattern in CALENDAR_ANALYSIS_PATTERNS)
+
+
+def determine_calendar_period(user_text: str) -> str:
+    normalized_text = normalize_user_text(user_text)
+    tokens = normalized_text.split()
+
+    mentions_today = any(
+        pattern in normalized_text
+        for pattern in (
+            " for the day",
+            " for today",
+        )
+    ) or "today" in tokens or "day" in tokens
+    mentions_week = any(
+        pattern in normalized_text
+        for pattern in (
+            "remainder of the week",
+            "rest of the week",
+            "left this week",
+            "left of the week",
+            "this week",
+            "remainder_of_week",
+        )
+    )
+
+    if mentions_today and mentions_week:
+        return "today_and_remainder_of_week"
+
+    if mentions_week:
+        return "remainder_of_week"
+
+    return "today"
 
 
 def _build_song_tool_instruction() -> str:
@@ -590,14 +690,20 @@ def determine_relevent_tool(user_text):
             lighting.station_light_color,
         ], user_text
 
-    if one_word_present_in_text(["schedule", "event"], user_text):
-        now = datetime.now(ZoneInfo(APP_TIMEZONE)).isoformat(timespec="seconds")
-        user_text += f"Generate a short event title. to_date and from_dates should be in RFC3339 timestamps, \
-                        like this example. YYYY-MM-DDTHH:MM:SS±HH:MM. Right now, it is: {now}. If to_date is not mentioned by user, assume 1 hour after from_date"
-        return [gcalendar.make_calendar_event], user_text
-
-    # TO DO: Benchmark with functiongemma as a tool classifier. 
-    # TO DO: Fix broken Calendar tool 
+    if is_calendar_query(user_text):
+        period = determine_calendar_period(user_text)
+        user_text += (
+            " The user wants help with Google Calendar."
+            f" Use period {period!r}."
+            " If the user wants a factual list of events, their agenda, or what is on the calendar,"
+            " call get_calendar_events."
+            " If the user wants an analysis, overview, summary, what is planned, or how busy the schedule looks,"
+            " call get_calendar_schedule_analysis."
+            " Do not create, edit, or delete calendar events."
+        )
+        if is_calendar_analysis_request(user_text):
+            user_text += " This request sounds analytical, so prefer get_calendar_schedule_analysis."
+        return [gcalendar.get_calendar_events, gcalendar.get_calendar_schedule_analysis], user_text
 
     logging.info("No relevant tool found for this query.")
     return None, user_text
@@ -714,6 +820,22 @@ def _play_tool_completion_audio(function_name: str) -> bool:
     read_out_response_from_file(selected_path)
     return True
 
+
+def _play_tool_acknowledgement_audio(function_name: str) -> bool:
+    candidate_paths = TOOL_ACKNOWLEDGEMENT_AUDIO_MAP.get(function_name)
+    if not candidate_paths:
+        return False
+
+    existing_paths = [path for path in candidate_paths if path.is_file()]
+    if not existing_paths:
+        logging.warning("No acknowledgement audio files found for tool %s.", function_name)
+        return False
+
+    selected_path = random.choice(existing_paths)
+    logging.info("Playing acknowledgement audio for %s: %s", function_name, selected_path)
+    read_out_response_from_file(selected_path)
+    return True
+
 def execute_tool_calls(tool_calls):
     clarification_messages = []
 
@@ -745,6 +867,7 @@ def execute_tool_calls(tool_calls):
                 continue
 
             logging.info(f"Executing tool: {function_name}, with arguments: {sanitized_args}")
+            _play_tool_acknowledgement_audio(function_name)
             if inspect.iscoroutinefunction(TOOL_MAP[function_name]):
                 tool_response = asyncio.run(TOOL_MAP[function_name](**sanitized_args))  # Await if it's a coroutine
             else:   
