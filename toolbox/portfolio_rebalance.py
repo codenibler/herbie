@@ -5,9 +5,12 @@ import os
 import subprocess
 from pathlib import Path
 
+from dotenv import dotenv_values
+
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PORTFOLIO_REBALANCE_DIR = REPO_ROOT / "portfolio_rebalance"
+PORTFOLIO_REBALANCE_ENV_FILE = PORTFOLIO_REBALANCE_DIR / ".env"
 PORTFOLIO_REBALANCE_MAIN = PORTFOLIO_REBALANCE_DIR / "main.py"
 PORTFOLIO_REBALANCE_PRIMARY_PYTHON = PORTFOLIO_REBALANCE_DIR / "venv" / "bin" / "python"
 PORTFOLIO_REBALANCE_LINUX_PYTHON = PORTFOLIO_REBALANCE_DIR / "venv_linux" / "bin" / "python"
@@ -104,11 +107,39 @@ def _select_python_path() -> Path | None:
     return None
 
 
-def _missing_required_env_vars() -> list[str]:
+def _load_portfolio_rebalance_env_overrides() -> dict[str, str]:
+    if not PORTFOLIO_REBALANCE_ENV_FILE.is_file():
+        logging.info(
+            "Portfolio rebalance env file not found: %s",
+            PORTFOLIO_REBALANCE_ENV_FILE,
+        )
+        return {}
+
+    overrides: dict[str, str] = {}
+    for env_var, value in dotenv_values(PORTFOLIO_REBALANCE_ENV_FILE).items():
+        if value is None:
+            continue
+        overrides[env_var] = value.strip()
+
+    logging.info(
+        "Loaded %s portfolio rebalance env override(s) from %s",
+        len(overrides),
+        PORTFOLIO_REBALANCE_ENV_FILE,
+    )
+    return overrides
+
+
+def _build_portfolio_rebalance_env() -> dict[str, str]:
+    merged_env = os.environ.copy()
+    merged_env.update(_load_portfolio_rebalance_env_overrides())
+    return merged_env
+
+
+def _missing_required_env_vars(env: dict[str, str]) -> list[str]:
     return [
         env_var
         for env_var in REQUIRED_PORTFOLIO_REBALANCE_ENV_VARS
-        if not os.getenv(env_var, "").strip()
+        if not env.get(env_var, "").strip()
     ]
 
 
@@ -138,7 +169,8 @@ def rebalance_portfolio() -> str:
             "are usable on this machine."
         )
 
-    missing_env_vars = _missing_required_env_vars()
+    command_env = _build_portfolio_rebalance_env()
+    missing_env_vars = _missing_required_env_vars(command_env)
     if missing_env_vars:
         logging.error(
             "Portfolio rebalance cannot start because required environment variables are missing: %s",
@@ -161,7 +193,7 @@ def rebalance_portfolio() -> str:
         completed_process = subprocess.run(
             command,
             cwd=PORTFOLIO_REBALANCE_DIR,
-            env=os.environ.copy(),
+            env=command_env,
             capture_output=True,
             text=True,
             timeout=PORTFOLIO_REBALANCE_TIMEOUT_SECONDS,
