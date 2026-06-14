@@ -39,6 +39,11 @@ def _format_duration(seconds: int) -> str:
     return f"{parts[0]}, {parts[1]}, and {parts[2]}"
 
 
+def build_timer_started_response(duration_seconds: int) -> str:
+    formatted_duration = _format_duration(int(duration_seconds))
+    return f"Okay, the timer has been successfully set for {formatted_duration}."
+
+
 class TimerManager:
     def __init__(self) -> None:
         self._lock = Lock()

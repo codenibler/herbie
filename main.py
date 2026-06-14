@@ -36,10 +36,6 @@ import os
 
 load_dotenv(override=True)  
 
-BUZZER_PIN = int(os.getenv("BUZZER_PIN", 2))
-BUZZER_BEEP_COUNT = int(os.getenv("BUZZER_BEEP_COUNT", 2))
-BUZZER_BEEP_ON_SECONDS = float(os.getenv("BUZZER_BEEP_ON_SECONDS", 0.1))
-BUZZER_BEEP_OFF_SECONDS = float(os.getenv("BUZZER_BEEP_OFF_SECONDS", 0.1))
 AMBIENT_NOISE_VALUE = float(os.getenv("AMBIENT_NOISE_THRESHOLD", 700.0))
 RECALIBRATION_INTERVAL = int(os.getenv("RECALIBRATION_INTERVAL", 600))  
 LAST_RECALIBRATION_TIME = None

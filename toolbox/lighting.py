@@ -308,7 +308,7 @@ async def station_lights_freaky():
 
     await play_specific_song(Path(FREAK_MODE_SONG_PATH))
 
-    # Turn on the living room lights to red. 
+    # Turn on the station lights with a purple palette.
     BULB1_IP = os.getenv("BULB1_IP")
     BULB2_IP = os.getenv("BULB2_IP")
     BULB3_IP = os.getenv("BULB3_IP") 
@@ -319,11 +319,15 @@ async def station_lights_freaky():
     light1 = wizlight(BULB1_IP)
     light2 = wizlight(BULB2_IP)
     light3 = wizlight(BULB3_IP)
-    color_rgb = COLORS["DARK_RED"]
+    palette = [
+        COLORS["PURPLE"],
+        COLORS["VIOLET"],
+        COLORS["DARK_PURPLE"],
+    ]
     try:
-        await light1.turn_on(PilotBuilder(rgb=color_rgb))
-        await light2.turn_on(PilotBuilder(rgb=color_rgb))
-        await light3.turn_on(PilotBuilder(rgb=color_rgb))
+        await light1.turn_on(PilotBuilder(rgb=palette[0]))
+        await light2.turn_on(PilotBuilder(rgb=palette[1]))
+        await light3.turn_on(PilotBuilder(rgb=palette[2]))
         await wait_for_light_state_settle()
         try:
             state1 = await light1.updateState()
@@ -337,11 +341,11 @@ async def station_lights_freaky():
                 light_is_on(state1)
                 and light_is_on(state2)
                 and light_is_on(state3)
-                and rgb1 == color_rgb
-                and rgb2 == color_rgb
-                and rgb3 == color_rgb
+                and rgb1 == palette[0]
+                and rgb2 == palette[1]
+                and rgb3 == palette[2]
             ):
-                logging.info("Living room lights set to color Red.")
+                logging.info("Living room lights set to the purple freaky palette.")
             else:
                 logging.warning("Freaky mode verification mismatched. Assuming success.")
         except Exception as error:
@@ -361,7 +365,7 @@ async def station_lights_freaky():
 
     from toolbox import led_strip
 
-    led_strip.set_runtime_color_scheme(color_rgb)
+    led_strip.set_runtime_color_scheme(COLORS["VIOLET"])
     logging.info("Assuming freaky mode activated successfully.")
     return True
 
@@ -483,7 +487,7 @@ COLORS = {
     "DARK_GREEN": (0, 100, 0),       # #006400
     "DARK_BLUE": (0, 0, 139),        # #00008B
     "DARK_ORANGE": (255, 140, 0),    # #FF8C00
-    "DARK_PURPLE": (48, 25, 52),     # #301934
+    "DARK_PURPLE": (75, 0, 130),     # #4B0082
     # Light
     "LIGHT_RED": (255, 102, 102),    # #FF6666
     "LIGHT_GREEN": (144, 238, 144),  # #90EE90

@@ -10,14 +10,19 @@ from piper import PiperVoice, SynthesisConfig
 
 load_dotenv(override=True)
 
-GREETING_TEXTS = {
-    "good_to_hear_you.wav": "Good to hear you. What is on your mind?",
-    "hello_there.wav": "Hello there, what can I help you with?",
-    "lets_dig_in.wav": "Let us dig in. What do you need?",
-    "mentor_mode.wav": "Mentor mode engaged. Hit me with your question.",
-    "ready_when_you_are.wav": "Ready when you are. What are we figuring out today?",
-    "strange_thing_today.wav": "What delightfully strange thing are we tackling today?",
-    "welcome_back.wav": "Welcome back. What are we exploring this time?",
+PRERECORDED_RESPONSE_TEXTS = {
+    "greetings": {
+        "good_to_hear_you.wav": "Good to hear you. What is on your mind?",
+        "hello_there.wav": "Hello there, what can I help you with?",
+        "lets_dig_in.wav": "Let us dig in. What do you need?",
+        "mentor_mode.wav": "Mentor mode engaged. Hit me with your question.",
+        "ready_when_you_are.wav": "Ready when you are. What are we figuring out today?",
+        "strange_thing_today.wav": "What delightfully strange thing are we tackling today?",
+        "welcome_back.wav": "Welcome back. What are we exploring this time?",
+    },
+    "ack_tool/portfolio": {
+        "on_it_from_herbie.wav": "On it from Herbie.",
+    },
 }
 
 
@@ -67,19 +72,27 @@ def main() -> None:
     if not voice_model_path:
         raise RuntimeError("PIPER_VOICE_MODEL_PATH is not set.")
 
-    greetings_dir = Path(
-        os.getenv("GREETING_RESPONSES_DIR", "herbie_responses/greetings")
-    )
-    greetings_dir.mkdir(parents=True, exist_ok=True)
-
     voice = PiperVoice.load(voice_model_path)
     synthesis_config = build_synthesis_config()
 
-    for filename, text in GREETING_TEXTS.items():
-        output_path = greetings_dir / filename
-        with wave.open(str(output_path), "wb") as wav_file:
-            voice.synthesize_wav(text, wav_file, syn_config=synthesis_config)
-        print(f"Regenerated {output_path}")
+    base_responses_dir = Path("herbie_responses")
+    greetings_dir = Path(
+        os.getenv("GREETING_RESPONSES_DIR", str(base_responses_dir / "greetings"))
+    )
+
+    response_dirs = {
+        "greetings": greetings_dir,
+        "ack_tool/portfolio": base_responses_dir / "ack_tool" / "portfolio",
+    }
+
+    for relative_dir, responses in PRERECORDED_RESPONSE_TEXTS.items():
+        target_dir = response_dirs[relative_dir]
+        target_dir.mkdir(parents=True, exist_ok=True)
+        for filename, text in responses.items():
+            output_path = target_dir / filename
+            with wave.open(str(output_path), "wb") as wav_file:
+                voice.synthesize_wav(text, wav_file, syn_config=synthesis_config)
+            print(f"Regenerated {output_path}")
 
 
 if __name__ == "__main__":

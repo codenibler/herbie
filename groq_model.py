@@ -796,6 +796,16 @@ def _should_read_dynamic_tool_response(function_name: str, tool_response) -> boo
     return function_name not in TOOL_COMPLETION_AUDIO_MAP
 
 
+def _build_tool_success_response(function_name: str, function_args, tool_response) -> str | None:
+    if function_name == "start_timer" and tool_response is True:
+        duration_seconds = function_args.get("duration_seconds")
+        if duration_seconds is None:
+            return "Okay, the timer has been successfully set."
+        return timer.build_timer_started_response(int(duration_seconds))
+
+    return None
+
+
 def _play_tool_completion_audio(function_name: str) -> bool:
     thinking_audio.stop_thinking_audio()
 
@@ -885,7 +895,18 @@ def execute_tool_calls(tool_calls):
                 read_out_response(tool_response)
                 continue
 
+            success_response = _build_tool_success_response(
+                function_name,
+                sanitized_args,
+                tool_response,
+            )
+
             if _play_tool_completion_audio(function_name):
+                continue
+
+            if success_response is not None:
+                thinking_audio.stop_thinking_audio()
+                read_out_response(success_response)
                 continue
 
             if isinstance(tool_response, str):
