@@ -78,12 +78,11 @@ Local non-tool shortcuts:
 
 ## Hardware setup
 
-Herbie is currently set up like a Raspberry Pi build with a USB microphone/speaker path, a GPIO buzzer, a WS281x LED strip, and WiZ bulbs on the local network. Pin numbers below are given as `BCM GPIO` and Raspberry Pi physical header pins.
+Herbie is currently set up like a Raspberry Pi build with a USB microphone/speaker path, a WS281x LED strip, and WiZ bulbs on the local network. Pin numbers below are given as `BCM GPIO` and Raspberry Pi physical header pins.
 
 | Part | Code default / env var | Physical setup |
 | --- | --- | --- |
 | WS281x LED strip | `LED_PIN=18`, `PIXEL_COUNT=80`, `LED_CHANNEL=0`, `LED_STRIP_TYPE=WS2811_STRIP_GRB` | Connect the strip data input to `GPIO18` (physical pin `12`). Power the strip from a suitable `5V` supply, and tie LED ground to both PSU ground and a Raspberry Pi `GND` pin so the data line has a common ground reference. |
-| Buzzer | `BUZZER_PIN=2` | Connect the buzzer signal lead to `GPIO2` (physical pin `3`) and the other lead to `GND`. This code uses `gpiozero.Buzzer`, so it expects a simple on/off buzzer input. |
 | Microphone | `MICROPHONE_NAME` | No GPIO wiring is used in code. The current local `.env` expects a device name containing `ReSpeaker`, so plug in the mic and verify `sounddevice` can see it. |
 | Speaker / amp | `PREFERRED_WAV_OUTPUT_DEVICE=plughw:CARD=Audio,DEV=0` | No GPIO wiring is used in code. Playback is sent through ALSA to a device named `Audio`, which is typically a USB audio dongle / USB speaker path. |
 | WiZ bulbs | `KITCHEN_BULB_IP`, `BULB1_IP`, `BULB2_IP`, `BULB3_IP` | These are LAN devices, not GPIO devices. Put the bulbs on the same network as the Pi and reserve static/DHCP-stable IPs so the addresses in `.env` do not drift. |
@@ -111,7 +110,6 @@ LED_STRIP_TYPE=WS2811_STRIP_GRB
 ```
 
 Hardware-specific setup notes:
-- `GPIO2` / physical pin `3` is also the Pi's `SDA1` pin. If you plan to use I2C hardware on this build, move the buzzer to a different GPIO and update `BUZZER_PIN`.
 - Wake word detection always opens the microphone as a mono `sounddevice.InputStream`; the speech recorder defaults to `LISTENING_CHANNELS=2`. If your microphone is mono-only, set `LISTENING_CHANNELS=1`.
 - Kitchen lighting uses `KITCHEN_BULB_IP` for the kitchen bulb IP in your local `.env`.
 - For quick hardware validation, use [list_sounddevice_devices.py](list_sounddevice_devices.py) to find the microphone name and [led_tests/test.py](led_tests/test.py) to smoke-test the LED strip.
