@@ -28,10 +28,34 @@ cmake --build build -j --config Release
 .env setup:
 ```bash
 cp dotenvstructure.txt .env
-# edit .env and fill sensitive values: WAKEWORD_ACCESS_TOKEN, MICROPHONE_NAME,
-# GROQ_API_KEY, optional GROQ_MODEL_NAME, bulb IPs, and optional
-# CALENDAR_CLIENT_ID / CALENDAR_CLIENT_SECRET for Google Calendar access.
+# edit .env and fill sensitive values: MICROPHONE_NAME, GROQ_API_KEY,
+# optional GROQ_MODEL_NAME, bulb IPs, and optional CALENDAR_CLIENT_ID /
+# CALENDAR_CLIENT_SECRET for Google Calendar access.
 ```
+
+Sherpa-onnx wake-word detection:
+- Herbie listens for `Hey Herbie` entirely offline. No account or access token
+  is required. The repository includes the quantized sherpa-onnx 3M
+  English-capable model and its `HEY_HERBIE` keyword definition under
+  `herbie_wakewords/`.
+- `WAKEWORD_SCORE` defaults to `1.0`; increasing it makes the keyword easier to
+  keep during decoding. `WAKEWORD_THRESHOLD` defaults to `0.25`; increasing it
+  makes activation stricter and lowering it makes activation easier. Tune both
+  against recordings made in the room where Herbie runs.
+- `WAKEWORD_SAMPLE_RATE=16000` matches the bundled US English acoustic model.
+  `WAKEWORD_BLOCK_SIZE=2048` controls how many mono `int16` samples are read
+  from the microphone at a time.
+- Sherpa-onnx was selected because it is Apache-2.0 licensed, provides current
+  Python 3.13 ARM64 wheels, runs locally on Raspberry Pi, and supports arbitrary
+  keywords without retraining. openWakeWord is a strong neural alternative but
+  needs a separately trained model to retain the custom phrase. PocketSphinx is
+  lightweight and supports arbitrary phrases, but it failed the project's
+  synthetic `Hey Herbie` detection check.
+- Upstream references:
+  - sherpa-onnx keyword spotting: https://k2-fsa.github.io/sherpa/onnx/kws/
+  - sherpa-onnx Python package: https://pypi.org/project/sherpa-onnx/
+  - openWakeWord: https://github.com/dscripka/openWakeWord
+  - PocketSphinx: https://pypi.org/project/pocketsphinx/
 
 Groq inference:
 - Herbie uses the Groq API for language-model responses.
@@ -110,7 +134,7 @@ LED_STRIP_TYPE=WS2811_STRIP_GRB
 ```
 
 Hardware-specific setup notes:
-- Wake word detection always opens the microphone as a mono `sounddevice.InputStream`; the speech recorder defaults to `LISTENING_CHANNELS=2`. If your microphone is mono-only, set `LISTENING_CHANNELS=1`.
+- Wake word detection opens the microphone as a 16 kHz mono `sounddevice.InputStream`; the speech recorder defaults to `LISTENING_CHANNELS=2`. If your microphone is mono-only, set `LISTENING_CHANNELS=1`.
 - Kitchen lighting uses `KITCHEN_BULB_IP` for the kitchen bulb IP in your local `.env`.
 - For quick hardware validation, use [list_sounddevice_devices.py](list_sounddevice_devices.py) to find the microphone name and [led_tests/test.py](led_tests/test.py) to smoke-test the LED strip.
 

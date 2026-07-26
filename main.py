@@ -20,7 +20,7 @@ from helpers.audio_output import (
 from toolbox.background_audio import stop_background_playback
 from toolbox import led_strip
 from toolbox.led_strip import enable_pi5_led_runtime
-from wakeword_loop import initialize_wakeword_loop
+from wakeword_loop import WakewordInitializationError, initialize_wakeword_loop
 from parse_user_input import parse_user_input
 from setup.microphone_setup import setup_default_microphone
 from setup.log_setup import setup_logging
@@ -151,7 +151,11 @@ def main():
             AMBIENT_NOISE_VALUE = calibrate_ambient_noise()
             LAST_RECALIBRATION_TIME = time.time()
 
-        wakeword_detected = initialize_wakeword_loop() # Returns when heard
+        try:
+            wakeword_detected = initialize_wakeword_loop() # Returns when heard
+        except WakewordInitializationError as error:
+            logging.critical("Wake-word startup failed: %s", error)
+            raise SystemExit(1) from error
         background_audio_ducked = False
 
         if wakeword_detected:
