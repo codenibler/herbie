@@ -94,7 +94,6 @@ proto-plus==1.27.1
 protobuf==6.33.5
 psutil==7.0.0
 ptyprocess==0.7.0
-pvporcupine==4.0.2
 pyasn1==0.6.2
 pyasn1_modules==0.4.2
 pyasyncore==1.0.2
@@ -142,6 +141,7 @@ RTIMULib==7.2.1
 Send2Trash==1.8.3
 sense-hat==2.6.0
 setuptools==82.0.0
+sherpa-onnx==1.13.4
 simplejpeg==1.8.1
 smbus==1.1
 smbus2==0.4.3
