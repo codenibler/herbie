@@ -25,7 +25,6 @@ from parse_user_input import parse_user_input
 from setup.microphone_setup import setup_default_microphone
 from setup.log_setup import setup_logging
 from dotenv import load_dotenv
-from gpiozero import Buzzer
 from pathlib import Path
 
 import asyncio
@@ -43,15 +42,6 @@ USE_BLUETOOTH_SPEAKER = os.getenv("USE_BLUETOOTH_SPEAKER", "False").lower() == "
 GREETING_RESPONSES_DIR = Path(os.getenv("GREETING_RESPONSES_DIR", "herbie_responses/greetings"))
 STARTUP_OUTPUT_VOLUME_PERCENT = int(os.getenv("STARTUP_OUTPUT_VOLUME_PERCENT", 100))
 WAKEWORD_DUCKED_VOLUME_PERCENT = int(os.getenv("WAKEWORD_DUCKED_VOLUME_PERCENT", 20))
-
-
-def activate_buzzer():
-    buzzer = Buzzer(BUZZER_PIN)
-    for _ in range(BUZZER_BEEP_COUNT):
-        buzzer.on()
-        time.sleep(BUZZER_BEEP_ON_SECONDS)
-        buzzer.off()
-        time.sleep(BUZZER_BEEP_OFF_SECONDS)
 
 
 async def initialize_startup_tasks():
@@ -105,7 +95,6 @@ def process_user_text(user_text: str, *, background_audio_ducked: bool) -> None:
         restore_preferred_output_volume()
         led_strip.stop_loading_led_animation()
         read_out_response(stop_response)
-        activate_buzzer()
         return
 
     if is_time_query(user_text):
@@ -115,7 +104,6 @@ def process_user_text(user_text: str, *, background_audio_ducked: bool) -> None:
         logging.info(f"Responding locally to time query: {time_response}")
         led_strip.stop_loading_led_animation()
         read_out_response(time_response)
-        activate_buzzer()
         return
 
     if background_audio_ducked:
@@ -124,7 +112,6 @@ def process_user_text(user_text: str, *, background_audio_ducked: bool) -> None:
     groq_response = groq_query(user_text)
     led_strip.stop_loading_led_animation()
     read_out_response(groq_response)
-    activate_buzzer()
 
 
 def main():
