@@ -57,7 +57,7 @@ def _get_rgb_env(name: str, default: tuple[int, int, int]) -> tuple[int, int, in
 
 LED_STRIP_ENABLED = _get_bool_env("LED_STRIP_ENABLED", True)
 PIXEL_COUNT = int(os.getenv("PIXEL_COUNT", 80))
-LED_PIN = int(os.getenv("LED_PIN", 18))
+LED_PIN = int(os.getenv("LED_PIN", 12))
 LED_FREQ_HZ = int(os.getenv("LED_FREQ_HZ", 800000))
 LED_DMA = int(os.getenv("LED_DMA", 10))
 LED_BRIGHTNESS = int(os.getenv("LED_BRIGHTNESS", 80))

@@ -76,7 +76,8 @@ USER_INPUT_DIR=recorded_wavs
 
 # Groq API
 GROQ_API_KEY=
-GROQ_MODEL_NAME=meta-llama/llama-4-scout-17b-16e-instruct
+GROQ_MODEL_NAME=openai/gpt-oss-20b
+GROQ_REASONING_EFFORT=low
 
 # Google Calendar OAuth
 CALENDAR_CLIENT_ID=
@@ -111,7 +112,7 @@ TIMER_COMPLETE_RESPONSES_DIR=herbie_responses/timer_complete
 # LED strip: hardware
 LED_STRIP_ENABLED=true
 PIXEL_COUNT=80
-LED_PIN=18
+LED_PIN=12
 LED_FREQ_HZ=800000
 LED_DMA=10
 LED_BRIGHTNESS=80

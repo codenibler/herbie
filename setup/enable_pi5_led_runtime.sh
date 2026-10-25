@@ -10,8 +10,10 @@ OVERLAY_DTBO="${MODULE_DIR}/rp1_ws281x_pwm.dtbo"
 PYTHON_BIN="${REPO_ROOT}/venv/bin/python"
 DEVICE_NODE="/dev/ws281x_pwm"
 GPIO_GROUP="${GPIO_GROUP:-gpio}"
-PWM_PIN="${PWM_PIN:-18}"
-PWM_CHANNEL="${PWM_CHANNEL:-2}"
+# GPIO18 (PWM0_CHAN2, alt a3) is damaged on this board; GPIO12 is PWM0_CHAN0 on alt a0.
+PWM_PIN="${PWM_PIN:-12}"
+PWM_CHANNEL="${PWM_CHANNEL:-0}"
+PWM_ALT_FUNC="${PWM_ALT_FUNC:-a0}"
 
 log() {
     printf '[pi5-led] %s\n' "$*"
@@ -47,7 +49,8 @@ if ! lsmod | grep -q '^rp1_ws281x_pwm '; then
     log "Loading kernel module"
     sudo insmod "${MODULE_KO}" pwm_channel="${PWM_CHANNEL}"
 else
-    log "Kernel module already loaded"
+    log "Kernel module already loaded; setting pwm_channel=${PWM_CHANNEL}"
+    echo "${PWM_CHANNEL}" | sudo tee /sys/module/rp1_ws281x_pwm/parameters/pwm_channel > /dev/null
 fi
 
 if ! sudo dtoverlay -l | grep -q 'rp1_ws281x_pwm'; then
@@ -58,7 +61,7 @@ else
 fi
 
 log "Configuring GPIO${PWM_PIN} for Pi 5 PWM"
-sudo pinctrl set "${PWM_PIN}" a3 pn
+sudo pinctrl set "${PWM_PIN}" "${PWM_ALT_FUNC}" pn
 
 for _ in 1 2 3 4 5; do
     if [[ -e "${DEVICE_NODE}" ]]; then

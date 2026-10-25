@@ -60,7 +60,11 @@ Sherpa-onnx wake-word detection:
 Groq inference:
 - Herbie uses the Groq API for language-model responses.
 - `GROQ_API_KEY` is required in `.env`.
-- `GROQ_MODEL_NAME` is optional and defaults to `meta-llama/llama-4-scout-17b-16e-instruct`.
+- `GROQ_MODEL_NAME` is optional and defaults to `openai/gpt-oss-20b`. The earlier defaults
+  (`meta-llama/llama-4-scout-17b-16e-instruct`, `qwen/qwen3.6-27b`) were shut down by Groq in 2026.
+  `openai/gpt-oss-120b` is a drop-in alternative at the same price and about half the speed.
+- `GROQ_REASONING_EFFORT` is optional and defaults to `low` to keep voice responses snappy;
+  `medium` or `high` trades latency for more careful tool-argument extraction.
 - `WEATHER_LOCATION` controls which place Herbie uses for weather analysis and defaults to `Amsterdam`.
 - Google Calendar support is read-only. To enable calendar event lookups and schedule analysis, set `CALENDAR_CLIENT_ID` and `CALENDAR_CLIENT_SECRET` in `.env` and let Herbie complete the one-time OAuth flow the first time a calendar tool runs.
 - On a headless Raspberry Pi, Google Calendar auth is configured for SSH tunneling by default: `CALENDAR_AUTH_HOST=localhost`, `CALENDAR_AUTH_PORT=8080`, `CALENDAR_AUTH_OPEN_BROWSER=false`.
@@ -106,17 +110,17 @@ Herbie is currently set up like a Raspberry Pi build with a USB microphone/speak
 
 | Part | Code default / env var | Physical setup |
 | --- | --- | --- |
-| WS281x LED strip | `LED_PIN=18`, `PIXEL_COUNT=80`, `LED_CHANNEL=0`, `LED_STRIP_TYPE=WS2811_STRIP_GRB` | Connect the strip data input to `GPIO18` (physical pin `12`). Power the strip from a suitable `5V` supply, and tie LED ground to both PSU ground and a Raspberry Pi `GND` pin so the data line has a common ground reference. |
+| WS281x LED strip | `LED_PIN=12`, `PIXEL_COUNT=80`, `LED_CHANNEL=0`, `LED_STRIP_TYPE=WS2811_STRIP_GRB` | Connect the strip data input to `GPIO12` (physical pin `32`). Power the strip from a suitable `5V` supply, and tie LED ground to both PSU ground and a Raspberry Pi `GND` pin so the data line has a common ground reference. |
 | Microphone | `MICROPHONE_NAME` | No GPIO wiring is used in code. The current local `.env` expects a device name containing `ReSpeaker`, so plug in the mic and verify `sounddevice` can see it. |
 | Speaker / amp | `PREFERRED_WAV_OUTPUT_DEVICE=plughw:CARD=Audio,DEV=0` | No GPIO wiring is used in code. Playback is sent through ALSA to a device named `Audio`, which is typically a USB audio dongle / USB speaker path. |
 | WiZ bulbs | `KITCHEN_BULB_IP`, `BULB1_IP`, `BULB2_IP`, `BULB3_IP` | These are LAN devices, not GPIO devices. Put the bulbs on the same network as the Pi and reserve static/DHCP-stable IPs so the addresses in `.env` do not drift. |
 | Optional Bluetooth speaker | `USE_BLUETOOTH_SPEAKER`, `BLUETOOTH_ADDRESS_SOUNDCORE`, `SOUNDCORE_SPEAKER_NAME` | Optional wireless output path. `main.py` uses the helper to connect/trust the speaker with `bluetoothctl`; running the helper directly also tries to switch the PipeWire sink with `wpctl`. |
 
 Recommended LED strip wiring notes:
-- `GPIO18` is the active LED data pin in the code, so wire the strip's `DIN`/`DI` pad there unless you also change `LED_PIN`.
+- `GPIO12` is the active LED data pin in the code, so wire the strip's `DIN`/`DI` pad there unless you also change `LED_PIN`.
 - A WS281x strip should not be powered from the Pi GPIO data pin. Use a proper `5V` supply sized for your strip and keep grounds common.
 - A 3.3V-to-5V logic level shifter on the LED data line is recommended for reliability.
-- The LED test script in [led_tests/test.py](led_tests/test.py) uses the same defaults as the main app: `80` pixels on `GPIO18`.
+- The LED test script in [led_tests/test.py](led_tests/test.py) uses the same defaults as the main app: `80` pixels on `GPIO12`.
 
 Useful `.env` values for the hardware build that are currently only implied by code:
 
@@ -124,7 +128,7 @@ Useful `.env` values for the hardware build that are currently only implied by c
 # WS281x LED strip
 LED_STRIP_ENABLED=true
 PIXEL_COUNT=80
-LED_PIN=18
+LED_PIN=12
 LED_FREQ_HZ=800000
 LED_DMA=10
 LED_BRIGHTNESS=80
@@ -168,9 +172,9 @@ make
 ./dts.sh
 
 # 3) load them for the current boot/session
-sudo insmod ./rp1_ws281x_pwm.ko pwm_channel=2
+sudo insmod ./rp1_ws281x_pwm.ko pwm_channel=0
 sudo dtoverlay -d . rp1_ws281x_pwm
-sudo pinctrl set 18 a3 pn
+sudo pinctrl set 12 a0 pn
 
 # 4) allow the normal Herbie user to access the device node
 sudo chgrp gpio /dev/ws281x_pwm
@@ -178,12 +182,12 @@ sudo chmod 660 /dev/ws281x_pwm
 ```
 
 Pi 5-specific notes:
-- `GPIO18` maps to `PWM0_CHAN2` on Pi 5, which is why the upstream guide uses `pwm_channel=2` with `pinctrl set 18 a3 pn`.
+- `GPIO12` maps to `PWM0_CHAN0` on Pi 5, hence `pwm_channel=0` with `pinctrl set 12 a0 pn`. (The upstream guide uses `GPIO18` = `PWM0_CHAN2` with `pwm_channel=2` and `a3`; GPIO18 on this board is damaged and stuck high, so it is no longer used.)
 - The `/dev/ws281x_pwm` permission change above is not persistent across reboot or overlay reload unless you add a udev rule or equivalent boot-time setup.
-- If you still see LED init failures, check four things in this order: imported `rpi_ws281x` package version, `/dev/ws281x_pwm` existence, `/dev/ws281x_pwm` permissions, and whether `pinctrl get 18` reports `GPIO18 = PWM0_CHAN2`.
+- If you still see LED init failures, check four things in this order: imported `rpi_ws281x` package version, `/dev/ws281x_pwm` existence, `/dev/ws281x_pwm` permissions, and whether `pinctrl get 12` reports `GPIO12 = PWM0_CHAN0`.
 
 Quick reboot protocol:
 1. Run `setup/enable_pi5_led_runtime.sh`
 2. Make sure it prints `start_result=True`
-3. If you want to double-check manually, run `ls -l /dev/ws281x_pwm` and `pinctrl get 18`
+3. If you want to double-check manually, run `ls -l /dev/ws281x_pwm` and `pinctrl get 12`
 4. Start Herbie normally with `source venv/bin/activate` and `python3 main.py`

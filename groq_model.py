@@ -31,7 +31,8 @@ TOOL_COMPLETE_RESPONSES_DIR = Path(os.getenv("TOOL_COMPLETE_RESPONSES_DIR", "her
 ACK_TOOL_RESPONSES_DIR = Path(os.getenv("ACK_TOOL_RESPONSES_DIR", "herbie_responses/ack_tool"))
 SPECIAL_CASE_RESPONSES_DIR = Path(os.getenv("SPECIAL_CASE_RESPONSES_DIR", "herbie_responses/special_cases"))
 APP_TIMEZONE = os.getenv("APP_TIMEZONE", "Europe/Amsterdam")
-DEFAULT_GROQ_MODEL_NAME = "meta-llama/llama-4-scout-17b-16e-instruct"
+DEFAULT_GROQ_MODEL_NAME = "openai/gpt-oss-20b"
+DEFAULT_GROQ_REASONING_EFFORT = "low"
 SYSTEM_PROMPT = (
     "You are an unapologetically nerdy, playful and wise AI mentor to a human. "
     "You are passionately enthusiastic about promoting truth, knowledge, philosophy, "
@@ -316,6 +317,10 @@ TOOL_PARAMETER_METADATA = {
 }
 
 
+def get_groq_reasoning_effort() -> str:
+    return os.getenv("GROQ_REASONING_EFFORT", DEFAULT_GROQ_REASONING_EFFORT)
+
+
 def get_groq_model_name() -> str:
     return os.getenv("GROQ_MODEL_NAME", DEFAULT_GROQ_MODEL_NAME)
 
@@ -354,7 +359,7 @@ def _build_json_schema_type(parameter: inspect.Parameter) -> dict[str, object]:
 
 
 def build_groq_tool_schema(function) -> dict[str, object]:
-    signature = inspect.signature(function)
+    signature = inspect.signature(function, eval_str=True)
     properties = {}
     required = []
 
@@ -453,6 +458,7 @@ def groq_query(user_text):
                 messages=build_chat_messages(user_text),
                 tools=build_groq_tools(tool),
                 tool_choice="auto",
+                reasoning_effort=get_groq_reasoning_effort(),
                 parallel_tool_calls=False,
             )
             response_message = response.choices[0].message
@@ -470,6 +476,7 @@ def groq_query(user_text):
             response = get_groq_client().chat.completions.create(
                 model=model_name,
                 messages=build_chat_messages(user_text),
+                reasoning_effort=get_groq_reasoning_effort(),
             )
             response_message = response.choices[0].message
     finally:
@@ -708,11 +715,36 @@ def determine_relevent_tool(user_text):
     logging.info("No relevant tool found for this query.")
     return None, user_text
 
+def _coerce_argument_type(parameter: inspect.Parameter, value):
+    """Coerce a tool argument to the annotated type when the model returns it as a string.
+
+    Some models (e.g. gpt-oss) emit numeric arguments as JSON strings even when the
+    schema declares them as integer/number. Leave the value untouched if coercion fails
+    so the tool can report the problem itself.
+    """
+    annotation = parameter.annotation
+    if not isinstance(value, str):
+        return value
+
+    try:
+        if annotation is int:
+            return int(float(value.strip()))
+        if annotation is float:
+            return float(value.strip())
+        if annotation is bool:
+            return value.strip().lower() in ("true", "1", "yes", "on")
+    except ValueError:
+        logging.warning(
+            "Could not coerce argument %s=%r to %s", parameter.name, value, annotation
+        )
+    return value
+
+
 def validate_tool_call_arguments(function, function_args):
     if function_args is None:
         function_args = {}
 
-    signature = inspect.signature(function)
+    signature = inspect.signature(function, eval_str=True)
     parameters = signature.parameters
     accepts_var_keyword = any(
         parameter.kind == inspect.Parameter.VAR_KEYWORD
@@ -732,7 +764,9 @@ def validate_tool_call_arguments(function, function_args):
             )
         }
         sanitized_args = {
-            name: value for name, value in function_args.items() if name in allowed_names
+            name: _coerce_argument_type(parameters[name], value)
+            for name, value in function_args.items()
+            if name in allowed_names
         }
         stripped_args = {
             name: value for name, value in function_args.items() if name not in allowed_names
