@@ -110,17 +110,17 @@ Herbie is currently set up like a Raspberry Pi build with a USB microphone/speak
 
 | Part | Code default / env var | Physical setup |
 | --- | --- | --- |
-| WS281x LED strip | `LED_PIN=12`, `PIXEL_COUNT=80`, `LED_CHANNEL=0`, `LED_STRIP_TYPE=WS2811_STRIP_GRB` | Connect the strip data input to `GPIO12` (physical pin `32`). Power the strip from a suitable `5V` supply, and tie LED ground to both PSU ground and a Raspberry Pi `GND` pin so the data line has a common ground reference. |
+| WS281x LED strip | `LED_PIN=13`, `PIXEL_COUNT=80`, `LED_CHANNEL=0`, `LED_STRIP_TYPE=WS2811_STRIP_GRB` | Connect the strip data input to `GPIO13` (physical pin `33`). Power the strip from a suitable `5V` supply, and tie LED ground to both PSU ground and a Raspberry Pi `GND` pin so the data line has a common ground reference. |
 | Microphone | `MICROPHONE_NAME` | No GPIO wiring is used in code. The current local `.env` expects a device name containing `ReSpeaker`, so plug in the mic and verify `sounddevice` can see it. |
 | Speaker / amp | `PREFERRED_WAV_OUTPUT_DEVICE=plughw:CARD=Audio,DEV=0` | No GPIO wiring is used in code. Playback is sent through ALSA to a device named `Audio`, which is typically a USB audio dongle / USB speaker path. |
 | WiZ bulbs | `KITCHEN_BULB_IP`, `BULB1_IP`, `BULB2_IP`, `BULB3_IP` | These are LAN devices, not GPIO devices. Put the bulbs on the same network as the Pi and reserve static/DHCP-stable IPs so the addresses in `.env` do not drift. |
 | Optional Bluetooth speaker | `USE_BLUETOOTH_SPEAKER`, `BLUETOOTH_ADDRESS_SOUNDCORE`, `SOUNDCORE_SPEAKER_NAME` | Optional wireless output path. `main.py` uses the helper to connect/trust the speaker with `bluetoothctl`; running the helper directly also tries to switch the PipeWire sink with `wpctl`. |
 
 Recommended LED strip wiring notes:
-- `GPIO12` is the active LED data pin in the code, so wire the strip's `DIN`/`DI` pad there unless you also change `LED_PIN`.
+- `GPIO13` is the active LED data pin in the code, so wire the strip's `DIN`/`DI` pad there unless you also change `LED_PIN`.
 - A WS281x strip should not be powered from the Pi GPIO data pin. Use a proper `5V` supply sized for your strip and keep grounds common.
 - A 3.3V-to-5V logic level shifter on the LED data line is recommended for reliability.
-- The LED test script in [led_tests/test.py](led_tests/test.py) uses the same defaults as the main app: `80` pixels on `GPIO12`.
+- The LED test script in [led_tests/test.py](led_tests/test.py) uses the same defaults as the main app: `80` pixels on `GPIO13`.
 
 Useful `.env` values for the hardware build that are currently only implied by code:
 
@@ -128,7 +128,7 @@ Useful `.env` values for the hardware build that are currently only implied by c
 # WS281x LED strip
 LED_STRIP_ENABLED=true
 PIXEL_COUNT=80
-LED_PIN=12
+LED_PIN=13
 LED_FREQ_HZ=800000
 LED_DMA=10
 LED_BRIGHTNESS=80
@@ -172,9 +172,9 @@ make
 ./dts.sh
 
 # 3) load them for the current boot/session
-sudo insmod ./rp1_ws281x_pwm.ko pwm_channel=0
+sudo insmod ./rp1_ws281x_pwm.ko pwm_channel=1
 sudo dtoverlay -d . rp1_ws281x_pwm
-sudo pinctrl set 12 a0 pn
+sudo pinctrl set 13 a0 pn
 
 # 4) allow the normal Herbie user to access the device node
 sudo chgrp gpio /dev/ws281x_pwm
@@ -182,12 +182,12 @@ sudo chmod 660 /dev/ws281x_pwm
 ```
 
 Pi 5-specific notes:
-- `GPIO12` maps to `PWM0_CHAN0` on Pi 5, hence `pwm_channel=0` with `pinctrl set 12 a0 pn`. (The upstream guide uses `GPIO18` = `PWM0_CHAN2` with `pwm_channel=2` and `a3`; GPIO18 on this board is damaged and stuck high, so it is no longer used.)
+- `GPIO13` maps to `PWM0_CHAN1` on Pi 5, hence `pwm_channel=1` with `pinctrl set 13 a0 pn`. (The upstream guide uses `GPIO18` = `PWM0_CHAN2` with `pwm_channel=2` and `a3`. On this board GPIO18 is stuck high and GPIO12 (`PWM0_CHAN0`) can no longer switch fast enough for WS281x data, so neither is used. The remaining PWM0 option is `GPIO19` = `PWM0_CHAN3` on `a3`.)
 - The `/dev/ws281x_pwm` permission change above is not persistent across reboot or overlay reload unless you add a udev rule or equivalent boot-time setup.
-- If you still see LED init failures, check four things in this order: imported `rpi_ws281x` package version, `/dev/ws281x_pwm` existence, `/dev/ws281x_pwm` permissions, and whether `pinctrl get 12` reports `GPIO12 = PWM0_CHAN0`.
+- If you still see LED init failures, check four things in this order: imported `rpi_ws281x` package version, `/dev/ws281x_pwm` existence, `/dev/ws281x_pwm` permissions, and whether `pinctrl get 13` reports `GPIO13 = PWM0_CHAN1`.
 
 Quick reboot protocol:
 1. Run `setup/enable_pi5_led_runtime.sh`
 2. Make sure it prints `start_result=True`
-3. If you want to double-check manually, run `ls -l /dev/ws281x_pwm` and `pinctrl get 12`
+3. If you want to double-check manually, run `ls -l /dev/ws281x_pwm` and `pinctrl get 13`
 4. Start Herbie normally with `source venv/bin/activate` and `python3 main.py`

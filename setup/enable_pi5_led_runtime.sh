@@ -10,9 +10,9 @@ OVERLAY_DTBO="${MODULE_DIR}/rp1_ws281x_pwm.dtbo"
 PYTHON_BIN="${REPO_ROOT}/venv/bin/python"
 DEVICE_NODE="/dev/ws281x_pwm"
 GPIO_GROUP="${GPIO_GROUP:-gpio}"
-# GPIO18 (PWM0_CHAN2, alt a3) is damaged on this board; GPIO12 is PWM0_CHAN0 on alt a0.
-PWM_PIN="${PWM_PIN:-12}"
-PWM_CHANNEL="${PWM_CHANNEL:-0}"
+# GPIO18 (PWM0_CHAN2) and GPIO12 (PWM0_CHAN0) are damaged on this board; GPIO13 is PWM0_CHAN1 on alt a0.
+PWM_PIN="${PWM_PIN:-13}"
+PWM_CHANNEL="${PWM_CHANNEL:-1}"
 PWM_ALT_FUNC="${PWM_ALT_FUNC:-a0}"
 
 log() {
