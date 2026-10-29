@@ -94,7 +94,48 @@ def get_preferred_alsa_card_name() -> str | None:
     return None
 
 
+def is_pulse_output() -> bool:
+    """True when playback goes through the ALSA 'pulse' plugin (e.g. a Bluetooth speaker)."""
+    preferred_device_name = os.getenv("PREFERRED_WAV_OUTPUT_DEVICE", PREFERRED_USB_AUDIO_DEVICE)
+    return preferred_device_name.strip().lower() == "pulse"
+
+
+def _get_pulse_default_sink_volume_percent() -> int | None:
+    result = subprocess.run(
+        ["pactl", "get-sink-volume", "@DEFAULT_SINK@"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        logging.warning("pactl get-sink-volume failed: %s", result.stderr.strip())
+        return None
+    match = re.search(r"(\d+)%", result.stdout)
+    if match is None:
+        logging.warning("Could not parse PulseAudio sink volume from: %s", result.stdout.strip())
+        return None
+    return int(match.group(1))
+
+
+def _set_pulse_default_sink_volume_percent(volume_percent: int, *, log_change: bool) -> bool:
+    result = subprocess.run(
+        ["pactl", "set-sink-volume", "@DEFAULT_SINK@", f"{volume_percent}%"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        logging.warning("pactl set-sink-volume %s%% failed: %s", volume_percent, result.stderr.strip())
+        return False
+    if log_change:
+        logging.info("Set PulseAudio default sink volume to %s%%.", volume_percent)
+    return True
+
+
 def get_preferred_output_volume_percent() -> int | None:
+    if is_pulse_output():
+        return _get_pulse_default_sink_volume_percent()
+
     card_name = get_preferred_alsa_card_name()
     if card_name is None:
         logging.warning("Could not determine ALSA card for preferred output volume control.")
@@ -119,12 +160,15 @@ def get_preferred_output_volume_percent() -> int | None:
 
 
 def set_preferred_output_volume_percent(volume_percent: int, *, log_change: bool = True) -> bool:
+    normalized_volume_percent = max(0, min(100, int(volume_percent)))
+    if is_pulse_output():
+        return _set_pulse_default_sink_volume_percent(normalized_volume_percent, log_change=log_change)
+
     card_name = get_preferred_alsa_card_name()
     if card_name is None:
         logging.warning("Could not determine ALSA card for preferred output volume control.")
         return False
 
-    normalized_volume_percent = max(0, min(100, int(volume_percent)))
     result = subprocess.run(
         ["amixer", "-c", card_name, "set", "PCM", f"{normalized_volume_percent}%"],
         capture_output=True,

@@ -7,13 +7,23 @@
 RECALIBRATION_INTERVAL=600
 
 # Audio output
-PREFERRED_WAV_OUTPUT_DEVICE=plughw:CARD=Audio,DEV=0
-STARTUP_OUTPUT_VOLUME_PERCENT=100
+# Use an ALSA device name for direct output, or `pulse` to play through the PulseAudio
+# default sink (required for the Bluetooth speaker).
+PREFERRED_WAV_OUTPUT_DEVICE=pulse
+STARTUP_OUTPUT_VOLUME_PERCENT=50
 
 # Wakeword ducking
 WAKEWORD_DUCKED_VOLUME_PERCENT=20
 WAKEWORD_DUCK_FADE_DURATION_MS=350
 WAKEWORD_DUCK_FADE_STEP_COUNT=7
+
+# Bluetooth speaker (see setup/install_speaker_keepalive.sh)
+USE_BLUETOOTH_SPEAKER=true
+# Sensitive: the speaker's Bluetooth MAC address, e.g. AA:BB:CC:DD:EE:FF
+BLUETOOTH_ADDRESS_SOUNDCORE=
+SOUNDCORE_SPEAKER_NAME=Soundcore Motion Boom
+# Peak sample value (16-bit scale) of the inaudible keepalive dither; 1 is the minimum
+SPEAKER_KEEPALIVE_AMPLITUDE=4
 
 # Piper voice model
 PIPER_VOICE_MODEL_PATH=./piper_voice_model/en_US-hfc_male-medium.onnx
@@ -58,8 +68,8 @@ MAX_RECORDING_DURATION_SECONDS=100.0
 
 # Wakeword engine
 WAKEWORD_MODEL_DIR=herbie_wakewords
-WAKEWORD_SCORE=1.0
-WAKEWORD_THRESHOLD=0.25
+WAKEWORD_SCORE=4.0
+WAKEWORD_THRESHOLD=0.09
 WAKEWORD_NUM_THREADS=2
 WAKEWORD_SAMPLE_RATE=16000
 WAKEWORD_BLOCK_SIZE=2048

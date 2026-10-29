@@ -125,8 +125,9 @@ def main():
     led_strip.start_led_strip_controller()
     led_strip.set_idle_led_mode(True)
     if USE_BLUETOOTH_SPEAKER:
-        from helpers.set_bluetooth_out import bluetooth_ctl_connect
-        bluetooth_ctl_connect()  
+        from helpers.set_bluetooth_out import bluetooth_ctl_connect, set_bluetooth_default_sink
+        if bluetooth_ctl_connect():
+            set_bluetooth_default_sink()
     set_preferred_output_volume_percent(STARTUP_OUTPUT_VOLUME_PERCENT)
     AMBIENT_NOISE_VALUE, LAST_RECALIBRATION_TIME = asyncio.run(initialize_startup_tasks())
 

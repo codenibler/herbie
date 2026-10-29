@@ -36,6 +36,9 @@ pip-wheel-metadata/
 logs/
 songs/
 wav_temp/
+# Runtime audio: user voice recordings and generated TTS replies
+recorded_wavs/
+response_audio/
 whisper.cpp/
 
 herbie_responses/thinking_noise/source.wav

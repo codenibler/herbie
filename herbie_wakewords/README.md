@@ -10,8 +10,16 @@ model latency for better accuracy than the chunk-8 variant.
 `keywords.txt` defines `HEY_HERBIE` using the model's English phoneme lexicon:
 
 ```text
-HH EY1 HH ER1 B IY0 @HEY_HERBIE
+HH EY1 HH ER1 B IY0 @HEY_HERBIE   # canonical
+HH EY1 ER1 B IY0 @HEY_HERBIE      # dropped H in Herbie ("Hey Erbie")
+EY1 HH ER1 B IY0 @HEY_HERBIE      # dropped H in Hey ("Ey Herbie")
+HH EY1 HH ER1 B IY1 @HEY_HERBIE   # stressed final syllable
+HH EY0 HH ER1 B IY0 @HEY_HERBIE   # unstressed Hey
+HH ER1 B IY0 @HEY_HERBIE          # "Herbie" alone (remove first if false triggers)
 ```
+
+All lines map to the same `HEY_HERBIE` label, so any variant activates Herbie.
+The comments above are documentation only; the real file has no comments.
 
 The model runs locally after installation and does not require an account,
 access key, or network request. Runtime settings are documented in the project

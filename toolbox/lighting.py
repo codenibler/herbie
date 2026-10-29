@@ -488,6 +488,7 @@ COLORS = {
     "DARK_BLUE": (0, 0, 139),        # #00008B
     "DARK_ORANGE": (255, 140, 0),    # #FF8C00
     "DARK_PURPLE": (75, 0, 130),     # #4B0082
+    "SUNSET": (170, 60, 0),          # #AA3C00
     # Light
     "LIGHT_RED": (255, 102, 102),    # #FF6666
     "LIGHT_GREEN": (144, 238, 144),  # #90EE90

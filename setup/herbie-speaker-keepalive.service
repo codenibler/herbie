@@ -1,0 +1,14 @@
+[Unit]
+Description=Herbie: keep the Bluetooth speaker connected and awake
+After=pulseaudio.service bluetooth.target
+Wants=pulseaudio.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/codenibler/Herbie
+ExecStart=/home/codenibler/Herbie/venv/bin/python /home/codenibler/Herbie/setup/speaker_keepalive.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

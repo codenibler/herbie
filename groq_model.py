@@ -110,7 +110,16 @@ TOOL_COMPLETION_AUDIO_MAP = {
     ],
 }
 
+
+def stay_silent():
+    # Returning None makes execute_tool_calls play and say nothing, so Herbie
+    # drops straight back to the wake-word loop.
+    logging.info("Model judged that no response is needed. Returning to wake-word loop silently.")
+    return None
+
+
 TOOL_MAP = {
+    "stay_silent": stay_silent,
     "turn_everything_off": lighting.turn_everything_off,
     "turn_everything_on": lighting.turn_everything_on,
     "kitchen_light_on": lighting.kitchen_light_on,
@@ -135,10 +144,6 @@ TOOL_MAP = {
     "get_weather_analysis": weather.get_weather_analysis,
     "rebalance_portfolio": portfolio_rebalance.rebalance_portfolio,
 }
-CANON = {
-    "lights": "light",
-}
-
 TIME_QUERY_PATTERNS = (
     "what time is it",
     "whats the time",
@@ -146,138 +151,68 @@ TIME_QUERY_PATTERNS = (
     "tell me the time",
     "current time",
 )
+# A bare "stop" is handled locally (no model round-trip) so alarms and music
+# halt instantly. Every other phrasing goes to the model, which picks the tool.
 GENERIC_STOP_QUERY_PATTERNS = (
     "stop",
 )
-TIMER_STATUS_QUERY_PATTERNS = (
-    "time left on timer",
-    "time left on the timer",
-    "time left on my timer",
-    "time left on countdown",
-    "time left on the countdown",
-    "time remaining on the timer",
-    "time remaining on timer",
-    "time remaining on my timer",
-    "time remaining on countdown",
-    "time remaining on the countdown",
-    "remaining time on the timer",
-    "remaining time on timer",
-    "remaining time on my timer",
-    "remaining time on countdown",
-    "remaining time on the countdown",
-    "how much time is left on timer",
-    "how much time is left on the timer",
-    "how much time is left on my timer",
-    "how much time is left on countdown",
-    "how much time is left on the countdown",
-    "how much time remains on timer",
-    "how much time remains on the timer",
-    "how much time remains on my timer",
-    "how much time remains on countdown",
-    "how much time remains on the countdown",
-    "how long is left on timer",
-    "how long is left on the timer",
-    "how long is left on my timer",
-    "how long is left on countdown",
-    "how long is left on the countdown",
-    "how long left on timer",
-    "how long left on the timer",
-    "how long left on my timer",
-    "how long left on countdown",
-    "how long left on the countdown",
-    "when does the timer end",
-    "when will the timer end",
-    "when does the countdown end",
-    "when will the countdown end",
-)
-BACKGROUND_AUDIO_STOP_PATTERNS = (
-    "stop it",
-    "stop that",
-    "stop the music",
-    "stop the song",
-    "turn the speaker off",
-    "turn speaker off",
-    "stop the speaker",
-    "mute the speaker",
-    "stop the timer",
-    "end the timer",
-    "end timer",
-    "cancel the timer",
-    "cancel timer",
-    "stop the countdown",
-    "stop countdown",
-    "end the countdown",
-    "end countdown",
-    "cancel the countdown",
-    "cancel countdown",
-    "stop the timer sound",
-    "stop the alarm",
-)
-CALENDAR_QUERY_PATTERNS = (
-    "what do i have today",
-    "what do i have this week",
-    "whats on my calendar",
-    "what's on my calendar",
-    "whats on my schedule",
-    "what's on my schedule",
-    "whats on today",
-    "what's on today",
-    "whats left this week",
-    "what's left this week",
-    "whats left of the week",
-    "what's left of the week",
-    "rest of the week",
-    "remainder of the week",
-    "whats planned for the day",
-    "what's planned for the day",
-    "whats planned for today",
-    "what's planned for today",
-    "whats planned for the rest of the week",
-    "what's planned for the rest of the week",
-    "whats planned for the remainder of the week",
-    "what's planned for the remainder of the week",
-)
-CALENDAR_ANALYSIS_PATTERNS = (
-    "calendar analysis",
-    "schedule analysis",
-    "analyze my calendar",
-    "analyse my calendar",
-    "summarize my calendar",
-    "summarise my calendar",
-    "calendar overview",
-    "schedule overview",
-    "how busy am i today",
-    "how busy is today",
-    "how busy is the rest of my week",
-    "how busy is the remainder of the week",
-    "whats planned",
-    "what's planned",
+CALENDAR_PERIODS = ["today", "remainder_of_week", "today_and_remainder_of_week"]
+
+TOOL_GUIDANCE = (
+    " You also control a smart home and can call tools. Decide yourself which tool, if any,"
+    " fits the request. Only call a tool when the user clearly asks for an action or for"
+    " information that a tool provides; answer general questions and conversation in words"
+    " without calling any tool."
+    " Not every utterance deserves a reply. Speaking when nothing was asked is a mistake."
+    " You must call stay_silent, and write no text, when the utterance contains no question"
+    " and no request: thanks, thank you, cheers, okay, cool, great, got it, never mind,"
+    " cancel, forget it, a fragment of a conversation between other people or a remark that"
+    " is clearly not addressed to you (for example 'and then she said the bus was late'),"
+    " filler sounds, or empty or unintelligible input. If the utterance contains any"
+    " question or request, even after a thanks, handle that instead and never call"
+    " stay_silent."
+    " Lights: the kitchen light is one bulb; the station lights are the three living-room"
+    " bulbs (also called the station, the living room, or just the lights). Use"
+    " turn_everything_on or turn_everything_off only when the user means every light."
+    " Music: when the user names a particular track, call play_specific_song with the"
+    " closest matching path from the song_path options, never an invented path. When the"
+    " user just wants music, bangers, or songs without naming one, call play_random_songs."
+    " skip_song moves to the next track; stop_music stops music specifically;"
+    " stop_background_playback stops whatever is sounding (music, a timer alarm, a countdown)"
+    " and is the right choice for a vague stop request."
+    " Timers: convert minutes and hours to total seconds before calling start_timer."
+    " Calendar: get_calendar_events lists what is scheduled; get_calendar_schedule_analysis"
+    " summarises how busy the schedule looks. Choose period today for today only,"
+    " remainder_of_week for the rest of this week after today, and"
+    " today_and_remainder_of_week when the user wants both."
+    " Never create, edit, or delete calendar events."
 )
 
 TOOL_DESCRIPTIONS = {
+    "stay_silent": "Say nothing and go straight back to waiting for the wake word. Use when the utterance needs no reply.",
     "turn_everything_off": "Turn off all configured smart lights.",
     "turn_everything_on": "Turn on all configured smart lights.",
     "kitchen_light_on": "Turn on the kitchen light.",
     "kitchen_light_off": "Turn off the kitchen light.",
     "kitchen_light_color": "Set the kitchen light to a named color.",
-    "station_lights_off": "Turn off the station lights.",
-    "station_lights_on": "Turn on the station lights.",
+    "station_lights_off": "Turn off the station lights (the three living-room bulbs).",
+    "station_lights_on": "Turn on the station lights (the three living-room bulbs).",
     "station_light_brightness": "Set the station lights brightness as a percentage.",
     "station_light_color": "Set the station lights to a named color.",
     "station_lights_freaky": "Activate freak mode for the station lights and music.",
     "get_calendar_events": "Fetch Google Calendar events for today or the remainder of the week.",
     "get_calendar_schedule_analysis": "Analyze how busy today or the remainder of the week looks based on Google Calendar events.",
-    "play_random_songs": "Play a shuffled queue of songs from the local songs directory.",
-    "play_specific_song": "Play one specific song from the local songs directory.",
+    "play_random_songs": "Play a shuffled queue of songs when the user wants music without naming a specific track.",
+    "play_specific_song": "Play one specific named song from the local songs directory. Only use a song_path from the listed options.",
     "skip_song": "Skip the current song or move to a different available track.",
     "stop_music": "Stop the current music playback.",
-    "stop_background_playback": "Stop music, timer sounds, or other active background audio.",
+    "stop_background_playback": "Stop whatever is currently sounding: music, a timer alarm, or a countdown. Use for a generic stop request.",
     "start_timer": "Start a timer for a specific duration in seconds.",
     "stop_timer": "Stop the active timer if one is running.",
     "get_timer_remaining": "Report how much time is left on the active timer.",
     "set_output_volume": "Set the preferred speaker output volume as a percentage.",
-    "get_weather_analysis": "Get a succinct weather analysis for the configured location and recommend what clothing to wear.",
-    "rebalance_portfolio": "Run the portfolio rebalance workflow in the standalone portfolio_rebalance virtual environment.",
+    "get_weather_analysis": "Get the current weather and forecast for the configured location, with a clothing recommendation.",
+    "rebalance_portfolio": "Run the investment portfolio rebalance workflow.",
 }
 
 TOOL_PARAMETER_METADATA = {
@@ -308,11 +243,11 @@ TOOL_PARAMETER_METADATA = {
     },
     ("get_calendar_events", "period"): {
         "description": "The calendar window to fetch. Use today, remainder_of_week, or today_and_remainder_of_week.",
-        "enum": ["today", "remainder_of_week", "today_and_remainder_of_week"],
+        "enum": CALENDAR_PERIODS,
     },
     ("get_calendar_schedule_analysis", "period"): {
         "description": "The calendar window to analyze. Use today, remainder_of_week, or today_and_remainder_of_week.",
-        "enum": ["today", "remainder_of_week", "today_and_remainder_of_week"],
+        "enum": CALENDAR_PERIODS,
     },
 }
 
@@ -337,9 +272,31 @@ def get_groq_client() -> Groq:
     return _GROQ_CLIENT
 
 
-def build_chat_messages(user_text: str) -> list[dict[str, str]]:
+def list_song_paths() -> list[str]:
+    songs_dir = Path("songs")
+    if not songs_dir.is_dir():
+        return []
+    return sorted(f"songs/{name}" for name in os.listdir(songs_dir))
+
+
+def _dynamic_parameter_metadata(function_name: str, parameter_name: str) -> dict[str, object]:
+    if (function_name, parameter_name) == ("play_specific_song", "song_path"):
+        song_paths = list_song_paths()
+        return {"enum": song_paths} if song_paths else {}
+    return {}
+
+
+def build_system_prompt(include_tool_guidance: bool = True) -> str:
+    now = datetime.now(ZoneInfo(APP_TIMEZONE))
+    context = f" The current local date and time is {now.strftime('%A %d %B %Y, %H:%M')}."
+    if include_tool_guidance:
+        return SYSTEM_PROMPT + TOOL_GUIDANCE + context
+    return SYSTEM_PROMPT + context
+
+
+def build_chat_messages(user_text: str, *, include_tool_guidance: bool = True) -> list[dict[str, str]]:
     return [
-        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "system", "content": build_system_prompt(include_tool_guidance)},
         {"role": "user", "content": user_text},
     ]
 
@@ -374,6 +331,7 @@ def build_groq_tool_schema(function) -> dict[str, object]:
         schema.update(
             TOOL_PARAMETER_METADATA.get((function.__name__, parameter.name), {})
         )
+        schema.update(_dynamic_parameter_metadata(function.__name__, parameter.name))
         properties[parameter.name] = schema
 
         if parameter.default is inspect.Parameter.empty:
@@ -439,46 +397,47 @@ def _extract_tool_call_data(tool_call) -> tuple[str | None, dict[str, object]]:
     return function_name, function_args
 
 
-def groq_query(user_text):
-    model_name = get_groq_model_name()
+def build_all_groq_tools() -> list[dict[str, object]]:
+    return build_groq_tools(TOOL_MAP.values())
 
-    tool, user_text = determine_relevent_tool(user_text)
+
+def request_chat_completion(user_text: str):
+    """Send the user's text to the model with every tool available and return the message.
+
+    The model decides whether a tool fits; there is no keyword pre-routing.
+    """
+    return get_groq_client().chat.completions.create(
+        model=get_groq_model_name(),
+        messages=build_chat_messages(user_text),
+        tools=build_all_groq_tools(),
+        tool_choice="auto",
+        parallel_tool_calls=False,
+        reasoning_effort=get_groq_reasoning_effort(),
+    ).choices[0].message
+
+
+def groq_query(user_text):
     started_thinking_audio = False
     started_loading_animation = False
     response_message = None
     handled_tool_response = False
 
     try:
-        if tool is not None:
-            logging.info(tool)
-            started_loading_animation = led_strip.start_loading_led_animation()
-            started_thinking_audio = thinking_audio.start_thinking_audio()
-            response = get_groq_client().chat.completions.create(
-                model=model_name,
-                messages=build_chat_messages(user_text),
-                tools=build_groq_tools(tool),
-                tool_choice="auto",
-                reasoning_effort=get_groq_reasoning_effort(),
-                parallel_tool_calls=False,
+        started_loading_animation = led_strip.start_loading_led_animation()
+        started_thinking_audio = thinking_audio.start_thinking_audio()
+        response_message = request_chat_completion(user_text)
+        if response_message.tool_calls:
+            logging.info(
+                "Model selected tool(s): %s",
+                [call.function.name for call in response_message.tool_calls],
             )
-            response_message = response.choices[0].message
-            logging.info(f"Selected tool for this query: {tool}")
-            logging.info("Groq response: %s", response_message.content)
-            if response_message.tool_calls:
-                clarification_message = execute_tool_calls(response_message.tool_calls)
-                if clarification_message is not None:
-                    logging.info(f"Tool clarification requested: {clarification_message}")
-                    return clarification_message
-                handled_tool_response = True
+            clarification_message = execute_tool_calls(response_message.tool_calls)
+            if clarification_message is not None:
+                logging.info(f"Tool clarification requested: {clarification_message}")
+                return clarification_message
+            handled_tool_response = True
         else:
-            started_loading_animation = led_strip.start_loading_led_animation()
-            started_thinking_audio = thinking_audio.start_thinking_audio()
-            response = get_groq_client().chat.completions.create(
-                model=model_name,
-                messages=build_chat_messages(user_text),
-                reasoning_effort=get_groq_reasoning_effort(),
-            )
-            response_message = response.choices[0].message
+            logging.info("Model answered without a tool call.")
     finally:
         if started_thinking_audio:
             thinking_audio.stop_thinking_audio()
@@ -514,206 +473,11 @@ def build_time_query_response() -> str:
     formatted_time = current_time.strftime("%I:%M %p")
     return f"It is {formatted_time}."
 
-def is_timer_status_query(user_text: str) -> bool:
-    normalized_text = normalize_user_text(user_text)
-    return any(pattern in normalized_text for pattern in TIMER_STATUS_QUERY_PATTERNS)
-
 def is_background_audio_stop_request(user_text: str) -> bool:
-    normalized_text = normalize_user_text(user_text)
-    if normalized_text in GENERIC_STOP_QUERY_PATTERNS:
-        return True
-    return any(pattern in normalized_text for pattern in BACKGROUND_AUDIO_STOP_PATTERNS)
+    # Only a bare "stop" short-circuits the model; anything more specific is
+    # left to the model so it can pick stop_music, stop_timer, etc. itself.
+    return is_generic_stop_query(user_text)
 
-
-def is_calendar_query(user_text: str) -> bool:
-    normalized_text = normalize_user_text(user_text)
-
-    if any(pattern in normalized_text for pattern in CALENDAR_QUERY_PATTERNS):
-        return True
-
-    return any(
-        word in normalized_text.split()
-        for word in ("calendar", "schedule", "agenda")
-    )
-
-
-def is_calendar_analysis_request(user_text: str) -> bool:
-    normalized_text = normalize_user_text(user_text)
-    return any(pattern in normalized_text for pattern in CALENDAR_ANALYSIS_PATTERNS)
-
-
-def determine_calendar_period(user_text: str) -> str:
-    normalized_text = normalize_user_text(user_text)
-    tokens = normalized_text.split()
-
-    mentions_today = any(
-        pattern in normalized_text
-        for pattern in (
-            " for the day",
-            " for today",
-        )
-    ) or "today" in tokens or "day" in tokens
-    mentions_week = any(
-        pattern in normalized_text
-        for pattern in (
-            "remainder of the week",
-            "rest of the week",
-            "left this week",
-            "left of the week",
-            "this week",
-            "remainder_of_week",
-        )
-    )
-
-    if mentions_today and mentions_week:
-        return "today_and_remainder_of_week"
-
-    if mentions_week:
-        return "remainder_of_week"
-
-    return "today"
-
-
-def _build_song_tool_instruction() -> str:
-    song_paths = [f"songs/{song}" for song in os.listdir("songs")]
-    return (
-        " If the user wants a specific song, call play_specific_song using exactly one"
-        f" of these relative paths as song_path: {song_paths}."
-        " Do not invent absolute placeholder paths like /path/to/...."
-        " If the user does not specify a particular track, call play_random_songs."
-    )
-
-def determine_relevent_tool(user_text):
-    normalized_user_text = normalize_user_text(user_text)
-    
-    if (
-        one_word_present_in_text(["everything", "every", "all"], user_text.lower())
-        and one_word_present_in_text(["on", "off"], user_text.lower())
-    ):
-        user_text += (
-            " If the user wants all lights on, call turn_everything_on."
-            " If the user wants all lights off, call turn_everything_off."
-        )
-        return [lighting.turn_everything_off, lighting.turn_everything_on], user_text
-
-    if one_word_present_in_text(["kitchen"], user_text.lower()):
-        user_text += (
-            " If the user wants the kitchen light on, call kitchen_light_on."
-            " If the user wants the kitchen light off, call kitchen_light_off."
-            f" If the user wants to change the kitchen light color, call kitchen_light_color."
-            f" The valid colors are: {sorted(list(lighting.COLORS.keys()))}."
-        )
-        return [
-            lighting.kitchen_light_on,
-            lighting.kitchen_light_off,
-            lighting.kitchen_light_color,
-        ], user_text
-
-    if is_generic_stop_query(user_text):
-        user_text += (
-            " The user wants to stop any background music, timer countdown, or timer"
-            " alarm audio. Call stop_background_playback."
-        )
-        return [background_audio.stop_background_playback], user_text
-
-    if (
-        normalized_user_text in {
-            "skip",
-            "skip please",
-            "skip it",
-            "skip this",
-            "skip song",
-            "skip this song",
-            "skip track",
-            "skip this track",
-            "next",
-            "next song",
-            "next track",
-        }
-        or words_present_in_text(["skip", "song"], user_text.lower())
-        or words_present_in_text(["next", "song"], user_text.lower())
-    ):
-        return [music.skip_song], user_text
-    if words_present_in_text(["stop", "music"], user_text.lower()) or words_present_in_text(["stop", "song"], user_text.lower()) or words_present_in_text(["stop", "playing"], user_text.lower()):
-        return [music.stop_music], user_text
-    if one_word_present_in_text(["bangers", "song", "music"], user_text.lower()):
-        user_text += _build_song_tool_instruction()
-        return [music.play_random_songs, music.play_specific_song], user_text
-    if words_present_in_text(["play"], user_text.lower()):
-        user_text += _build_song_tool_instruction()
-        return [music.play_specific_song], user_text
-
-    if is_timer_status_query(user_text):
-        user_text += (
-            " The user wants to know how much time is left on the active timer."
-            " Call get_timer_remaining."
-        )
-        return [timer.get_timer_remaining], user_text
-    if words_present_in_text(["stop", "timer"], user_text.lower()) or words_present_in_text(["cancel", "timer"], user_text.lower()) or words_present_in_text(["end", "timer"], user_text.lower()):
-        return [timer.stop_timer], user_text
-    if one_word_present_in_text(["timer", "countdown"], user_text.lower()):
-        user_text += (
-            " If the user wants to start a timer, call start_timer with duration_seconds"
-            " as a positive integer. Convert minutes or hours into total seconds before"
-            " calling the tool. If the user wants to stop or cancel a timer, call"
-            " stop_timer. If the user wants to know how much time is left on the active"
-            " timer, call get_timer_remaining."
-        )
-        return [timer.start_timer, timer.stop_timer, timer.get_timer_remaining], user_text
-
-    if one_word_present_in_text(["volume"], user_text.lower()):
-        user_text += " If the user wants to change the speaker volume, call set_output_volume with volume_percent as an integer from 0 to 100."
-        return [volume.set_output_volume], user_text
-
-    if one_word_present_in_text(["weather"], user_text.lower()):
-        user_text += (
-            " The user wants the current weather for the configured location."
-            " Call get_weather_analysis."
-        )
-        return [weather.get_weather_analysis], user_text
-
-    if one_word_present_in_text(["portfolio"], user_text.lower()) or one_word_present_in_text(
-        ["rebalance", "rebelance"],
-        user_text.lower(),
-    ):
-        user_text += (
-            " The user wants to run the portfolio rebalance workflow."
-            " Call rebalance_portfolio."
-        )
-        return [portfolio_rebalance.rebalance_portfolio], user_text
-
-    if words_present_in_text(["freaky"], user_text.lower()):
-        user_text += "Use the station_lights_freaky tool"
-        return [lighting.station_lights_freaky], user_text 
-    elif words_present_in_text(["station"], user_text.lower()):
-        user_text += (
-            "Choose the tool most fitting to the request from the following. In the case that the user wishes to change the station light colors," \
-            f"the valid colors are: {sorted(list(lighting.COLORS.keys()))}."
-        )
-        return [
-            lighting.station_lights_on,
-            lighting.station_lights_off,
-            lighting.station_light_brightness,
-            lighting.station_light_color,
-        ], user_text
-
-    if is_calendar_query(user_text):
-        period = determine_calendar_period(user_text)
-        user_text += (
-            " The user wants help with Google Calendar."
-            f" Use period {period!r}."
-            " If the user wants a factual list of events, their agenda, or what is on the calendar,"
-            " call get_calendar_events."
-            " If the user wants an analysis, overview, summary, what is planned, or how busy the schedule looks,"
-            " call get_calendar_schedule_analysis."
-            " Do not create, edit, or delete calendar events."
-        )
-        if is_calendar_analysis_request(user_text):
-            user_text += " This request sounds analytical, so prefer get_calendar_schedule_analysis."
-        return [gcalendar.get_calendar_events, gcalendar.get_calendar_schedule_analysis], user_text
-
-    logging.info("No relevant tool found for this query.")
-    return None, user_text
 
 def _coerce_argument_type(parameter: inspect.Parameter, value):
     """Coerce a tool argument to the annotated type when the model returns it as a string.
@@ -955,23 +719,6 @@ def execute_tool_calls(tool_calls):
     if clarification_messages:
         return " ".join(clarification_messages)
     return None
-
-def words_present_in_text(words, text):
-    tokens = re.findall(r'\b\w+\b', text.lower())  # Tokenize
-    for token in tokens:
-        if token in CANON:
-            tokens.append(CANON[token])  # Add canonical forms to tokenizer
-    return all(word in tokens for word in words) 
-
-def one_word_present_in_text(words, text):
-    tokens = re.findall(r'\b\w+\b', text.lower())  # Tokenize
-    for token in tokens:
-        if token in CANON:
-            tokens.append(CANON[token])  # Add canonical forms to tokenizer
-    for word in tokens:
-        if word in words:
-            return True
-    return False
 
 def warm_up_groq_client():
     model_name = get_groq_model_name()

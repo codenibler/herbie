@@ -38,10 +38,11 @@ Sherpa-onnx wake-word detection:
   is required. The repository includes the quantized sherpa-onnx 3M
   English-capable model and its `HEY_HERBIE` keyword definition under
   `herbie_wakewords/`.
-- `WAKEWORD_SCORE` defaults to `1.0`; increasing it makes the keyword easier to
-  keep during decoding. `WAKEWORD_THRESHOLD` defaults to `0.25`; increasing it
-  makes activation stricter and lowering it makes activation easier. Tune both
-  against recordings made in the room where Herbie runs.
+- `WAKEWORD_SCORE` boosts the keyword path during decoding (sherpa-onnx default
+  `1.0`; Herbie ships `4.0`). `WAKEWORD_THRESHOLD` is the detection confidence
+  cutoff (sherpa-onnx default `0.25`; Herbie ships `0.06`). Raise the threshold or
+  lower the score if you get false triggers; do the opposite if you have to shout.
+  Tune both against recordings made in the room where Herbie runs.
 - `WAKEWORD_SAMPLE_RATE=16000` matches the bundled US English acoustic model.
   `WAKEWORD_BLOCK_SIZE=2048` controls how many mono `int16` samples are read
   from the microphone at a time.
@@ -77,32 +78,66 @@ python3 main.py
 ```
 - When Herbie prints the Google auth URL, open it in a browser on your local machine. The callback to `localhost:8080` will traverse the SSH tunnel back to the Pi and create `toolbox/gcalendar_tokens.json`.
 
-## Tool triggers
+## Tool selection
 
-These are the current keyword heuristics in `groq_model.py`. They are terse on purpose and order-sensitive.
+Herbie sends every transcribed request to the model together with the full tool list
+(all entries in `TOOL_MAP` in `groq_model.py`) and lets the model decide whether a tool
+fits. There is no keyword pre-routing. Guidance that used to be injected per keyword
+(valid light colors, the live list of song files, calendar periods, timer unit
+conversion, kitchen vs station lights) now lives in the tool schemas and in
+`TOOL_GUIDANCE`, which is appended to the system prompt along with the current local
+date and time.
 
-| Tool call(s) | Trigger words / phrases |
-| --- | --- |
-| `turn_everything_on`, `turn_everything_off` | One of `everything`, `every`, `all` plus one of `on`, `off`. |
-| `kitchen_light_on`, `kitchen_light_off`, `kitchen_light_color` | Contains `kitchen`. |
-| `stop_background_playback` | Exact normalized query `stop`. |
-| `skip_song` | Exact phrases like `skip`, `skip please`, `skip song`, `next`, `next song`, `next track`, or words `skip` + `song`, `next` + `song`. |
-| `stop_music` | Words `stop` + `music`, `song`, or `playing`. |
-| `play_random_songs`, `play_specific_song` | Contains `bangers`, `song`, or `music`. |
-| `play_specific_song` | Contains `play`. |
-| `get_timer_remaining` | Phrases like `time left on timer`, `time remaining on timer`, `how much time is left`, `how long left`, `when does the timer end`, or the same with `countdown`. |
-| `stop_timer` | Words `stop`, `cancel`, or `end` with `timer`. |
-| `start_timer`, `stop_timer`, `get_timer_remaining` | Contains `timer` or `countdown`. |
-| `set_output_volume` | Contains `volume`. |
-| `get_weather_analysis` | Contains `weather`. |
-| `rebalance_portfolio` | Contains `portfolio`, `rebalance`, or `rebelance`. |
-| `station_lights_freaky` | Contains `freaky`. |
-| `station_lights_on`, `station_lights_off`, `station_light_brightness`, `station_light_color` | Contains `station`. |
-| `get_calendar_events`, `get_calendar_schedule_analysis` | Calendar/schedule/agenda queries, including phrases like `what do i have today`, `what's on my calendar`, `what's left this week`, `rest of the week`, `remainder of the week`, `what's planned for today`, `what's planned for the rest of the week`. |
-| `get_calendar_schedule_analysis` preference | Analysis phrases like `calendar analysis`, `schedule analysis`, `analyze my calendar`, `analyse my calendar`, `summarize my calendar`, `summarise my calendar`, `calendar overview`, `schedule overview`, `how busy am i today`, `how busy is today`, `how busy is the rest of my week`, `what's planned`. |
+To add a tool: register the function in `TOOL_MAP`, write a one-line entry in
+`TOOL_DESCRIPTIONS`, and add any parameter enums or bounds to `TOOL_PARAMETER_METADATA`.
+Type annotations on the function drive the JSON schema types.
 
-Local non-tool shortcuts:
+Local non-model shortcuts (the only remaining text matching):
 - Time responses are handled locally for `what time is it`, `what's the time`, `tell me the time`, and `current time`.
+- A bare `stop` while background audio is playing stops it immediately without a model round-trip.
+
+## Bluetooth speaker (Soundcore Motion Boom)
+
+Herbie plays through a Bluetooth speaker via PulseAudio, and keeps the speaker awake
+with a permanent, inaudible keepalive stream so it never auto-powers off.
+
+One-time setup on the Pi:
+```bash
+sudo apt-get install -y --no-install-recommends pulseaudio-module-bluetooth
+systemctl --user restart pulseaudio.service
+# put the speaker in pairing mode, then (replace the MAC):
+bluetoothctl scan on   # note the speaker's address, then in the same session:
+bluetoothctl pair AA:BB:CC:DD:EE:FF && bluetoothctl trust AA:BB:CC:DD:EE:FF && bluetoothctl connect AA:BB:CC:DD:EE:FF
+loginctl enable-linger $USER          # user services run without a login session
+```
+
+`/etc/bluetooth/main.conf` is set to reconnect to the speaker automatically after link
+loss (`[Policy] ReconnectUUIDs=0000110b-...` is the A2DP Sink UUID, with
+`ReconnectAttempts=7` and backoff `ReconnectIntervals=1,2,4,8,16,32,64`), plus
+`AutoEnable=true` and `FastConnectable=true`. A backup of the original is at
+`/etc/bluetooth/main.conf.bak-herbie`.
+
+`.env` values:
+- `PREFERRED_WAV_OUTPUT_DEVICE=pulse` routes all of Herbie's `aplay` output through the
+  PulseAudio default sink; volume control then uses `pactl` on that sink.
+- `USE_BLUETOOTH_SPEAKER=true`, `BLUETOOTH_ADDRESS_SOUNDCORE=<MAC>`, `SOUNDCORE_SPEAKER_NAME`.
+- `SPEAKER_KEEPALIVE_AMPLITUDE=4` is the peak sample value of the dither (16-bit scale,
+  about -78 dBFS). `1` is the minimum non-zero signal.
+
+Keepalive service:
+```bash
+setup/install_speaker_keepalive.sh      # installs + enables herbie-speaker-keepalive (systemd --user)
+systemctl --user status herbie-speaker-keepalive.service
+journalctl --user -u herbie-speaker-keepalive.service -f
+```
+`setup/speaker_keepalive.py` loops forever: reconnects the speaker if it drops, waits for
+its `bluez_sink.<MAC>.a2dp_sink`, sets it as the PulseAudio default sink, then streams
+random +/-amplitude dither to it through `pacat`. Because a stream is always playing,
+PulseAudio never suspends the sink, the A2DP transport stays open, and the speaker never
+sees the idle condition that triggers its auto power-off.
+
+To go back to the USB speaker, set `PREFERRED_WAV_OUTPUT_DEVICE=plughw:CARD=Audio,DEV=0`,
+`USE_BLUETOOTH_SPEAKER=false`, and `systemctl --user disable --now herbie-speaker-keepalive`.
 
 ## Hardware setup
 
@@ -114,7 +149,7 @@ Herbie is currently set up like a Raspberry Pi build with a USB microphone/speak
 | Microphone | `MICROPHONE_NAME` | No GPIO wiring is used in code. The current local `.env` expects a device name containing `ReSpeaker`, so plug in the mic and verify `sounddevice` can see it. |
 | Speaker / amp | `PREFERRED_WAV_OUTPUT_DEVICE=plughw:CARD=Audio,DEV=0` | No GPIO wiring is used in code. Playback is sent through ALSA to a device named `Audio`, which is typically a USB audio dongle / USB speaker path. |
 | WiZ bulbs | `KITCHEN_BULB_IP`, `BULB1_IP`, `BULB2_IP`, `BULB3_IP` | These are LAN devices, not GPIO devices. Put the bulbs on the same network as the Pi and reserve static/DHCP-stable IPs so the addresses in `.env` do not drift. |
-| Optional Bluetooth speaker | `USE_BLUETOOTH_SPEAKER`, `BLUETOOTH_ADDRESS_SOUNDCORE`, `SOUNDCORE_SPEAKER_NAME` | Optional wireless output path. `main.py` uses the helper to connect/trust the speaker with `bluetoothctl`; running the helper directly also tries to switch the PipeWire sink with `wpctl`. |
+| Bluetooth speaker | `USE_BLUETOOTH_SPEAKER`, `BLUETOOTH_ADDRESS_SOUNDCORE`, `SOUNDCORE_SPEAKER_NAME` | Wireless output path through PulseAudio (see the Bluetooth speaker section). `main.py` connects/trusts the speaker with `bluetoothctl` and sets the PulseAudio default sink with `pactl`; the keepalive user service does the same continuously. |
 
 Recommended LED strip wiring notes:
 - `GPIO13` is the active LED data pin in the code, so wire the strip's `DIN`/`DI` pad there unless you also change `LED_PIN`.
